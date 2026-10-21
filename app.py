@@ -131,7 +131,9 @@ if role == "Joueur (Ma Fiche)":
                     "deux_mains": deux_mains, "w_dang": w_dang, "w_por": w_por, "t_kat": t_kat, "t_kih": t_kih, "t_inv": t_inv, "t_rit": t_rit,
                     "t_shu": t_shu, "t_mah": t_mah, "t_nin": t_nin, "t_invs": t_invs, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite,
                     "sh_social": sh_social, "sh_equipement": sh_equipement, "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_for": c_for,
-                    "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen,
+                    "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen,}
+                sauver_fiche(nom_id, maj)
+                st.success("Fiche synchronisée chez l'Hôte !"); st.rerun()
         st.markdown("---")
         st.subheader("📢 Lancer une Action / Technique au MJ")
         c_a1, c_a2 = st.columns(2)
