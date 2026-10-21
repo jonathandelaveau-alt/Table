@@ -216,27 +216,23 @@ if role == "Joueur (Ma Fiche)":
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
-        # --- SYSTÈME D'ACTUALISATION HYBRIDE INTELLIGENT ---
-    col_refresh = st.columns(1)
-    
-    # 1. Le bouton manuel (Qui recharge les données sans toucher aux menus latéaux)
-    if col_refresh.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
+           # --- SYSTÈME D'ACTUALISATION SANS TOUCHER AU NAVIGATEUR ---
+    # Un bouton direct qui recharge uniquement les données de la table
+    if st.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
         st.rerun()
 
-    # 2. Le script invisible qui CLIQUE physiquement à votre place toutes les 7 secondes
+    # Le minuteur invisible qui clique sur le bouton interne toutes les 7 secondes
     st.components.v1.html("""
         <script>
             setTimeout(function() {
-                // Va chercher tous les boutons présents sur l'écran du MJ
                 const liste_boutons = window.parent.document.querySelectorAll('button');
                 for (const bouton of liste_boutons) {
-                    // Si le texte du bouton contient les mots magiques, on clique dessus
                     if (bouton.textContent.includes("ACTUALISER LA TABLE")) {
                         bouton.click();
                         break;
                     }
                 }
-            }, 7000); // 7000 millisecondes = 7 secondes
+            }, 7000);
         </script>
     """, height=0, width=0)
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
