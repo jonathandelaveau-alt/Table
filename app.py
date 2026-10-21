@@ -175,18 +175,141 @@ if role == "Joueur (Ma Fiche)":
         stats_armure = CATALOGUE_ARMURES.get(armure_active, {"res_p": 0, "res_s": 0, "proprietes": "Aucune"})
         res_p, res_s = stats_armure["res_p"], stats_armure["res_s"]
 
-        st.markdown("#### 🗡️ Gestion des Armes")
-        liste_armes_possedees = f.get("inventaire_armes", ["Wakizashi"])
-        col_add_w, col_sel_w = st.columns(2)
-        nouvelle_arme_cat = col_add_w.selectbox("Forger / Ajouter une arme au catalogue :", list(CATALOGUE_ARMES.keys()))
-        if col_add_w.button("➕ Ajouter l'arme à mon sac"):
-            if nouvelle_arme_cat not in liste_armes_possedees:
-                liste_armes_possedees.append(nouvelle_arme_cat)
-                f["inventaire_armes"] = liste_armes_possedees
-        arme_active = col_sel_w.selectbox("Arme équipée :", liste_armes_possedees, index=liste_armes_possedees.index(f.get("arme_active")) if f.get("arme_active") in liste_armes_possedees else 0)
-        stats_arme = CATALOGUE_ARMES.get(arme_active, {"degats": 0, "danger": 0, "portee": "0", "proprietes": "Aucune", "categorie": "Inconnue"})
-        w_deg, w_dang_base, w_por = stats_arme["degats"], stats_arme["danger"], stats_arme["portee"]
-        deux_mains = st.checkbox("Tenir cette arme à 2 mains ⚔️ (+2 Dangerosité)", value=f.get("deux_mains", False))
+                # --- BASE DE DONNÉES SYSTÉMIQUE ET AVANCÉE DES ARMES L5A ---
+        CATALOGUE_ARMES_AVANCE = {
+            "Wakizashi": {
+                "competence": "Martiales (Corps-à-corps)", "portee": "0 - 1", "degats": 3, "danger": 5, "rareté": 4,
+                "prise_autorisee": "1 main ou 2 mains",
+                "effet_2_mains": {"danger": 2, "degats": 0, "portee": 0, "texte": "+2 Dangerosité"},
+                "proprietes": "Acérée, Cérémoniale"
+            },
+            "Katana": {
+                "competence": "Martiales (Corps-à-corps)", "portee": "1", "degats": 4, "danger": 5, "rareté": 5,
+                "prise_autorisee": "1 main ou 2 mains",
+                "effet_2_mains": {"danger": 0, "degats": 1, "portee": 0, "texte": "+1 Dégât"},
+                "proprietes": "Acérée, Cérémoniale"
+            },
+            "Yari (Lance)": {
+                "competence": "Martiales (Corps-à-corps)", "portee": "2", "degats": 4, "danger": 6, "rareté": 3,
+                "prise_autorisee": "2 mains uniquement",
+                "effet_2_mains": {"danger": 0, "degats": 0, "portee": 0, "texte": "Aucun (Prise fixe)"},
+                "proprietes": "Allonge, Solide"
+            },
+            "Yumi (Arc)": {
+                "competence": "Martiales (Distance)", "portee": "2 - 5", "degats": 5, "danger": 3, "rareté": 3,
+                "prise_autorisee": "2 mains uniquement",
+                "effet_2_mains": {"danger": 0, "degats": 0, "portee": 0, "texte": "Aucun (Prise fixe)"},
+                "proprietes": "Encombrante, Militaire"
+            }
+        }
+
+        st.markdown("#### 🗡️ Galerie Tactique des Armes")
+        liste_armes_possedees = f.get("inventaire_armes_complexe", [])
+        
+        # Initialisation si l'inventaire du joueur est vide lors de sa première connexion
+        if not liste_armes_possedees:
+            # On lui équipe un Wakizashi de référence par défaut avec ses statistiques de base initiales
+            liste_armes_possedees = [{
+                "nom_modele": "Wakizashi", "degats_bonus": 0, "danger_bonus": 0, "portee_modifiee": "",
+                "props_ajoutees": "", "rarete_modifiee": 4, "notes_mj": "Objet ordinaire de départ.", "prise_choisie": "1 main"
+            }]
+            f["inventaire_armes_complexe"] = liste_armes_possedees
+
+        # 1. Module d'achat et d'intégration d'une nouvelle arme depuis le Catalogue
+        col_add_w1, col_add_w2 = st.columns(2)
+        arme_selectionnee_catalogue = col_add_w1.selectbox("Sélectionner un modèle à forger/acheter :", list(CATALOGUE_ARMES_AVANCE.keys()), key="cat_w_add")
+        
+        if col_add_w2.button("➕ Forger et ajouter à mon sac de transport"):
+            base_stats = CATALOGUE_ARMES_AVANCE[arme_selectionnee_catalogue]
+            liste_armes_possedees.append({
+                "nom_modele": arm_sel_cat := arme_selectionnee_catalogue,
+                "degats_bonus": 0, "danger_bonus": 0, "portee_modifiee": "", "props_ajoutees": "",
+                "rarete_modifiee": base_stats["rareté"], "notes_mj": "", "prise_choisie": "1 main"
+            })
+            f["inventaire_armes_complexe"] = liste_armes_possedees
+            st.rerun()
+
+        st.markdown("---")
+        st.write("🔧 Sélectionnez l'arme que vous sortez de votre sac pour l'équiper, l'ajuster ou l'altérer :")
+        
+        noms_armes_sac = [f"{idx} - {item['nom_modele']}" for idx, item in enumerate(liste_armes_possedees)]
+        arme_index_choisie_str = st.selectbox("Arme active en main :", noms_armes_sac, key="w_active_index")
+        idx_arme = int(arme_index_choisie_str.split(" - ")[0])
+        
+        # Arme en cours de manipulation par le joueur
+        w_joueur = liste_armes_possedees[idx_arme]
+        w_base = CATALOGUE_ARMES_AVANCE.get(w_joueur["nom_modele"], {"competence": "Inconnue", "portee": "1", "degats": 0, "danger": 0, "rareté": 1, "prise_autorisee": "1 main", "effet_2_mains": {"danger":0,"degats":0,"portee":0,"texte":"Aucun"}, "proprietes": "Ordinaire"})
+
+        # --- MODULE D'ALTÉRATIONS ET D'ENCHANTEMENTS MANUELS ---
+        with st.expander("🛠️ Laboratoire d'Altération & Forgeron (Aiguiser, Enchantements, Éveiller)"):
+            st.write("Modifiez manuellement la structure physique ou surnaturelle de cette arme :")
+            col_alt1, col_alt2 = st.columns(2)
+            w_joueur["degats_bonus"] = col_alt1.number_input("Modifier / Augmenter les Dégâts de base :", value=int(w_joueur.get("degats_bonus", 0)))
+            w_joueur["danger_bonus"] = col_alt2.number_input("Modifier / Augmenter la Dangerosité de base :", value=int(w_joueur.get("danger_bonus", 0)))
+            
+            col_alt3, col_alt4 = st.columns(2)
+            w_joueur["portee_modifiee"] = col_alt3.text_input("Altérer la Portée (Laissez vide pour garder la portée d'origine) :", value=w_joueur.get("portee_modifiee", ""))
+            w_joueur["rarete_modifiee"] = col_alt4.number_input("Altérer / Ajuster la Rareté de l'objet :", 0, 10, value=int(w_joueur.get("rarete_modifiee", w_base["rareté"])))
+            
+            w_joueur["props_ajoutees"] = st.text_input("Ajouter des propriétés surnaturelles ou physiques (Séparées par des virgules) :", value=w_joueur.get("props_ajoutees", ""), placeholder="Ex: Solide, Sacrée, Dissimulée")
+            w_joueur["notes_mj"] = st.text_area("Notes de l'objet (Éveillé, Histoire, Altérations magiques) :", value=w_joueur.get("notes_mj", ""))
+        # --- MODULE DE PRISE EN MAIN DYNAMIQUE (1 MAIN / 2 MAINS) ---
+        st.markdown("##### 🖐️ Configuration de la Prise en Main")
+        prise_legale = w_base["prise_autorisee"]
+        st.write(f"ℹ️ *Prise d'origine du modèle : {prise_legale}*")
+        
+        # Choix de la prise si l'arme est polyvalente
+        if "1 main ou 2 mains" in Prise_legale:
+            choix_prise = st.radio("Comment tenez-vous l'arme activement ?", ["1 main", "2 mains"], index=0 if w_joueur.get("prise_choisie", "1 main") == "1 main" else 1, key="prise_w_radio")
+            w_joueur["prise_choisie"] = choix_prise
+        else:
+            w_joueur["prise_choisie"] = "2 mains" if "2 mains" in prise_legale else "1 main"
+            st.caption(f"🔒 Prise fixe : Cette arme est obligatoirement tenue à {w_joueur['prise_choisie']}.")
+
+        # --- CALCULATEUR PHYSIQUE DES STATISTIQUES FINALES D'ATTAQUE ---
+        # 1. Chargement des valeurs de base + altérations manuelles du forgeron
+        degats_finals = w_base["degats"] + int(w_joueur.get("degats_bonus", 0))
+        danger_final = w_base["danger"] + int(w_joueur.get("danger_bonus", 0))
+        portee_finale = w_joueur["portee_modifiee"] if w_joueur.get("portee_modifiee", "").strip() else w_base["portee"]
+        
+        # 2. Application automatique des règles de prise à 2 mains de l'arme
+        if w_joueur["prise_choisie"] == "2 mains" and "1 main ou 2 mains" in prise_legale:
+            modifs_2h = w_base.get("effet_2_mains", {"danger": 0, "degats": 0, "portee": 0})
+            danger_final += modifs_2h.get("danger", 0)
+            degats_finals += modifs_2h.get("degats", 0)
+            st.success(f"⚔️ **Effet 2 mains actif :** {w_base['effet_2_mains']['texte']}")
+
+        # 3. Fusion des propriétés d'origine et des enchantements ajoutés
+        props_totales = w_base["proprietes"]
+        if w_joueur.get("props_ajoutees", "").strip():
+            props_totales += f", {w_joueur['props_ajoutees']}"
+
+        # Affichage du profil complet final pour le joueur
+        st.info(f"📊 **Profil final calculé en main :** Affilié à : *{w_base['competence']}* | Dégâts : **{degats_finals}** | Dangerosité : **{danger_final}** | Portée : **{portee_finale}** | Rareté : {w_joueur['rarete_modifiee']}\n\n📜 **Propriétés de l'objet :** *{props_totales}*")
+        if w_joueur.get("notes_mj", "").strip():
+            st.caption(f"📖 **Notes / Éveil de l'arme :** {w_joueur['notes_mj']}")
+
+        # Extraction des variables d'attaque pour la sauvegarde centrale globale
+        arme_active_nom = w_joueur["nom_modele"]
+        arme_active_degats = degats_finals
+        arme_active_danger = danger_final
+        arme_active_portee = portee_finale
+        arme_active_props = props_totales
+        arme_active_prise = w_joueur["prise_choisie"]
+        arme_active_notes = w_joueur.get("notes_mj", "")
+
+        # --- GESTION DE L'ARMURE DE RÉFÉRENCE ---
+        st.markdown("#### 👘 Gestion de l'Armure")
+        liste_armures_possedees = f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"])
+        col_add_arm, col_sel_arm = st.columns(2)
+        nouvelle_arm_cat = col_add_arm.selectbox("Acheter / Ajouter une armure au catalogue :", list(CATALOGUE_ARMURES.keys()))
+        if col_add_arm.button("➕ Ajouter l'armure"):
+            if nouvelle_arm_cat not in liste_armures_possedees:
+                liste_armures_possedees.append(nouvelle_arm_cat)
+                f["inventaire_armures"] = liste_armures_possedees
+        armure_active = col_sel_arm.selectbox("Armure portée :", liste_armures_possedees, index=liste_armures_possedees.index(f.get("armure_active")) if f.get("armure_active") in liste_armures_possedees else 0)
+        stats_armure = CATALOGUE_ARMURES.get(armure_active, {"res_p": 0, "res_s": 0, "proprietes": "Aucune"})
+        res_p, res_s = stats_armure["res_p"], stats_armure["res_s"]
 
                # --- CATALOGUE ENRICHI DE VOS TECHNIQUES MAISON (RANG 1 À 5) ---
         # Pour rajouter une technique : écrivez son nom entre guillemets, suivi d'une virgule.
