@@ -219,12 +219,21 @@ if role == "Joueur (Ma Fiche)":
         col_add_w1, col_add_w2 = st.columns(2)
         arme_selectionnee_catalogue = col_add_w1.selectbox("Sélectionner un modèle à forger/acheter :", list(CATALOGUE_ARMES_AVANCE.keys()), key="cat_w_add")
         
-        if col_add_w2.button("➕ Forger et ajouter à mon sac de transport"):
+               if col_add_w2.button("➕ Forger et ajouter à mon sac de transport"):
             base_stats = CATALOGUE_ARMES_AVANCE[arme_selectionnee_catalogue]
+            
+            # Correction : On extrait le texte de l'arme AVANT d'ouvrir le dictionnaire
+            arm_sel_cat = arme_selectionnee_catalogue
+            
             liste_armes_possedees.append({
-                "nom_modele": arm_sel_cat := arme_selectionnee_catalogue,
-                "degats_bonus": 0, "danger_bonus": 0, "portee_modifiee": "", "props_ajoutees": "",
-                "rarete_modifiee": base_stats["rareté"], "notes_mj": "", "prise_choisie": "1 main"
+                "nom_modele": arm_sel_cat, 
+                "degats_bonus": 0, 
+                "danger_bonus": 0, 
+                "portee_modifiee": "", 
+                "props_ajoutees": "",
+                "rarete_modifiee": base_stats["rareté"], 
+                "notes_mj": "", 
+                "prise_choisie": "1 main"
             })
             f["inventaire_armes_complexe"] = liste_armes_possedees
             st.rerun()
