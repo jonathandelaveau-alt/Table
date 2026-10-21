@@ -361,32 +361,34 @@ if role == "Joueur (Ma Fiche)":
                     cle_g_map = {"Katas": "mes_katas", "Kíhos": "mes_kihos", "Invocations": "mes_invocs", "Rituels": "mes_rituels", "Shujis": "mes_shujis", "Mahos": "mes_mahos", "Ninjutsus": "mes_ninjutsus", "Inversions": "mes_inversions"}[g_cat]
                     
                     # Affichage des sous-choix
+                                       # --- AFFICHAGE NETTOYÉ DU GRIMOIRE ACTIF FILTRÉ ---
                     st.write(f"📂 Vos parchemins enregistrés en **{g_cat}** :")
-                    for t_apprise in f.get(cle_g_map, []):
-                        c_t_click, c_t_del = st.columns([4, 1])
-                        
-                                         for tech_apprise in liste_specifique:
-                        # Découpage précis de la ligne en 3 zones
+                    
+                    # On utilise la bonne clé de fichier filtrée par le sélecteur
+                    liste_specifique = f.get(cle_g_map, [])
+                    
+                    for tech_apprise in liste_specifique:
+                        # Découpage précis et proportionnel de la ligne en 3 zones (Nom, Œil, Croix)
                         c_t_nom, c_t_oeil, c_t_del = st.columns([3, 1, 1])
                         
                         est_active = f.get("tech_active_cliquee") == tech_apprise
                         label_click = f"🎯 {tech_apprise} (Prête)" if est_active else f"📜 {tech_apprise}"
                         
-                        # 1. Bouton pour sélectionner l'attaque
+                        # 1. Bouton pour sélectionner activement la technique
                         if c_t_nom.button(label_click, key=f"click_active_{tech_apprise}"):
                             f["tech_active_cliquee"] = tech_apprise
                             sauver_fiche(nom_id, f)
                             st.rerun()
                             
-                        # 2. Le petit œil magique pour ouvrir la sous-page de détails
+                        # 2. Le petit œil magique pour ouvrir la description détaillée
                         if c_t_oeil.button("👁️", key=f"oeil_details_{tech_apprise}", help="Ouvrir la description détaillée"):
                             afficher_details_technique(tech_apprise)
                             
-                        # 3. La croix de suppression habituelle
+                        # 3. La croix rouge de suppression
                         if c_t_del.button("❌", key=f"del_g_{tech_apprise}"):
                             if tech_apprise == f.get("tech_active_cliquee"):
                                 f["tech_active_cliquee"] = "Aucune technique active"
-                            f[cle_sauvegardee].remove(tech_apprise)
+                            f[cle_g_map].remove(tech_apprise)
                             sauver_fiche(nom_id, f)
                             st.rerun()
             else:
