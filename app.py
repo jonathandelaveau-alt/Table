@@ -229,12 +229,17 @@ if role == "Joueur (Ma Fiche)":
             f["inventaire_armes_complexe"] = liste_armes_possedees
             st.rerun()
 
-        st.markdown("---")
+                st.markdown("---")
         st.write("🔧 Sélectionnez l'arme que vous sortez de votre sac pour l'équiper, l'ajuster ou l'altérer :")
-        noms_armes_sac = [f"{idx} - {item['nom_modele']}" for idx, item in enumerate(liste_armes_possedees)]
-        arme_index_choisie_str = st.selectbox("Arme active en main :", noms_armes_sac, key="w_active_index")
-        idx_arme = int(arme_index_choisie_str.split(" - "))
         
+        # Correction de la ligne 236 : On utilise une liste propre de noms pour l'affichage
+        noms_armes_sac = [item['nom_modele'] for item in liste_armes_possedees]
+        
+        # On demande à Streamlit de retenir l'index numérique (0, 1, 2...) directement grâce au paramètre index
+        arme_choisie_nom = st.selectbox("Arme active en main :", noms_armes_sac, key="w_active_name")
+        idx_arme = noms_armes_sac.index(arme_choisie_nom)
+        
+        # Chargement sécurisé de l'arme et de ses statistiques de référence
         w_joueur = liste_armes_possedees[idx_arme]
         w_base = CATALOGUE_ARMES_AVANCE.get(w_joueur["nom_modele"], {"competence": "Inconnue", "portee": "1", "degats": 0, "danger": 0, "rareté": 1, "prise_autorisee": "1 main", "effet_2_mains": {"danger":0,"degats":0,"portee":0,"texte":"Aucun"}, "proprietes": "Ordinaire"})
 
