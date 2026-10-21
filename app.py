@@ -216,8 +216,8 @@ if role == "Joueur (Ma Fiche)":
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
-      # --- SYSTÈME D'ACTUALISATION HYBRIDE (VERSION ULTRA-STABLE SANS BUG) ---
-    col_refresh = st.columns()
+         # --- SYSTÈME D'ACTUALISATION HYBRIDE (VERSION FIXÉE) ---
+    col_refresh = st.columns(1)[0] # <--- LE CHIFFRE 1 ET LE [0] ONT ÉTÉ RAJOUTÉS ICI
     
     # 1. Le bouton manuel toujours fonctionnel
     if col_refresh.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
