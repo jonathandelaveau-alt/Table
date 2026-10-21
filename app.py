@@ -275,13 +275,6 @@ elif role == "Maître du Jeu (Hôte)":
         st.subheader("🔔 Boîte de réception des Actions Soumises")
         if os.path.exists(ACTIONS_FILE):
             try:
-                
-        # --- RÉCEPTION DES ACTIONS EN DIRECT (BOÎTE DE RÉCEPTION MJ) ---
-        st.markdown("---")
-        st.subheader("🔔 Boîte de réception des Actions Soumises")
-        
-        if os.path.exists(ACTIONS_FILE):
-            try:
                 with open(ACTIONS_FILE, "r", encoding="utf-8") as file: 
                     actions = json.load(file)
             except: 
@@ -312,3 +305,4 @@ elif role == "Maître du Jeu (Hôte)":
             st.info("Aucune notification reçue.")
 else: 
     st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")
+   
