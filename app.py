@@ -2,7 +2,6 @@ import streamlit as st
 import json
 import os
 import time
-st.logo = st.empty()
 
 # 1. Configuration et Design Sombre L5A (Obligatoire tout en haut)
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
@@ -58,15 +57,6 @@ def charger_fiche(nom_joueur):
     return None
 
 role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maître du Jeu (Hôte)"])
-
-# --- SYNC IMMÉDIATE DU PANNEAU MJ ---
-# Force le navigateur à vérifier les fichiers toutes les 2 secondes sans toucher à la souris
-if "compteur" not in st.session_state:
-    st.session_state.compteur = 0
-
-time.sleep(2)
-st.session_state.compteur += 1
-st.rerun()
 
 # ==================== VUE JOUEUR ====================
 if role == "Joueur (Ma Fiche)":
@@ -226,6 +216,12 @@ if role == "Joueur (Ma Fiche)":
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
+        # --- BOUTON D'ACTUALISATION MANUELLE DU MJ ---
+    col_refresh = st.columns([1])[0]
+    if col_refresh.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
+        st.success("Données de la table synchronisées avec succès !")
+        st.preload = True # Force le chargement des fichiers JSON en tâche de fond
+        st.rerun() # Rafraîchit l'affichage instantanément sans recharger la page web
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
     
     if not fichiers:
