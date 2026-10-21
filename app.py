@@ -185,7 +185,7 @@ if role == "Joueur (Ma Fiche)":
             cprof1, cprof2, cprof3, cprof4, fprof5 = st.columns(5)
             c_cmr, c_tra, c_nav, c_mag, c_sur = cprof1.slider("Commerce", 0, 6, value=f.get("c_cmr", 0)), cprof2.slider("Travail Manuel", 0, 6, value=f.get("c_tra", 0)), cprof3.slider("Navigation", 0, 6, value=f.get("c_nav", 0)), cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0)), fprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
 
-                st.subheader("🛡️ Arsenal & Inventaire Cliquable")
+        st.subheader("🛡️ Arsenal & Inventaire Cliquable")
         sh_equipement = st.checkbox("👁️ Partager mes équipements équipés avec le MJ", value=f.get("sh_equipement", True))
         
         st.markdown("#### 👘 Gestion des Armures")
