@@ -32,12 +32,33 @@ DATA_CLANS = {
 }
 ROLES_LISTE = ["Bushi", "Courtisan", "Shugenja", "Moine", "Artisan", "Shinobi"]
 
-# Catalogue d'objets physiques de référence pour le logiciel
-CATALOGUE_ARMES = {
-    "Wakizashi": {"degats": 3, "danger": 5, "portee": "0 - 1", "proprietes": "Acérée, Cérémoniale", "categorie": "Sabre"},
-    "Katana": {"degats": 4, "danger": 5, "portee": "1", "proprietes": "Acérée, Cérémoniale", "categorie": "Sabre"},
-    "Yumi (Arc)": {"degats": 5, "danger": 3, "portee": "2 - 5", "proprietes": "Encombrante", "categorie": "Arme à distance"},
-    "Yari (Lance)": {"degats": 4, "danger": 6, "portee": "2", "proprietes": "Allonge", "categorie": "Arme d'hast"}
+# --- RECONSTRUCTION DU CATALOGUE DES ARMES DE RÉFÉRENCE ---
+# (À placer obligatoirement tout en haut du fichier pour corriger la ligne 193)
+CATALOGUE_ARMES_AVANCE = {
+    "Wakizashi": {
+        "competence": "Martiales (Corps-à-corps)", "portee": "0 - 1", "degats": 3, "danger": 5, "rareté": 4,
+        "prise_autorisee": "1 main ou 2 mains",
+        "effet_2_mains": {"danger": 2, "degats": 0, "portee": 0, "texte": "+2 Dangerosité"},
+        "proprietes": "Acérée, Cérémoniale"
+    },
+    "Katana": {
+        "competence": "Martiales (Corps-à-corps)", "portee": "1", "degats": 4, "danger": 5, "rareté": 5,
+        "prise_autorisee": "1 main ou 2 mains",
+        "effet_2_mains": {"danger": 0, "degats": 1, "portee": 0, "texte": "+1 Dégât"},
+        "proprietes": "Acérée, Cérémoniale"
+    },
+    "Yari (Lance)": {
+        "competence": "Martiales (Corps-à-corps)", "portee": "2", "degats": 4, "danger": 6, "rareté": 3,
+        "prise_autorisee": "2 mains uniquement",
+        "effet_2_mains": {"danger": 0, "degats": 0, "portee": 0, "texte": "Aucun (Prise fixe)"},
+        "proprietes": "Allonge, Solide"
+    },
+    "Yumi (Arc)": {
+        "competence": "Martiales (Distance)", "portee": "2 - 5", "degats": 5, "danger": 3, "rareté": 3,
+        "prise_autorisee": "2 mains uniquement",
+        "effet_2_mains": {"danger": 0, "degats": 0, "portee": 0, "texte": "Aucun (Prise fixe)"},
+        "proprietes": "Encombrante, Militaire"
+    }
 }
 
 CATALOGUE_ARMURES = {
