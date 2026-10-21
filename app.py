@@ -185,7 +185,7 @@ if role == "Joueur (Ma Fiche)":
             cprof1, cprof2, cprof3, cprof4, fprof5 = st.columns(5)
             c_cmr, c_tra, c_nav, c_mag, c_sur = cprof1.slider("Commerce", 0, 6, value=f.get("c_cmr", 0)), cprof2.slider("Travail Manuel", 0, 6, value=f.get("c_tra", 0)), cprof3.slider("Navigation", 0, 6, value=f.get("c_nav", 0)), cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0)), fprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
 
-        st.subheader("🛡️ Arsenal & Inventaire Cliquable")
+                st.subheader("🛡️ Arsenal & Inventaire Cliquable")
         sh_equipement = st.checkbox("👁️ Partager mes équipements équipés avec le MJ", value=f.get("sh_equipement", True))
         
         st.markdown("#### 👘 Gestion des Armures")
@@ -229,17 +229,12 @@ if role == "Joueur (Ma Fiche)":
             f["inventaire_armes_complexe"] = liste_armes_possedees
             st.rerun()
 
-                st.markdown("---")
+        st.markdown("---")
         st.write("🔧 Sélectionnez l'arme que vous sortez de votre sac pour l'équiper, l'ajuster ou l'altérer :")
-        
-        # Correction de la ligne 236 : On utilise une liste propre de noms pour l'affichage
         noms_armes_sac = [item['nom_modele'] for item in liste_armes_possedees]
-        
-        # On demande à Streamlit de retenir l'index numérique (0, 1, 2...) directement grâce au paramètre index
         arme_choisie_nom = st.selectbox("Arme active en main :", noms_armes_sac, key="w_active_name")
         idx_arme = noms_armes_sac.index(arme_choisie_nom)
         
-        # Chargement sécurisé de l'arme et de ses statistiques de référence
         w_joueur = liste_armes_possedees[idx_arme]
         w_base = CATALOGUE_ARMES_AVANCE.get(w_joueur["nom_modele"], {"competence": "Inconnue", "portee": "1", "degats": 0, "danger": 0, "rareté": 1, "prise_autorisee": "1 main", "effet_2_mains": {"danger":0,"degats":0,"portee":0,"texte":"Aucun"}, "proprietes": "Ordinaire"})
 
@@ -286,6 +281,7 @@ if role == "Joueur (Ma Fiche)":
         arme_active_degats = degats_finals
         arme_active_danger = danger_final
         arme_active_portee = portee_finale
+
         # --- SECTION GESTION DES TECHNIQUES ---
         st.subheader("📜 Gestion des techniques")
         st.write("Cochez les arts secrets que votre personnage étudie pour les ajouter à votre Grimoire Actif :")
