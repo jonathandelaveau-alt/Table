@@ -253,7 +253,7 @@ if role == "Joueur (Ma Fiche)":
             f.get("mes_ninjutsus", []) + f.get("mes_inversions", [])
         )
 
-        # --- CRÉATION DE LA DOUBLE COLONNE VISUELLE JOUEUR ---
+        # Création de la double colonne visuelle joueur
         col_catalogue, col_grimoire_actif = st.columns(2)
 
         # ==============================================================================
@@ -272,17 +272,6 @@ if role == "Joueur (Ma Fiche)":
             c_nin = st.checkbox("🥷 Manuel de Ninjutsu", value=f.get("ch_nin", False))
             c_invs = st.checkbox("🔮 Parchemins d'Inversion", value=f.get("ch_invs", False))
 
-            LISTE_SOUS_CATS = {
-                "Katas": ["Général", "Corps-à-corps", "Distance", "Non-humain"],
-                "Kíhos": ["Air", "Terre", "Feu", "Eau", "Vide"],
-                "Invocations": ["Air", "Terre", "Feu", "Eau", "Vide"],
-                "Rituels": ["Général"],
-                "Shujis": ["Air", "Terre", "Feu", "Eau", "Vide"],
-                "Mahos": ["Général"],
-                "Ninjutsus": ["Général"],
-                "Inversions": ["Général"]
-            }
-
             mapping_categories = [
                 (c_kat, "Katas", "mes_katas"), (c_kih, "Kíhos", "mes_kihos"),
                 (c_inv, "Invocations", "mes_invocs"), (c_rit, "Rituels", "mes_rituels"),
@@ -290,7 +279,7 @@ if role == "Joueur (Ma Fiche)":
                 (c_nin, "Ninjutsus", "mes_ninjutsus"), (c_invs, "Inversions", "mes_inversions")
             ]
 
-                       for coche, nom_cat, cle_sauvegardee in mapping_categories:
+            for coche, nom_cat, cle_sauvegardee in mapping_categories:
                 if coche:
                     st.markdown(f"#### 📂 Filtres : {nom_cat}")
                     
@@ -304,7 +293,6 @@ if role == "Joueur (Ma Fiche)":
                     
                     # Extraction des techniques correspondantes
                     techs_disponibles = CATALOGUE_COMPLET.get(nom_cat, {}).get(sub_sel, {}).get(rang_sel, [])
-
                     num_rang = int(rang_sel.split()[-1])
                     est_hors_rang = num_rang > rang_ecole
 
@@ -312,53 +300,36 @@ if role == "Joueur (Ma Fiche)":
                         st.caption("ℹ️ Aucune technique enregistrée pour cette combinaison.")
                     else:
                         for t in techs_disponibles:
-                            # Si la technique est déjà dans le grimoire du joueur, on l'indique
                             if t in f.get(cle_sauvegardee, []):
                                 st.caption(f"🔹 {t} — [Déjà présent dans votre Grimoire Actif]")
                             else:
                                 c_txt, c_btn = st.columns(2)
                                 if est_hors_rang:
-                                    c_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} — (Nécessite le Rang d'École {num_rang})</span>*", unsafe_allow_html=True)
+                                    c_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} — (Nécessite le Rang {num_rang})</span>*", unsafe_allow_html=True)
                                     label_btn = "➕ Inscrire au Grimoire (Exception)"
                                 else:
                                     c_txt.write(f"✨ **{t}**")
                                     label_btn = "➕ Inscrire au Grimoire Actif"
                                 
-                                # --- ACTION INTERCONNECTÉE DE L'INSCRIPTION ---
                                 if c_btn.button(label_btn, key=f"add_{nom_cat}_{t}"):
-                                    if cle_sauvegardee not in f:
-                                        f[cle_sauvegardee] = []
-                                    
-                                    # 1. Ajout de la technique dans la liste interne
                                     f[cle_sauvegardee].append(t)
-                                    
-                                    # 2. On recalcule immédiatement la liste totale pour la colonne de droite
                                     grimoire_actif_total.append(t)
-                                    
-                                    # 3. Sauvegarde automatique immédiate du fichier .json
-                                    f["mes_katas"] = f.get("mes_katas", [])
-                                    f["mes_kihos"] = f.get("mes_kihos", [])
-                                    f["mes_invocs"] = f.get("mes_invocs", [])
-                                    f["mes_rituels"] = f.get("mes_rituels", [])
-                                    f["mes_shujis"] = f.get("mes_shujis", [])
-                                    f["mes_mahos"] = f.get("mes_mahos", [])
-                                    f["mes_ninjutsus"] = f.get("mes_ninjutsus", [])
-                                    f["mes_inversions"] = f.get("mes_inversions", [])
                                     sauver_fiche(nom_id, f)
-                                    
-                                    # 4. Rafraîchissement instantané de la mise en page
                                     st.rerun()
-                                    
+
+        # ==============================================================================
+        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES
+        # ==============================================================================
+        with col_grimoire_actif:
             st.markdown("### 📖 Grimoire des techniques actives")
             if grimoire_actif_total:
-                st.write("Voici la liste complète de vos capacités actuellement prêtes à l'action autour de la table :")
-                # Affichage sous forme de liste à puces propre
+                st.write("Voici la liste complète de vos capacités actuellement prêtes à l'action :")
                 for tech_apprise in sorted(list(set(grimoire_actif_total))):
                     st.markdown(f"🔹 **{tech_apprise}**")
             else:
-                st.info("Votre grimoire actif est vide pour le moment. Explorez et sélectionnez des techniques dans le catalogue de gauche pour les mémoriser.")
+                st.info("Votre grimoire actif est vide pour le moment. Sélectionnez des techniques à gauche pour les mémoriser.")
 
-        # --- MODULE DE REQUÊTES EN DIRECT (AVEC GRIMOIRE ACTIF INTERCONNECTÉ) ---
+        # --- MODULE DE REQUÊTES EN DIRECT ---
         st.markdown("---")
         st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
         
@@ -366,12 +337,11 @@ if role == "Joueur (Ma Fiche)":
         comp_c = c_a1.text_input("Compétence (FACULTATIF) :", placeholder="Ex: Corps-à-corps")
         elem_c = c_a2.selectbox("Élément combiné (FACULTATIF) :", ["Aucun / Simple texte", "Air 💨", "Terre 🏔️", "Feu 🔥", "Eau 💧", "Vide 🌌"])
         
-        # Le menu se remplit automatiquement avec les techniques apprises par le joueur
         if grimoire_actif_total:
             options_tech = ["Aucune technique associée"] + list(set(grimoire_actif_total))
             tech_c = c_a3.selectbox("Technique issue du Grimoire Actif :", options_tech)
         else:
-            c_a3.caption("📖 Grimoire Actif vide (Inscrivez des techniques ci-dessus)")
+            c_a3.caption("📖 Grimoire Actif vide.")
             tech_c = "Aucune technique associée"
             
         desc_a = st.text_area("Votre Message / Intention (Pourquoi faites-vous cela ?) :", placeholder="Écrivez ici vos détails...")
@@ -394,7 +364,7 @@ if role == "Joueur (Ma Fiche)":
                 with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
                 st.success("Action envoyée au MJ !")
 
-        # Sauvegarde automatique des parchemins et catalogues
+        # Sauvegarde automatique globale
         maj = {
             "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
             "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
@@ -402,7 +372,7 @@ if role == "Joueur (Ma Fiche)":
             "ch_kat": c_kat, "ch_kih": c_kih, "ch_inv": c_inv, "ch_rit": c_rit, "ch_shu": c_shu, "ch_mah": c_mah, "ch_nin": c_nin, "ch_invs": c_invs,
             "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), "mes_rituels": f.get("mes_rituels", []),
             "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
-            "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire, "inventaire_armes": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
+            "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire, "inventaire_armes": f.get("inventaire_armes", ["Wakizashi"]), "inventaire_armures": f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"]),
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
             "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
