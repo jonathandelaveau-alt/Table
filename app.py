@@ -469,9 +469,8 @@ elif role == "Maître du Jeu (Hôte)":
                     st.markdown("**⚖️ Profil Social**")
                     if p.get("sh_social", True): 
                       st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
-                else: 
-                    st.caption("🔒 Masqué par le joueur")
-            
+                else:  st.caption("🔒 Masqué par le joueur")
+       
             with col4:
                 st.markdown("**⚔️ Arsenal Équipé**")
                 if p.get("sh_equipement", True):
