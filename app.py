@@ -127,74 +127,79 @@ if role == "Joueur (Ma Fiche)":
         rang_ecole = col_civ5.number_input("Rang d'École (1 à 6) :", 1, 6, value=f.get("rang_ecole", 1))
         roles_actuels = col_civ6.multiselect("Sélectionnez votre ou vos Rôles :", ROLES_LISTE, default=f.get("profil", ["Bushi"]))
 
-            # --- POSTURE ET ANNEAUX ---
-            posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
+        col_civ4, col_civ5, col_civ6 = st.columns(3)
+        ecole = col_civ4.text_input("Nom de l'École :", value=f.get("ecole", ""))
+        rang_ecole = col_civ5.number_input("Rang d'École (1 à 6) :", 1, 6, value=f.get("rang_ecole", 1))
+        roles_actuels = col_civ6.multiselect("Sélectionnez votre ou vos Rôles :", ROLES_LISTE, default=f.get("profil", ["Bushi"]))
 
-            st.subheader("🌀 Les Cinq Anneaux")
-            sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
-            ca1, ca2, ca3, ca4, ca5 = st.columns(5)
-            air = ca1.slider("Air 💨", 1, 5, value=f.get("air", 1))
-            terre = ca2.slider("Terre 🏔️", 1, 5, value=f.get("terre", 1))
-            feu = ca3.slider("Feu 🔥", 1, 5, value=f.get("feu", 1))
-            eau = ca4.slider("Eau 💧", 1, 5, value=f.get("eau", 1))
-            vide = ca5.slider("Vide 🌌", 1, 5, value=f.get("vide", 1))
-            p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
+        # --- REPRISE ALIGNÉE DEPUIS LA POSTURE (LIGNE 131 CORRIGÉE) ---
+        posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
 
-            end_m, sf_m, attn, vigi = (terre + feu) * 2, (terre + eau) * 2, air + feu, (air + eau) / 2
-            st.subheader("📊 Vitalité & Défenses")
-            sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
-            cv1, cv2 = st.columns(2)
-            end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
-            sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
+        st.subheader("🌀 Les Cinq Anneaux")
+        sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
+        ca1, ca2, ca3, ca4, ca5 = st.columns(5)
+        air = ca1.slider("Air 💨", 1, 5, value=f.get("air", 1))
+        terre = ca2.slider("Terre 🏔️", 1, 5, value=f.get("terre", 1))
+        feu = ca3.slider("Feu 🔥", 1, 5, value=f.get("feu", 1))
+        eau = ca4.slider("Eau 💧", 1, 5, value=f.get("eau", 1))
+        vide = ca5.slider("Vide 🌌", 1, 5, value=f.get("vide", 1))
+        p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
 
-            st.subheader("⚖️ Caractéristiques Sociales (0 à 100)")
-            sh_social = st.checkbox("👁️ Partager mes caractéristiques sociales avec le MJ", value=f.get("sh_social", True))
-            cs1, cs2, cs3 = st.columns(3)
-            hon = cs1.slider("Honneur", 0, 100, value=f.get("hon", 50))
-            glo = cs2.slider("Gloire", 0, 100, value=f.get("glo", 50))
-            sta = cs3.slider("Statut", 0, 100, value=f.get("sta", 50))
+        end_m, sf_m, attn, vigi = (terre + feu) * 2, (terre + eau) * 2, air + feu, (air + eau) / 2
+        st.subheader("📊 Vitalité & Défenses")
+        sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
+        cv1, cv2 = st.columns(2)
+        end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
+        sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
 
-            # --- LES 5 CATÉGORIES DE COMPÉTENCES ---
-            st.subheader("🎭 Grille des 25 Compétences Officielles")
+        st.subheader("⚖️ Caractéristiques Sociales (0 à 100)")
+        sh_social = st.checkbox("👁️ Partager mes caractéristiques sociales avec le MJ", value=f.get("sh_social", True))
+        cs1, cs2, cs3 = st.columns(3)
+        hon = cs1.slider("Honneur", 0, 100, value=f.get("hon", 50))
+        glo = cs2.slider("Gloire", 0, 100, value=f.get("glo", 50))
+        sta = cs3.slider("Statut", 0, 100, value=f.get("sta", 50))
 
-            with st.expander("🎨 1. Compétences Artisanales"):
-                cart1, cart2, cart3, cart4 = st.columns(4)
-                c_est = cart1.slider("Esthétique", 0, 6, value=f.get("c_est", 0))
-                c_com = cart2.slider("Composition", 0, 6, value=f.get("c_com", 0))
-                c_sty = cart3.slider("Stylisme", 0, 6, value=f.get("c_sty", 0))
-                c_forg = cart4.slider("Forge 🔨", 0, 6, value=f.get("c_forg", 0)) # Ajout de Forge
+        st.subheader("🎭 Grille des 25 Compétences Officielles")
 
-            with st.expander("⚔️ 2. Compétences Martiales"):
-                cm1, cm2, cm3, cm4, cm5, cm6 = st.columns(6)
-                c_for = cm1.slider("Forme", 0, 6, value=f.get("c_for", 0))
-                c_cac = cm2.slider("Corps-à-corps", 0, 6, value=f.get("c_cac", 0))
-                c_dis = cm3.slider("Distance", 0, 6, value=f.get("c_dis", 0))
-                c_chu = cm4.slider("Corps Humain", 0, 6, value=f.get("c_chu", 0))
-                c_med = cm5.slider("Méditation", 0, 6, value=f.get("c_med", 0))
-                c_tac = cm6.slider("Tactique", 0, 6, value=f.get("c_tac", 0))
+        with st.expander("🎨 1. Compétences Artisanales"):
+            cart1, cart2, cart3, cart4 = st.columns(4)
+            c_est = cart1.slider("Esthétique", 0, 6, value=f.get("c_est", 0))
+            c_com = cart2.slider("Composition", 0, 6, value=f.get("c_com", 0))
+            c_sty = cart3.slider("Stylisme", 0, 6, value=f.get("c_sty", 0))
+            c_forg = cart4.slider("Forge 🔨", 0, 6, value=f.get("c_forg", 0))
 
-            with st.expander("📜 3. Compétences Savantes"):
-                csav1, csav2, csav3, csav4, csav5 = st.columns(5)
-                c_cul = csav1.slider("Culture", 0, 6, value=f.get("c_cul", 0))
-                c_gou = csav2.slider("Gouvernement", 0, 6, value=f.get("c_gou", 0))
-                c_mdc = csav3.slider("Médecine", 0, 6, value=f.get("c_mdc", 0))
-                c_sen = csav4.slider("Sentiment", 0, 6, value=f.get("c_sen", 0))
-                c_the = csav5.slider("Théologie", 0, 6, value=f.get("c_the", 0))
+        with st.expander("⚔️ 2. Compétences Martiales"):
+            cm1, cm2, cm3, cm4, cm5, cm6 = st.columns(6)
+            c_for = cm1.slider("Forme", 0, 6, value=f.get("c_for", 0))
+            c_cac = cm2.slider("Corps-à-corps", 0, 6, value=f.get("c_cac", 0))
+            c_dis = cm3.slider("Distance", 0, 6, value=f.get("c_dis", 0))
+            c_chu = cm4.slider("Corps Humain", 0, 6, value=f.get("c_chu", 0))
+            c_med = cm5.slider("Méditation", 0, 6, value=f.get("c_med", 0))
+            c_tac = cm6.slider("Tactique", 0, 6, value=f.get("c_tac", 0))
 
-            with st.expander("🗣️ 4. Compétences Sociales"):
-                csoc1, csoc2, csoc3, csoc4 = st.columns(4)
-                c_cmd = csoc1.slider("Commandement", 0, 6, value=f.get("c_cmd", 0))
-                c_crt = csoc2.slider("Courtoisie", 0, 6, value=f.get("c_crt", 0))
-                c_jeu = csoc3.slider("Jeu", 0, 6, value=f.get("c_jeu", 0))
-                c_org = csoc4.slider("Organisation 📋", 0, 6, value=f.get("c_org", 0)) # Ajout d'Organisation
+        with st.expander("📜 3. Compétences Savantes"):
+            csav1, csav2, csav3, csav4, csav5 = st.columns(5)
+            c_cul = csav1.slider("Culture", 0, 6, value=f.get("c_cul", 0))
+            c_gou = csav2.slider("Gouvernement", 0, 6, value=f.get("c_gou", 0))
+            c_mdc = csav3.slider("Médecine", 0, 6, value=f.get("c_mdc", 0))
+            c_sen = csav4.slider("Sentiment", 0, 6, value=f.get("c_sen", 0))
+            c_the = csav5.slider("Théologie", 0, 6, value=f.get("c_the", 0))
 
-            with st.expander("🛠️ 5. Compétences Professionnelles"):
-                cprof1, cprof2, cprof3, cprof4, cprof5 = st.columns(5)
-                c_cmr = cprof1.slider("Commerce", 0, 6, value=f.get("c_cmr", 0))
-                c_tra = cprof2.slider("Travail Manuel", 0, 6, value=f.get("c_tra", 0))
-                c_nav = cprof3.slider("Navigation", 0, 6, value=f.get("c_nav", 0))
-                c_mag = cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0))
-                c_sur = cprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
+        with st.expander("🗣️ 4. Compétences Sociales"):
+            csoc1, csoc2, csoc3, csoc4 = st.columns(4)
+            c_cmd = csoc1.slider("Commandement", 0, 6, value=f.get("c_cmd", 0))
+            c_crt = csoc2.slider("Courtoisie", 0, 6, value=f.get("c_crt", 0))
+            c_jeu = csoc3.slider("Jeu", 0, 6, value=f.get("c_jeu", 0))
+            c_org = csoc4.slider("Organisation 📋", 0, 6, value=f.get("c_org", 0))
+
+        with st.expander("🛠️ 5. Compétences Professionnelles"):
+            cprof1, cprof2, cprof3, cprof4, cprof5 = st.columns(5)
+            c_cmr = cprof1.slider("Commerce", 0, 6, value=f.get("c_cmr", 0))
+            c_tra = cprof2.slider("Travail Manuel", 0, 6, value=f.get("c_tra", 0))
+            c_nav = cprof3.slider("Navigation", 0, 6, value=f.get("c_nav", 0))
+            c_mag = cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0))
+            c_sur = cprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
+
             st.subheader("🛡️ Arsenal & Inventaire Cliquable")
             sh_equipement = st.checkbox("👁️ Partager mes équipements équipés avec le MJ", value=f.get("sh_equipement", True))
             
