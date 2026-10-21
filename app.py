@@ -464,6 +464,7 @@ elif role == "Maître du Jeu (Hôte)":
                         st.write(f"👁️ Vigilance : **{vi}** | 🧠 Attention : **{at}**")
                     else: st.caption("🔒 Masqué par le joueur")
                 with col3:
+                    
                 # BLOC 3 : PROFIL SOCIAL
                 st.markdown("**⚖️ Profil Social**")
                 if p.get("sh_social", True): 
