@@ -473,9 +473,3 @@ elif role == "Maître du Jeu (Hôte)":
             st.info("Aucune notification reçue.")
 else: 
     st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")
-        # --- FIN COMMANDE DU SECTEUR JOUEUR ---
-        # Ligne de fermeture obligatoire pour renvoyer un message d'accueil si aucun prénom n'est tapé
-        else:
-            st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
-
-
