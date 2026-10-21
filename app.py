@@ -438,29 +438,37 @@ if role == "Joueur (Ma Fiche)":
                     g_cat = st.selectbox("Filtrer mon grimoire par Type :", sorted(cats_possedees), key="g_cat_filter")
                     cle_g_map = {"Katas": "mes_katas", "Kíhos": "mes_kihos", "Invocations": "mes_invocs", "Rituels": "mes_rituels", "Shujis": "mes_shujis", "Mahos": "mes_mahos", "Ninjutsus": "mes_ninjutsus", "Inversions": "mes_inversions"}[g_cat]
                     
+                                        # --- AFFICHAGE DU GRIMOIRE ACTIF FILTRÉ FIXÉ (LIGNE 445 CORRIGÉE) ---
                     st.write(f"📂 Vos parchemins enregistrés en **{g_cat}** :")
                     liste_specifique = f.get(cle_g_map, [])
                     
-                    for tech_apprise in liste_specifique:
-                        c_t_nom, c_t_oeil, c_t_del = st.columns()
-                        
-                        est_active = f.get("tech_active_cliquee") == tech_apprise
-                        label_click = f"🎯 {tech_apprise} (Prête)" if est_active else f"📜 {tech_apprise}"
-                        
-                        if c_t_nom.button(label_click, key=f"click_active_{tech_apprise}"):
-                            f["tech_active_cliquee"] = tech_apprise
-                            sauver_fiche(nom_id, f)
-                            st.rerun()
+                    if not liste_specifique:
+                        st.caption("ℹ️ Vous n'avez mémorisé aucune technique dans cette catégorie.")
+                    else:
+                        for tech_apprise in liste_specifique:
+                            # CORRECTION TYPEERROR : On déclare explicitement le chiffre 3 entre les parenthèses
+                            c_t_nom, c_t_oeil, c_t_del = st.columns(3)
                             
-                        if c_t_oeil.button("👁️", key=f"oeil_details_{tech_apprise}", help="Ouvrir la description détaillée"):
-                            afficher_details_technique(tech_apprise)
+                            est_active = f.get("tech_active_cliquee") == tech_apprise
+                            label_click = f"🎯 {tech_apprise} (Prête)" if est_active else f"📜 {tech_apprise}"
                             
-                        if c_t_del.button("❌", key=f"del_g_{tech_apprise}"):
-                            if tech_apprise == f.get("tech_active_cliquee"):
-                                f["tech_active_cliquee"] = "Aucune technique active"
-                            f[cle_g_map].remove(tech_apprise)
-                            sauver_fiche(nom_id, f)
-                            st.rerun()
+                            # 1. Sélectionner activement la technique (met en surbrillance pour le MJ)
+                            if c_t_nom.button(label_click, key=f"click_active_{tech_apprise}"):
+                                f["tech_active_cliquee"] = tech_apprise
+                                sauver_fiche(nom_id, f)
+                                st.rerun()
+                                
+                            # 2. Le petit œil magique pour ouvrir la description détaillée
+                            if c_t_oeil.button("👁️", key=f"oeil_details_{tech_apprise}", help="Ouvrir la description détaillée"):
+                                afficher_details_technique(tech_apprise)
+                                
+                            # 3. La croix rouge de suppression pour désapprendre
+                            if c_t_del.button("❌", key=f"del_g_{tech_apprise}"):
+                                if tech_apprise == f.get("tech_active_cliquee"):
+                                    f["tech_active_cliquee"] = "Aucune technique active"
+                                f[cle_g_map].remove(tech_apprise)
+                                sauver_fiche(nom_id, f)
+                                st.rerun()
             else:
                 st.info("Votre grimoire actif est vide. Sélectionnez des techniques à gauche pour les mémoriser.")
 
