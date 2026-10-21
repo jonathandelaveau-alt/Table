@@ -275,52 +275,92 @@ if role == "Joueur (Ma Fiche)":
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
+    
     if not fichiers:
         st.info("Aucun samouraï n'a partagé de données.")
     else:
+        st.subheader("📋 Informations Autorisées par les Joueurs")
         for f in fichiers:
-            with open(os.path.join(DB_DIR, f), "r", encoding="utf-8") as file: p = json.load(file)
+            chemin_fichier = os.path.join(DB_DIR, f)
+            with open(chemin_fichier, "r", encoding="utf-8") as file: 
+                p = json.load(file)
             nom_j = f.replace('.json', '').capitalize()
-            av, tv, fv, ev = p.get('air', 1), p.get('terre', 1), p.get('feu', 1), p.get('eau', 1)
-            em, sm, at, vi = (tv + fv) * 2, (tv + ev) * 2, av + fv, (av + ev) / 2
-            ep, sp = em - p.get('end_act', em), sm - p.get('sf_act', sm)
             
-            # Gestion de l'affichage des rôles sous forme de liste propre
+            # --- ❌ BOUTON DE SUPPRESSION DE FICHE (CROIX DU MJ) ---
+            col_head1, col_head2 = st.columns([5, 1])
+            col_head1.markdown(f"### 🏯 Fiche de {nom_j}")
+            if col_head2.button(f"❌ Supprimer {nom_j}", key=f"del_{nom_j}", help="Supprime définitivement ce joueur de la session"):
+                os.remove(chemin_fichier)
+                st.warning(f"La fiche de {nom_j} a été détruite."); st.rerun()
+            
+            # Chargement des variables pour les calculs secondaires automatiques
+            air_v = p.get('air', 1)
+            terre_v = p.get('terre', 1)
+            feu_v = p.get('feu', 1)
+            eau_v = p.get('eau', 1)
+            
+            c_end_m = (terre_v + feu_v) * 2
+            c_sf_m = (terre_v + eau_v) * 2
+            c_attn = air_v + feu_v
+            c_vigi = (air_v + eau_v) / 2
+            
+            end_p = c_end_m - p.get('end_act', c_end_m)
+            sf_p = c_sf_m - p.get('sf_act', c_sf_m)
+            
             roles_bruts = p.get('profil', ['Bushi'])
             roles_txt = ", ".join(roles_bruts) if isinstance(roles_bruts, list) else roles_bruts
-            
-            titre_cadre = f"🏯 {nom_j} : {p.get('famille','Inconnu')} {p.get('perso','Inconnu')} (Clan {p.get('clan','Inconnu')}) — [{roles_txt}] | Posture : {p.get('posture','Air')}"
+            titre_cadre = f"💮 {nom_j} : {p.get('famille','Inconnu')} {p.get('perso','Inconnu')} (Clan {p.get('clan','Inconnu')}) — [{roles_txt}] | Posture : {p.get('posture','Air')}"
             
             with st.expander(titre_cadre, expanded=True):
                 col1, col2, col3, col4 = st.columns(4)
+                
+                # BLOC 1 : ANNEAUX (Soumis au bouton œil du joueur)
                 with col1:
                     st.markdown("**🌀 Éléments**")
                     if p.get("sh_anneaux", True):
-                        st.write(f"💨 A: {av} | 🏔️ T: {tv} | 🔥 F: {fv} | 💧 E: {ev}")
+                        st.write(f"💨 A: {air_v} | 🏔️ T: {terre_v} | 🔥 F: {feu_v} | 💧 E: {eau_v}")
                         st.write(f"🌌 Vide: {p.get('vide',1)} (Actuel: **{p.get('p_vide',0)}**)")
-                    else: st.caption("🔒 Masqué par le joueur")
+                    else: 
+                        st.caption("🔒 Masqué par le joueur")
+                
+                # BLOC 2 : VITALITÉ (Soumis au bouton œil du joueur)
                 with col2:
                     st.markdown("**🩸 Santé & Seuils**")
                     if p.get("sh_vitalite", True):
-                        st.write(f"❤️ Endurance : **{p.get('end_act',em)} / {em}**")
-                        if ep > 0: st.error(f"-{ep} PV")
-                        st.write(f"🧠 Sang-froid : **{p.get('sf_act',sm)} / {sm}**")
-                        if sp > 0: st.warning(f"Stress : -{sp}")
-                        st.write(f"👁️ Vigilance : **{vi}** | 🧠 Attention : **{at}**")
-                    else: st.caption("🔒 Masqué par le joueur")
+                        st.write(f"❤️ Endurance : **{p.get('end_act',c_end_m)} / {c_end_m}**")
+                        if end_p > 0: st.error(f"-{end_p} PV")
+                        st.write(f"🧠 Sang-froid : **{p.get('sf_act',c_sf_m)} / {c_sf_m}**")
+                        if sf_p > 0: st.warning(f"Stress : -{sf_p}")
+                        st.write(f"👁️ Vigilance : **{c_vigi}** | 🧠 Attention : **{c_attn}**")
+                    else: 
+                        st.caption("🔒 Masqué par le joueur")
+                        
+                # BLOC 3 : CARACTÉRISTIQUES SOCIALES (Soumis au bouton œil du joueur)
                 with col3:
                     st.markdown("**⚖️ Profil Social**")
-                    if p.get("sh_social", True): st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
-                    else: st.caption("🔒 Masqué par le joueur")
+                    if p.get("sh_social", True): 
+                        st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
+                    else: 
+                        st.caption("🔒 Masqué par le joueur")
+                        
+                # BLOC 4 : ÉQUIPEMENT DYNAMIQUE (Soumis au bouton œil du joueur)
                 with col4:
                     st.markdown("**⚔️ Arsenal Équipé**")
                     if p.get("sh_equipement", True):
-                        df = (int(p.get('w_dang', 5)) + 2) if p.get('deux_mains', False) else int(p.get('w_dang', 5))
+                        d_base = int(p.get('w_dang', 5))
+                        d_final = (d_base + 2) if p.get('deux_mains', False) else d_base
                         st.write(f"🗡️ Arme : **{p.get('arme_active','Aucune')}** ({'2 mains ⚔️' if p.get('deux_mains',False) else '1 main'})")
-                        st.write(f"💥 Dégâts: {p.get('w_deg','3')} | Dangerosité: **{df}** | 📏 Portée: {p.get('w_por','0 - 1')}")
+                        st.write(f"💥 Dégâts: {p.get('w_deg','3')} | Danger: **{d_final}** | 📏 Portée: {p.get('w_por','0 - 1')}")
                         st.write(f"👘 Armure: {p.get('armure_active','Aucune')} (P: {p.get('res_p',1)}/S: {p.get('res_s',0)})")
-                    else: st.caption("🔒 Masqué par le joueur")
+                    else: 
+                        st.caption("🔒 Masqué par le joueur")
+                
+                # Rappel constant des compétences en bas de chaque expander (uniquement pour la lecture globale si partagée)
+                st.caption(f"📊 **Artisanat :** Esth: {p.get('c_est',0)}, Comp: {p.get('c_com',0)}, Sty: {p.get('c_sty',0)}, Forge: {p.get('c_forg',0)} | **Martial :** Forme: {p.get('c_for',0)}, CàC: {p.get('c_cac',0)}, Dist: {p.get('c_dis',0)}, Corps Humain: {p.get('c_chu',0)}, Méd: {p.get('c_med',0)}, Tac: {p.get('c_tac',0)}")
+                st.caption(f"📊 **Savant :** Cult: {p.get('c_cul',0)}, Gouv: {p.get('c_gou',0)}, Méd: {p.get('c_mdc',0)}, Sent: {p.get('c_sen',0)}, Théo: {p.get('c_the',0)} | **Social :** Comm: {p.get('c_cmd',0)}, Court: {p.get('c_crt',0)}, Jeu: {p.get('c_jeu',0)}, Org: {p.get('c_org',0)}")
+                st.caption(f"📊 **Pro :** Commerce: {p.get('c_cmr',0)}, Travail: {p.get('c_tra',0)}, Nav: {p.get('c_nav',0)}, Magouille: {p.get('c_mag',0)}, Survie: {p.get('c_sur',0)}")
 
+        # --- GESTIONNAIRE DE REQUÊTES (VALIDER / REFUSER AVEC NOTIFICATION EFFECTIVE) ---
         st.markdown("---")
         st.subheader("🔔 Boîte de réception des Actions Soumises")
         if os.path.exists(ACTIONS_FILE):
@@ -329,30 +369,48 @@ elif role == "Maître du Jeu (Hôte)":
                     actions = json.load(file)
             except: 
                 actions = []
-                
+            
             en_attente = [a for a in actions if a["statut"] == "En attente"]
             if not en_attente: 
-                st.info("Aucune action en attente.")
+                st.info("Aucune action ou question en attente d'arbitrage.")
             else:
                 for act in en_attente:
-                    cola, colb = st.columns(2)
+                    st.markdown("---")
+                    cola, colb = st.columns([2, 1])
                     with cola:
-                        st.warning(f"⚔️ **{act['joueur']}** ({act['perso']}) veut agir !")
-                        st.write(f"🔹 **Jet :** Compétence **[{act['competence']}]** + Élément **[{act['element']}]**")
+                        st.warning(f"⚔️ **{act['joueur']}** ({act['perso']}) sollicite l'arbitrage !")
+                        st.write(f"🔹 **Jet requis :** Compétence **[{act['competence']}]** + Élément **[{act['element']}]**")
                         aj = act.get("anneaux", {})
-                        st.caption(f"📈 *Anneaux du joueur :* Air: {aj.get('air',1)} | Terre: {aj.get('terre',1)} | Feu: {aj.get('feu',1)} | Eau: {aj.get('eau',1)} | Vide: {aj.get('vide',1)}")
-                        if act['description']: 
-                            st.info(f"📜 **Description / Technique :** {act['description']}")
+                        st.caption(f"📈 *Rappel de ses anneaux :* Air: {aj.get('air',1)} | Terre: {aj.get('terre',1)} | Feu: {aj.get('feu',1)} | Eau: {aj.get('eau',1)} | Vide: {aj.get('vide',1)}")
+                        st.info(f"💬 **Message / Technique :** {act['description']}")
                     
-                    if colb.button("Valider l'Action", key=f"btn_act_{act['id']}"):
-                        for a in actions:
-                            if a["id"] == act["id"]: 
-                                a["statut"] = "Validé"
-                        with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
-                            json.dump(actions, file, indent=4, ensure_ascii=False)
-                        st.success("Action validée !"); st.rerun()
+                    with colb:
+                        # Case de texte pour que le MJ écrive sa sentence, transmise au bandeau du joueur
+                        commentaire_mj = st.text_input("Réponse ou contrainte du MJ (Ex: Jet DD 2 / Lancer impossible) :", key=f"txt_{act['id']}")
+                        
+                        c_btn1, c_btn2 = st.columns(2)
+                        
+                        # Bouton vert : Validation
+                        if c_btn1.button("✅ Autoriser", key=f"val_{act['id']}"):
+                            for a in actions:
+                                if a["id"] == act["id"]: 
+                                    a["statut"] = "Validé"
+                                    a["description_mj"] = commentaire_mj if commentaire_mj else "Action approuvée par le MJ."
+                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
+                                json.dump(actions, file, indent=4, ensure_ascii=False)
+                            st.success("Action approuvée !"); st.rerun()
+                        
+                        # Bouton rouge : Refus
+                        if c_btn2.button("⛔ Refuser", key=f"ref_{act['id']}"):
+                            for a in actions:
+                                if a["id"] == act["id"]: 
+                                    a["statut"] = "Refusé"
+                                    a["description_mj"] = commentaire_mj if commentaire_mj else "Action rejetée par le MJ."
+                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
+                                json.dump(actions, file, indent=4, ensure_ascii=False)
+                            st.error("Action rejetée !"); st.rerun()
         else: 
             st.info("Aucune notification reçue.")
-else: 
+else:
     st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")
-   
+
