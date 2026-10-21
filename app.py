@@ -170,99 +170,83 @@ if role == "Joueur (Ma Fiche)":
         w_deg, w_dang_base, w_por = stats_arme["degats"], stats_arme["danger"], stats_arme["portee"]
         deux_mains = st.checkbox("Tenir cette arme à 2 mains ⚔️ (+2 Dangerosité)", value=f.get("deux_mains", False))
 
-               # --- BASE DE DONNÉES DU CATALOGUE OFFICIEL DES TECHNIQUES ---
-               # --- BASE DE DONNÉES ENRICHIE ET STRUCTURÉE DU CATALOGUE (RANG 1 À 5) ---
-        CATALOGUE_COMPLET = {
+               # --- BASE DE DONNÉES ET CATALOGUE SYSTÉMIQUE DES TECHNIQUES (RANG 1 À 5, SHUJIS JUSQU'À 6) ---
+        # Structure de secours : s'il n'y a pas de technique nommée, le logiciel génère une capacité universelle
+        CATALOGUE_DONNEES = {
             "Katas": {
-                "Général": {
-                    "Rang 1": ["Posture de la Sentinelle", "Éclat de la Lame"],
-                    "Rang 2": ["Danse des Ombres"]
-                },
-                "Corps-à-corps": {
-                    "Rang 1": ["Frappe du Tonnerre d'Acier"],
-                    "Rang 2": ["Coup de l'Avalanche Crépusculaire"]
-                },
-                "Distance": {
-                    "Rang 1": ["Visée du Faucon"],
-                    "Rang 3": ["Flèche de Tempête"]
-                },
-                "Non-humain": {
-                    "Rang 1": ["Esprit de la Meute"],
-                    "Rang 4": ["Griffe du Dragon"]
-                }
+                "Général": ["Posture de la Sentinelle", "Éclat de la Lame", "Mouvement Fluide"],
+                "Corps-à-corps": ["Frappe du Tonnerre d'Acier", "Coup de l'Avalanche Crépusculaire"],
+                "Distance": ["Visée du Faucon", "Flèche de Tempête"],
+                "Non-humain": ["Esprit de la Meute", "Griffe du Dragon"]
             },
             "Kíhos": {
-                "Air": {"Rang 1": ["Souffle de la Brise"]},
-                "Terre": {"Rang 1": ["Souffle de la Terre"]},
-                "Feu": {"Rang 2": ["Flamme Intérieure"]},
-                "Eau": {"Rang 1": ["Pureté des Flots"]},
-                "Vide": {"Rang 3": ["Paume du Vide Éveillé"]}
+                "Air": ["Souffle de la Brise"], "Terre": ["Souffle de la Terre"], 
+                "Feu": ["Flamme Intérieure"], "Eau": ["Pureté des Flots"], "Vide": ["Paume du Vide Éveillé"]
             },
             "Invocations": {
-                "Air": {"Rang 1": ["Murmure du Vent d'Air"]},
-                "Terre": {"Rang 1": ["Communion de la Roche"]},
-                "Feu": {"Rang 1": ["Appel des Esprits du Feu"]},
-                "Eau": {"Rang 2": ["Colère des Flots d'Eau"]},
-                "Vide": {"Rang 5": ["Équilibre Cosmique"]}
+                "Air": ["Murmure du Vent d'Air"], "Terre": ["Communion de la Roche"], 
+                "Feu": ["Appel des Esprits du Feu"], "Eau": ["Colère des Flots d'Eau"], "Vide": ["Équilibre Cosmique"]
             },
             "Rituels": {
-                "Général": {
-                    "Rang 1": ["Communion avec les Ancêtres", "Purification du Sel"],
-                    "Rang 2": ["Bénédiction de la Lignée"]
-                }
+                "Général": ["Communion avec les Ancêtres", "Purification du Sel", "Bénédiction de la Lignée"]
             },
             "Shujis": {
-                "Air": {"Rang 1": ["Insinuation Subtile"]},
-                "Terre": {"Rang 1": ["Présence Majestueuse"]},
-                "Feu": {"Rang 2": ["Parole Enflammée"]},
-                "Eau": {"Rang 1": ["Sagesse du Fleuve"]},
-                "Vide": {"Rang 6": ["Voix de l'Empereur"]} # Rang 6 exceptionnel Shuji
+                "Air": ["Insinuation Subtile"], "Terre": ["Présence Majestueuse"], 
+                "Feu": ["Parole Enflammée"], "Eau": ["Sagesse du Fleuve"], "Vide": ["Voix de l'Empereur"]
             },
             "Mahos": {
-                "Général": {
-                    "Rang 1": ["Offrande de Sang", "Malédiction de la Chair"],
-                    "Rang 2": ["Éveil des Morts Déshonorés"]
-                }
+                "Général": ["Offrande de Sang", "Malédiction de la Chair", "Éveil des Morts Déshonorés"]
             },
             "Ninjutsus": {
-                "Général": {
-                    "Rang 1": ["Pas Sans Trace", "Dissimulation du Lotus"],
-                    "Rang 2": ["Poison de l'Araignée Scorpion"]
-                }
+                "Général": ["Pas Sans Trace", "Dissimulation du Lotus", "Poison de l'Araignée Scorpion"]
             },
             "Inversions": {
-                "Général": {
-                    "Rang 1": ["Altération Mineure"],
-                    "Rang 5": ["Inversion des Éléments Éternels"]
-                }
+                "Général": ["Altération Mineure", "Distorsion Temporelle", "Inversion des Éléments Éternels"]
             }
         }
 
-        st.subheader("📜 Grimoire Tactique & Catalogues de l'École")
-        st.write("Sélectionnez vos maîtrises pour déployer les parchemins d'apprentissage :")
+        st.subheader("📜 Gestion des Parchemins d'École")
+        st.write("Cochez les arts secrets que votre personnage étudie :")
 
-        # Cases à cocher pour filtrer l'affichage
-        c_kat = st.checkbox("🥋 Ouvrir le Catalogue des Katas", value=f.get("ch_kat", False))
-        c_kih = st.checkbox("🧘 Ouvrir le Catalogue des Kíhos", value=f.get("ch_kih", False))
-        c_inv = st.checkbox("🔥 Ouvrir le Catalogue des Invocations", value=f.get("ch_inv", False))
-        c_rit = st.checkbox("📿 Ouvrir le Catalogue des Rituels", value=f.get("ch_rit", False))
-        c_shu = st.checkbox("🗣️ Ouvrir le Catalogue des Shujis", value=f.get("ch_shu", False))
-        c_mah = st.checkbox("🩸 Ouvrir le Grimoire de la Maho", value=f.get("ch_mah", False))
-        c_nin = st.checkbox("🥷 Ouvrir le Manuel de Ninjutsu", value=f.get("ch_nin", False))
-        c_invs = st.checkbox("🔮 Ouvrir les Parchemins d'Inversion", value=f.get("ch_invs", False))
+        # Boutons "œil" de partage du grimoire complet au MJ
+        sh_grimoire = st.checkbox("👁️ Autoriser le MJ à voir mon Grimoire Actif et mes choix de catalogues", value=f.get("sh_grimoire", True))
 
-        # Assurer l'existence des listes de techniques apprises dans la mémoire du joueur
-        for cle_grimoire in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
-            if cle_grimoire not in f: f[cle_grimoire] = []
+        c_kat = st.checkbox("🥋 Catalogue des Katas", value=f.get("ch_kat", False))
+        c_kih = st.checkbox("🧘 Catalogue des Kíhos", value=f.get("ch_kih", False))
+        c_inv = st.checkbox("🔥 Catalogue des Invocations", value=f.get("ch_inv", False))
+        c_rit = st.checkbox("📿 Catalogue des Rituels", value=f.get("ch_rit", False))
+        c_shu = st.checkbox("🗣️ Catalogue des Shujis", value=f.get("ch_shu", False))
+        c_mah = st.checkbox("🩸 Grimoire de la Maho", value=f.get("ch_mah", False))
+        c_nin = st.checkbox("🥷 Manuel de Ninjutsu", value=f.get("ch_nin", False))
+        c_invs = st.checkbox("🔮 Parchemins d'Inversion", value=f.get("ch_invs", False))
 
-        # Fusion de toutes les techniques apprises pour remplir la boîte d'action
+        # Initialisation propre des listes de techniques apprises
+        for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
+            if cle_g not in f: f[cle_g] = []
+
+        # Construction dynamique du Grimoire Actif
         grimoire_actif_total = (
             f.get("mes_katas", []) + f.get("mes_kihos", []) + f.get("mes_invocs", []) +
             f.get("mes_rituels", []) + f.get("mes_shujis", []) + f.get("mes_mahos", []) +
             f.get("mes_ninjutsus", []) + f.get("mes_inversions", [])
         )
 
-        # Moteur d'affichage par Clicker/Sélecteur pour chaque catégorie cochée
+        if grimoire_actif_total:
+            st.markdown("### 📖 Votre Grimoire Actif (Techniques Apprises)")
+            st.write(", ".join(list(set(grimoire_actif_total))))
+
+        # Configuration des options de sous-catégories selon votre liste
+        LISTE_SOUS_CATS = {
+            "Katas": ["Général", "Corps-à-corps", "Distance", "Non-humain"],
+            "Kíhos": ["Air", "Terre", "Feu", "Eau", "Vide"],
+            "Invocations": ["Air", "Terre", "Feu", "Eau", "Vide"],
+            "Rituels": ["Général"],
+            "Shujis": ["Air", "Terre", "Feu", "Eau", "Vide"],
+            "Mahos": ["Général"],
+            "Ninjutsus": ["Général"],
+            "Inversions": ["Général"]
+        }
+
         mapping_categories = [
             (c_kat, "Katas", "mes_katas"), (c_kih, "Kíhos", "mes_kihos"),
             (c_inv, "Invocations", "mes_invocs"), (c_rit, "Rituels", "mes_rituels"),
@@ -272,54 +256,58 @@ if role == "Joueur (Ma Fiche)":
 
         for coche, nom_cat, cle_sauvegardee in mapping_categories:
             if coche:
-                st.markdown(f"### 📂 Catalogue : {nom_cat}")
+                st.markdown(f"#### 📂 Filtres : {nom_cat}")
                 
-                # Étape 1 : Choix de la sous-catégorie (ex: Général, Corps-à-corps...)
-                sous_cats_dispo = list(CATALOGUE_COMPLET[nom_cat].keys())
-                sub_sel = st.selectbox(f"Type de {nom_cat} :", sous_cats_dispo, key=f"sub_sel_{nom_cat}")
+                # 1. Sélection de la sous-catégorie demandée
+                sub_options = LISTE_SOUS_CATS.get(nom_cat, ["Général"])
+                sub_sel = st.selectbox(f"Sous-catégorie ({nom_cat}) :", sub_options, key=f"sub_{nom_cat}")
                 
-                # Étape 2 : Choix du Rang de puissance
-                rangs_dispo = list(CATALOGUE_COMPLET[nom_cat][sub_sel].keys())
-                rang_sel = st.selectbox(f"Sélectionner le niveau de maîtrise :", rangs_dispo, key=f"rang_sel_{nom_cat}_{sub_sel}")
+                # 2. Sélection du Rang (1 à 6 pour les Shujis, 1 à 5 pour le reste)
+                max_rang = 6 if nom_cat == "Shujis" else 5
+                rangs_options = [f"Rang {i}" for i in range(1, max_rang + 1)]
+                rang_sel = st.selectbox(f"Niveau d'apprentissage :", rangs_options, key=f"rng_{nom_cat}")
                 
-                # Étape 3 : Liste des techniques trouvées à cet endroit précis
-                liste_techs_trouvees = CATALOGUE_COMPLET[nom_cat][sub_sel][rang_sel]
-                
-                # Extraction du numéro de rang pour la règle visuelle
+                # Récupération ou génération d'une technique universelle si la case est vide
+                techs_disponibles = DATA_CLANS.get(nom_cat, {}).get(sub_sel, []) if nom_cat in DATA_CLANS and sub_sel in DATA_CLANS[nom_cat] else []
+                if not techs_disponibles:
+                    # Règle d'or : On génère une option pour qu'elle apparaisse quand même à l'écran
+                    techs_disponibles = [f"{nom_cat} de {sub_sel} ({rang_sel}) Enseigné par l'École"]
+
                 num_rang = int(rang_sel.split()[-1])
-                est_hors_ecole = num_rang > rang_ecole
-                
-                for t in liste_techs_trouvees:
+                est_hors_rang = num_rang > rang_ecole
+
+                for t in techs_disponibles:
                     if t in f[cle_sauvegardee]:
-                        st.write(f"📜 {t} — *[Déjà appris et présent dans votre Grimoire Actif]*")
+                        st.caption(f"🔹 {t} — [Inscrit dans votre Grimoire Actif]")
                     else:
-                        c_txt, c_btn = st.columns([3, 1])
-                        if est_hors_ecole:
-                            c_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} ({rang_sel}) — Exception (Scénario)</span>*", unsafe_allow_html=True)
+                        c_txt, c_btn = st.columns(2)
+                        if est_hors_rang:
+                            c_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} — Bloqué (Nécessite le Rang d'École {num_rang})</span>*", unsafe_allow_html=True)
+                            label_btn = "➕ Inscrire au Grimoire (Exception Scénario)"
                         else:
-                            c_txt.write(f"✨ **{t}** ({rang_sel})")
+                            c_txt.write(f"✨ **{t}**")
+                            label_btn = "➕ Inscrire au Grimoire Actif"
                         
-                        if c_btn.button("➕ Inscrire au Grimoire", key=f"btn_learn_{t}"):
+                        if c_btn.button(label_btn, key=f"add_{nom_cat}_{t}"):
                             f[cle_sauvegardee].append(t)
                             st.rerun()
-        # --- REQUÊTE TACTIQUE (AVEC COLONNE TECHNIQUE APPRISE) ---
+        # --- MODULE DE REQUÊTES EN DIRECT (AVEC GRIMOIRE ACTIF INTERCONNECTÉ) ---
         st.markdown("---")
         st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
         
-        # Organisation en colonnes pour intégrer la sélection de la technique apprise
         c_a1, c_a2, c_a3 = st.columns(3)
         comp_c = c_a1.text_input("Compétence (FACULTATIF) :", placeholder="Ex: Corps-à-corps")
         elem_c = c_a2.selectbox("Élément combiné (FACULTATIF) :", ["Aucun / Simple texte", "Air 💨", "Terre 🏔️", "Feu 🔥", "Eau 💧", "Vide 🌌"])
         
-        # Nouvelle colonne : choix parmi les techniques REELLEMENT apprises par le joueur
+        # Le menu se remplit automatiquement avec les techniques apprises par le joueur
         if grimoire_actif_total:
             options_tech = ["Aucune technique associée"] + list(set(grimoire_actif_total))
             tech_c = c_a3.selectbox("Technique issue du Grimoire Actif :", options_tech)
         else:
-            c_a3.caption("📖 Grimoire Actif vide (Apprenez des techniques ci-dessus)")
+            c_a3.caption("📖 Grimoire Actif vide (Inscrivez des techniques ci-dessus)")
             tech_c = "Aucune technique associée"
             
-        desc_a = st.text_area("Votre Message / Intention d'Attaque (Pourquoi faites-vous cela ?) :", placeholder="Écrivez ici vos détails...")
+        desc_a = st.text_area("Votre Message / Intention (Pourquoi faites-vous cela ?) :", placeholder="Écrivez ici vos détails...")
         
         if st.button("⚡ Soumettre la demande au MJ"):
             if desc_a and nom_perso:
@@ -337,7 +325,7 @@ if role == "Joueur (Ma Fiche)":
                     "anneaux": {"air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide}, "statut": "En attente", "description_mj": ""
                 })
                 with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
-                st.success("Action envoyée sur le panneau tactique du MJ.")
+                st.success("Action envoyée au MJ !")
 
         # Sauvegarde automatique des parchemins et catalogues
         maj = {
@@ -347,11 +335,14 @@ if role == "Joueur (Ma Fiche)":
             "ch_kat": c_kat, "ch_kih": c_kih, "ch_inv": c_inv, "ch_rit": c_rit, "ch_shu": c_shu, "ch_mah": c_mah, "ch_nin": c_nin, "ch_invs": c_invs,
             "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), "mes_rituels": f.get("mes_rituels", []),
             "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
+            "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire, "inventaire_armes": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
             "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
         }
         sauver_fiche(nom_id, maj)
+    else:
+        st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
 
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
@@ -414,15 +405,30 @@ elif role == "Maître du Jeu (Hôte)":
                         st.write(f"👘 Armure: {p.get('armure_active','Aucune')} (P: {p.get('res_p',1)}/S: {p.get('res_s',0)})")
                     else: st.caption("🔒 Masqué par le joueur")
                 
-                # Récapitulatif des techniques apprises visibles par le MJ
-                list_techs_mj = []
-                for tk, tn in [("mes_katas", "Katas"), ("mes_kihos", "Kihos"), ("mes_invocs", "Invocations"), ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Maho ⚠️"), ("mes_ninjutsus", "Ninjutsu"), ("mes_inversions", "Inversions")]:
-                    if p.get(tk): list_techs_mj.append(f"**{tn} :** " + ", ".join(p.get(tk)))
-                if list_techs_mj:
-                    st.markdown("📖 **Grimoire Actuel du Personnage :**")
-                    for lt in list_techs_mj: st.write(lt)
+                # Récapitulatif du Grimoire Actif visible par le MJ (si autorisé)
+                if p.get("sh_grimoire", True):
+                    list_techs_mj = []
+                    for tk, tn in [("mes_katas", "Katas"), ("mes_kihos", "Kihos"), ("mes_invocs", "Invocations"), ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Maho ⚠️"), ("mes_ninjutsus", "Ninjutsu"), ("mes_inversions", "Inversions")]:
+                        if p.get(tk): list_techs_mj.append(f"**{tn} :** " + ", ".join(p.get(tk)))
+                    if list_techs_mj:
+                        st.markdown("📖 **Grimoire Actuel du Personnage (Autorisé) :**")
+                        for lt in list_techs_mj: st.write(lt)
+                else:
+                    st.caption("🔒 Grimoire Actif masqué par le joueur")
 
-                st.caption(f"📊 **Artisanat :** Esth: {p.get('c_est',0)}, Comp: {p.get('c_com',0)}, Sty: {p.get('c_sty',0)}, Forge: {p.get('c_forg',0)} | **Martial :** Forme: {p.get('c_for',0)}, CàC: {p.get('c_cac',0)}, Dist: {p.get('c_dis',0)}, Méd: {p.get('c_med',0)}, Tac: {p.get('c_tac',0)}")
+                # Affichage uniquement des compétences > 0 pour le MJ
+                comp_visibles = []
+                dic_noms = {
+                    "c_est": "Esthétique", "c_com": "Composition", "c_sty": "Stylisme", "c_forg": "Forge 🔨",
+                    "c_for": "Forme", "c_cac": "Corps-à-corps", "c_dis": "Distance", "c_chu": "Corps Humain", "c_med": "Méditation", "c_tac": "Tactique",
+                    "c_cul": "Culture", "c_gou": "Gouvernement", "c_mdc": "Médecine", "c_sen": "Sentiment", "c_the": "Théologie",
+                    "c_cmd": "Commandement", "c_crt": "Courtoisie", "c_jeu": "Jeu", "c_org": "Organisation 📋",
+                    "c_cmr": "Commerce", "c_tra": "Travail Manuel", "c_nav": "Navigation", "c_mag": "Magouille", "c_sur": "Survie"
+                }
+                for k_code, n_aff in dic_noms.items():
+                    if p.get(k_code, 0) > 0: comp_visibles.append(f"{n_aff}: **{p[k_code]}**")
+                if comp_visibles:
+                    st.caption(f"📊 **Compétences (Rang ≥ 1) :** " + " | ".join(comp_visibles))
 
         st.markdown("---")
         st.subheader("🔔 Boîte de réception des Actions Soumises")
@@ -431,7 +437,8 @@ elif role == "Maître du Jeu (Hôte)":
                 with open(ACTIONS_FILE, "r", encoding="utf-8") as file: actions = json.load(file)
             except: actions = []
             en_attente = [a for a in actions if a["statut"] == "En attente"]
-            if not en_attente: st.info("Aucune action en attente.")
+            if not en_attente: 
+                st.info("Aucune action en attente.")
             else:
                 for act in en_attente:
                     st.markdown("---")
@@ -439,7 +446,6 @@ elif role == "Maître du Jeu (Hôte)":
                     with cola:
                         st.warning(f"⚔️ **{act['joueur']}** ({act['perso']}) veut agir !")
                         st.write(f"🔹 **Jet :** Compétence **[{act['competence']}]** + Élément **[{act['element']}]**")
-                        # Affichage de la technique cliquée par le joueur
                         st.write(f"🎯 **Technique employée :** `{act.get('technique', 'Aucune')}`")
                         aj = act.get("anneaux", {})
                         st.caption(f"📈 *Anneaux :* Air: {aj.get('air',1)} | Terre: {aj.get('terre',1)} | Feu: {aj.get('feu',1)} | Eau: {aj.get('eau',1)}")
@@ -448,7 +454,6 @@ elif role == "Maître du Jeu (Hôte)":
                         commentaire_mj = st.text_input("Réponse ou contrainte du MJ :", key=f"txt_{act['id']}")
                         c_btn1, c_btn2 = st.columns(2)
                         
-                        # Bouton vert : Autoriser la technique ou la question
                         if c_btn1.button("✅ Autoriser", key=f"val_{act['id']}"):
                             for a in actions:
                                 if a["id"] == act["id"]: 
@@ -458,8 +463,7 @@ elif role == "Maître du Jeu (Hôte)":
                                 json.dump(actions, file, indent=4, ensure_ascii=False)
                             st.success("Validé !")
                             st.rerun()
-                        
-                        # Bouton rouge : Refuser la technique ou la question
+                            
                         if c_btn2.button("⛔ Refuser", key=f"ref_{act['id']}"):
                             for a in actions:
                                 if a["id"] == act["id"]: 
