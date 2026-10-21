@@ -292,40 +292,44 @@ if role == "Joueur (Ma Fiche)":
 
             for coche, nom_cat, cle_sauvegardee in mapping_categories:
                 if coche:
-                    st.markdown(f"**📖 Sélection : {nom_cat}**")
-                    sub_options = LISTE_SOUS_CATS.get(nom_cat, ["Général"])
+                    st.markdown(f"#### 📂 Filtres : {nom_cat}")
+                    
+                    # 1. Le joueur choisit sa sous-catégorie (ex: Général, Corps-à-corps)
+                    sub_options = list(CATALOGUE_COMPLET.get(nom_cat, {}).keys())
                     sub_sel = st.selectbox(f"Sous-catégorie ({nom_cat}) :", sub_options, key=f"sub_{nom_cat}")
                     
-                    max_rang = 6 if nom_cat == "Shujis" else 5
-                    rangs_options = [f"Rang {i}" for i in range(1, max_rang + 1)]
+                    # 2. Le joueur choisit son niveau (ex: Rang 1, Rang 2)
+                    rangs_options = list(CATALOGUE_COMPLET.get(nom_cat, {}).get(sub_sel, {}).keys())
                     rang_sel = st.selectbox(f"Niveau d'apprentissage :", rangs_options, key=f"rng_{nom_cat}")
                     
-                    # Génération automatique ou récupération d'une option universelle cliquable
-                    techs_disponibles = [f"{nom_cat} - {sub_sel} ({rang_sel})"]
+                    # LIAISON DIRECTE : L'ordinateur extrait la liste exacte de vos techniques personnalisées
+                    techs_disponibles = CATALOGUE_COMPLET.get(nom_cat, {}).get(sub_sel, {}).get(rang_sel, [])
 
                     num_rang = int(rang_sel.split()[-1])
                     est_hors_rang = num_rang > rang_ecole
 
-                    for t in techs_disponibles:
-                        if t in f[cle_sauvegardee]:
-                            st.caption(f"🔹 {t} [Appris]")
-                        else:
-                            c_t_txt, c_t_btn = st.columns([2, 1])
-                            if est_hors_rang:
-                                c_t_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} (Hors-Rang)</span>*", unsafe_allow_html=True)
-                                label_btn = "➕ Inscrire (Exception)"
+                    # Affichage des techniques correspondantes filtrées
+                    if not techs_disponibles:
+                        st.caption("ℹ️ Aucune technique enregistrée pour cette combinaison.")
+                    else:
+                        for t in techs_disponibles:
+                            if t in f.get(cle_sauvegardee, []):
+                                st.caption(f"🔹 {t} — [Inscrit dans votre Grimoire Actif]")
                             else:
-                                c_t_txt.write(f"✨ {t}")
-                                label_btn = "➕ Inscrire au Grimoire"
-                            
-                            if c_t_btn.button(label_btn, key=f"add_{nom_cat}_{t}"):
-                                f[cle_sauvegardee].append(t)
-                                st.rerun()
-
-        # ==============================================================================
-        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES
-        # ==============================================================================
-        with col_grimoire_actif:
+                                c_txt, c_btn = st.columns(2)
+                                if est_hors_rang:
+                                    c_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} — (Nécessite le Rang d'École {num_rang})</span>*", unsafe_allow_html=True)
+                                    label_btn = "➕ Inscrire au Grimoire (Exception)"
+                                else:
+                                    c_txt.write(f"✨ **{t}**")
+                                    label_btn = "➕ Inscrire au Grimoire Actif"
+                                
+                                if c_btn.button(label_btn, key=f"add_{nom_cat}_{t}"):
+                                    if cle_sauvegardee not in f:
+                                        f[cle_sauvegardee] = []
+                                    f[cle_sauvegardee].append(t)
+                                    st.rerun()
+                                    
             st.markdown("### 📖 Grimoire des techniques actives")
             if grimoire_actif_total:
                 st.write("Voici la liste complète de vos capacités actuellement prêtes à l'action autour de la table :")
