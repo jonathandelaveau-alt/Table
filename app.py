@@ -87,7 +87,7 @@ if role == "Joueur (Ma Fiche)":
         if "inventaire_armes" not in f or not f["inventaire_armes"]: f["inventaire_armes"] = ["Wakizashi"]
         if "inventaire_armures" not in f or not f["inventaire_armures"]: f["inventaire_armures"] = ["Armure de Tenue de Cérémonie"]
 
-        st.subheader("📝 État-Civil Tactique")
+        st.subheader("📝 Feuille du Personnage")
         col_civ1, col_civ2, col_civ3 = st.columns(3)
         nom_perso = col_civ1.text_input("Nom du Personnage :", value=f.get("perso", ""))
         clan_actuel = col_civ2.selectbox("Sélectionnez votre Clan :", list(DATA_CLANS.keys()), index=list(DATA_CLANS.keys()).index(f.get("clan", "Grue")) if f.get("clan") in DATA_CLANS else 1)
@@ -170,24 +170,137 @@ if role == "Joueur (Ma Fiche)":
         w_deg, w_dang_base, w_por = stats_arme["degats"], stats_arme["danger"], stats_arme["portee"]
         deux_mains = st.checkbox("Tenir cette arme à 2 mains ⚔️ (+2 Dangerosité)", value=f.get("deux_mains", False))
 
-        st.subheader("📜 Grimoire des Techniques Apprises")
-        with st.expander("Éditer mon catalogue de techniques secrètes"):
-            t_kat = st.text_area("Katas :", f.get("t_kat",""))
-            t_kih = st.text_area("Kihos :", f.get("t_kih",""))
-            t_inv = st.text_area("Invocations :", f.get("t_inv",""))
-            t_rit = st.text_area("Rituels :", f.get("t_rit",""))
-            t_shu = st.text_area("Shujis :", f.get("t_shu",""))
-            t_mah = st.text_area("Maho :", f.get("t_mah",""))
-            t_nin = st.text_area("Ninjutsu :", f.get("t_nin",""))
-            t_invs = st.text_area("Inversions :", f.get("t_invs",""))
+               # --- BASE DE DONNÉES DU CATALOGUE OFFICIEL DES TECHNIQUES ---
+        # Liste complète des techniques existantes dans le jeu (Rang 1 et 2)
+        CATALOGUE_TECHS = {
+            "Katas": {
+                "Rang 1": ["Frappe du Tonnerre d'Acier", "Posture de la Sentinelle", "Éclat de la Lame"],
+                "Rang 2": ["Danse des Ombres", "Coup de l'Avalanche Crépusculaire"]
+            },
+            "Kíhos": {
+                "Rang 1": ["Harmonie de l'Esprit", "Souffle de la Terre"],
+                "Rang 2": ["Paume du Vide Éveillé"]
+            },
+            "Invocations": {
+                "Rang 1": ["Appel des Esprits du Feu", "Murmure du Vent d'Air"],
+                "Rang 2": ["Colère des Flots d'Eau"]
+            },
+            "Rituels": {
+                "Rang 1": ["Communion avec les Ancêtres", "Purification du Sel"],
+                "Rang 2": ["Bénédiction de la Lignée"]
+            },
+            "Shujis": {
+                "Rang 1": ["Présence Majestueuse", "Insinuation Subtile"],
+                "Rang 2": ["Voix de l'Empereur"]
+            },
+            "Mahos": {
+                "Rang 1": ["Offrande de Sang", "Malédiction de la Chair"],
+                "Rang 2": ["Éveil des Morts Déshonorés"]
+            },
+            "Ninjutsus": {
+                "Rang 1": ["Pas Sans Trace", "Dissimulation du Lotus"],
+                "Rang 2": ["Poison de l'Araignée Scorpion"]
+            }
+        }
 
-        # --- SAUVEGARDE AUTOMATIQUE EN DIRECT EN ARRIÈRE-PLAN ---
+        st.subheader("📜 Grimoire Tactique & Catalogue des Techniques")
+        st.write("Cochez les types de techniques que votre école vous autorise à maîtriser :")
+
+        # 1. Système de cases à cocher pour filtrer l'affichage du personnage
+        c_kat = st.checkbox("🥋 Maîtrise des Katas", value=f.get("ch_kat", False))
+        c_kih = st.checkbox("🧘 Maîtrise des Kíhos", value=f.get("ch_kih", False))
+        c_inv = st.checkbox("🔥 Maîtrise des Invocations", value=f.get("ch_inv", False))
+        c_rit = st.checkbox("📿 Maîtrise des Rituels", value=f.get("ch_rit", False))
+        c_shu = st.checkbox("🗣️ Maîtrise des Shujis", value=f.get("ch_shu", False))
+        c_mah = st.checkbox("🩸 Maîtrise de la Maho (Magie du sang)", value=f.get("ch_mah", False))
+        c_nin = st.checkbox("🥷 Maîtrise du Ninjutsu", value=f.get("ch_nin", False))
+
+        # Initialisation des grimoires personnels dans le fichier du joueur si absents
+        if "mes_katas" not in f: f["mes_katas"] = []
+        if "mes_kihos" not in f: f["mes_kihos"] = []
+        if "mes_invocs" not in f: f["mes_invocs"] = []
+        if "mes_rituels" not in f: f["mes_rituels"] = []
+        if "mes_shujis" not in f: f["mes_shujis"] = []
+        if "mes_mahos" not in f: f["mes_mahos"] = []
+        if "mes_ninjutsus" not in f: f["mes_ninjutsus"] = []
+        # --- EXTENSION DU CATALOGUE AVEC LES SOUS-CATÉGORIES OFFICIELLES RANG 1 À 5 ---
+        CATALOGUE_TECHS["Inversions"] = {
+            "Rang 1": ["Altération Mineure", "Distorsion Temporelle"],
+            "Rang 5": ["Inversion des Éléments Éternels"]
+        }
+        
+        # Précision des sous-catégories dans le dictionnaire pour l'affichage MJ/Joueur
+        CATEGORIES_DETAILS = {
+            "Katas": ["Général", "Corps-à-corps", "Distance", "Non-humain"],
+            "Kíhos": ["Air", "Terre", "Feu", "Eau", "Vide"],
+            "Invocations": ["Air", "Terre", "Feu", "Eau", "Vide"],
+            "Rituels": ["Général"],
+            "Shujis": ["Air", "Terre", "Feu", "Eau", "Vide"],
+            "Mahos": ["Général"],
+            "Ninjutsus": ["Général"],
+            "Inversions": ["Général"]
+        }
+
+        # Ajout de la case à cocher pour la maîtrise des Inversions
+        c_invs = st.checkbox("🔮 Maîtrise des Inversions", value=f.get("ch_invs", False))
+        if "mes_inversions" not in f: f["mes_inversions"] = []
+
+        # --- SYSTÈME D'AFFICHAGE ET D'APPRENTISSAGE INTELLIGENT ---
+        # Tableau associatif pour relier les cases à cocher aux données de sauvegarde
+        associations = [
+            (c_kat, "Katas", "mes_katas"), (c_kih, "Kíhos", "mes_kihos"),
+            (c_inv, "Invocations", "mes_invocs"), (c_rit, "Rituels", "mes_rituels"),
+            (c_shu, "Shujis", "mes_shujis"), (c_mah, "Mahos", "mes_mahos"),
+            (c_nin, "Ninjutsus", "mes_ninjutsus"), (c_invs, "Inversions", "mes_inversions")
+        ]
+
+        for coche, nom_cat, cle_sauvegardee in associations:
+            if coche:
+                st.markdown(f"#### 📖 Catalogue des {nom_cat}")
+                
+                # Affichage des techniques déjà apprises par le personnage
+                deja_apprises = f.get(cle_sauvegardee, [])
+                if deja_apprises:
+                    st.write(f"✅ {nom_cat} connus : " + ", ".join(deja_apprises))
+                
+                # Déploiement du catalogue complet par Rang (1 à 5, Rang 6 réservé aux Shujis)
+                for rang_str, liste_techniques in CATALOGUE_TECHS.get(nom_cat, {}).items():
+                    numero_rang = int(rang_str.split()[-1])
+                    
+                    # Vérification de l'exception scénaristique (Technique d'un rang trop élevé)
+                    est_hors_rang = numero_rang > rang_ecole
+                    
+                    for tech in liste_techniques:
+                        # Si déjà apprise, on ne la propose plus dans la liste d'achat
+                        if tech in deja_apprises:
+                            continue
+                            
+                        col_t_nom, col_t_btn = st.columns([3, 1])
+                        
+                        # Règle visuelle : Grisée si hors-rang, mais reste fonctionnelle pour le scénario
+                        if est_hors_rang:
+                            col_t_nom.markdown(f"⚠️ *<span style='color:gray;'>{tech} ({rang_str}) - Hors de votre portée d'école</span>*", unsafe_allow_html=True)
+                            label_bouton = "➕ Apprendre (Exception Scénario)"
+                        else:
+                            # Ajout des détails de sous-catégories élémentaires ou martiales
+                            sous_cats = ", ".join(CATEGORIES_DETAILS.get(nom_cat, ["Général"]))
+                            col_t_nom.write(f"📜 **{tech}** ({rang_str}) | *Type : {sous_cats}*")
+                            label_bouton = "➕ Apprendre"
+                            
+                        # Clic d'apprentissage direct
+                        if col_t_btn.button(label_bouton, key=f"learn_{nom_cat}_{tech}"):
+                            deja_apprises.append(tech)
+                            f[cle_sauvegardee] = deja_apprises
+                            st.rerun()
+
+        # --- BLOC DE SAUVEGARDE AUTOMATIQUE EN DIRECT ---
         maj = {
             "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
             "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
             "armure_active": armure_active, "res_p": res_p, "res_s": res_s, "arme_active": arme_active, "w_deg": w_deg, "deux_mains": deux_mains, "w_dang": w_dang_base, "w_por": w_por, 
-            "t_kat": t_kat, "t_kih": t_kih, "t_inv": t_inv, "t_rit": t_rit, "t_shu": t_shu, "t_mah": t_mah, "t_nin": t_nin, "t_invs": t_invs, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite,
-            "sh_social": sh_social, "sh_equipement": sh_equipement, "inventaire_armes": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
+            "ch_kat": c_kat, "ch_kih": c_kih, "ch_inv": c_inv, "ch_rit": c_rit, "ch_shu": c_shu, "ch_mah": c_mah, "ch_nin": c_nin, "ch_invs": c_invs,
+            "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), "mes_rituels": f.get("mes_rituels", []),
+            "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
             "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
