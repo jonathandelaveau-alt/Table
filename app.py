@@ -216,12 +216,32 @@ if role == "Joueur (Ma Fiche)":
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
-        # --- BOUTON D'ACTUALISATION MANUELLE DU MJ ---
-    col_refresh = st.columns([1])[0]
+    # --- SYSTÈME D'ACTUALISATION HYBRIDE (MANUEL + AUTOMATIQUE TOUTES LES 7 SECONDES) ---
+    col_refresh = st.columns()
+    
+    # 1. Le bouton manuel (si vous décidez de cliquer vous-même)
     if col_refresh.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
-        st.success("Données de la table synchronisées avec succès !")
-        st.preload = True # Force le chargement des fichiers JSON en tâche de fond
-        st.rerun() # Rafraîchit l'affichage instantanément sans recharger la page web
+        st.rerun()
+
+    # 2. Le script invisible qui clique à votre place toutes les 7 secondes si vous ne faites rien
+    st.html("""
+        <script>
+            // On vérifie si le compte à rebours n'est pas déjà lancé pour éviter les doublons
+            if (!window.l5a_timer) {
+                window.l5a_timer = setInterval(function() {
+                    // Cherche le bouton d'actualisation dans l'écran et clique dessus
+                    const boutons = window.parent.document.querySelectorAll('button');
+                    for (const btn of boutons) {
+                        if (btn.textContent.includes("ACTUALISER LA TABLE")) {
+                            btn.click();
+                            break;
+                        }
+                    }
+                }, 7000); // 7000 millisecondes = 7 secondes (ajustable entre 5000 et 10000)
+            }
+        </script>
+    """)
+
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
     
     if not fichiers:
