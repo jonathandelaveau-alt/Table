@@ -80,13 +80,18 @@ role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maît
 if role == "Joueur (Ma Fiche)":
     st.header("👤 Votre Feuille Dynamique")
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
-        # --- BOUTON DE SOUS-VERSION JOUEUR (ACTUALISATION MANUELLE) ---
-    # Permet au joueur de forcer la réception des validations ou refus du MJ d'un seul clic
-    if st.button("🔄 ACTUALISER MON PARCHEMIN (Vérifier les réponses du MJ)"):
-        st.rerun()
-
+    
     if nom_id:
         f = charger_fiche(nom_id) or {}
+        
+        # --- MINUTEUR JOUEUR (RÉCEPTION DES REFUS / VALIDATIONS MJ EN DIRECT) ---
+        st.components.v1.html("""
+            <script>
+                setTimeout(function() {
+                    window.parent.postMessage({type: 'streamlit:render'}, '*');
+                }, 3000);
+            </script>
+        """, height=0, width=0)
         
         # Affichage immédiat des réponses ou contraintes imposées par le MJ
         if os.path.exists(ACTIONS_FILE):
@@ -105,7 +110,7 @@ if role == "Joueur (Ma Fiche)":
         if "inventaire_armes" not in f or not f["inventaire_armes"]: f["inventaire_armes"] = ["Wakizashi"]
         if "inventaire_armures" not in f or not f["inventaire_armures"]: f["inventaire_armures"] = ["Armure de Tenue de Cérémonie"]
 
-        st.subheader("📝 Feuille du Personnage")
+        st.subheader("📝 État-Civil Tactique")
         col_civ1, col_civ2, col_civ3 = st.columns(3)
         nom_perso = col_civ1.text_input("Nom du Personnage :", value=f.get("perso", ""))
         clan_actuel = col_civ2.selectbox("Sélectionnez votre Clan :", list(DATA_CLANS.keys()), index=list(DATA_CLANS.keys()).index(f.get("clan", "Grue")) if f.get("clan") in DATA_CLANS else 1)
@@ -142,7 +147,6 @@ if role == "Joueur (Ma Fiche)":
         hon = cs1.slider("Honneur", 0, 100, value=f.get("hon", 50))
         glo = cs2.slider("Gloire", 0, 100, value=f.get("glo", 50))
         sta = cs3.slider("Statut", 0, 100, value=f.get("sta", 50))
-
         st.subheader("🎭 Grille des 25 Compétences Officielles")
         with st.expander("🎨 1. Compétences Artisanales"):
             cart1, cart2, cart3, cart4 = st.columns(4)
@@ -157,8 +161,8 @@ if role == "Joueur (Ma Fiche)":
             csoc1, csoc2, csoc3, csoc4 = st.columns(4)
             c_cmd, c_crt, c_jeu, c_org = csoc1.slider("Commandement", 0, 6, value=f.get("c_cmd", 0)), csoc2.slider("Courtoisie", 0, 6, value=f.get("c_crt", 0)), csoc3.slider("Jeu", 0, 6, value=f.get("c_jeu", 0)), csoc4.slider("Organisation 📋", 0, 6, value=f.get("c_org", 0))
         with st.expander("🛠️ 5. Compétences Professionnelles"):
-            cprof1, cprof2, cprof3, cprof4, cprof5 = st.columns(5)
-            c_cmr, c_tra, c_nav, c_mag, c_sur = cprof1.slider("Commerce", 0, 6, value=f.get("c_cmr", 0)), cprof2.slider("Travail Manuel", 0, 6, value=f.get("c_tra", 0)), cprof3.slider("Navigation", 0, 6, value=f.get("c_nav", 0)), cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0)), cprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
+            cprof1, cprof2, cprof3, cprof4, fprof5 = st.columns(5)
+            c_cmr, c_tra, c_nav, c_mag, c_sur = cprof1.slider("Commerce", 0, 6, value=f.get("c_cmr", 0)), cprof2.slider("Travail Manuel", 0, 6, value=f.get("c_tra", 0)), cprof3.slider("Navigation", 0, 6, value=f.get("c_nav", 0)), cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0)), fprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
 
         st.subheader("🛡️ Arsenal & Inventaire Cliquable")
         sh_equipement = st.checkbox("👁️ Partager mes équipements équipés avec le MJ", value=f.get("sh_equipement", True))
@@ -175,48 +179,17 @@ if role == "Joueur (Ma Fiche)":
         stats_armure = CATALOGUE_ARMURES.get(armure_active, {"res_p": 0, "res_s": 0, "proprietes": "Aucune"})
         res_p, res_s = stats_armure["res_p"], stats_armure["res_s"]
 
-                # --- BASE DE DONNÉES SYSTÉMIQUE ET AVANCÉE DES ARMES L5A ---
-        CATALOGUE_ARMES_AVANCE = {
-            "Wakizashi": {
-                "competence": "Martiales (Corps-à-corps)", "portee": "0 - 1", "degats": 3, "danger": 5, "rareté": 4,
-                "prise_autorisee": "1 main ou 2 mains",
-                "effet_2_mains": {"danger": 2, "degats": 0, "portee": 0, "texte": "+2 Dangerosité"},
-                "proprietes": "Acérée, Cérémoniale"
-            },
-            "Katana": {
-                "competence": "Martiales (Corps-à-corps)", "portee": "1", "degats": 4, "danger": 5, "rareté": 5,
-                "prise_autorisee": "1 main ou 2 mains",
-                "effet_2_mains": {"danger": 0, "degats": 1, "portee": 0, "texte": "+1 Dégât"},
-                "proprietes": "Acérée, Cérémoniale"
-            },
-            "Yari (Lance)": {
-                "competence": "Martiales (Corps-à-corps)", "portee": "2", "degats": 4, "danger": 6, "rareté": 3,
-                "prise_autorisee": "2 mains uniquement",
-                "effet_2_mains": {"danger": 0, "degats": 0, "portee": 0, "texte": "Aucun (Prise fixe)"},
-                "proprietes": "Allonge, Solide"
-            },
-            "Yumi (Arc)": {
-                "competence": "Martiales (Distance)", "portee": "2 - 5", "degats": 5, "danger": 3, "rareté": 3,
-                "prise_autorisee": "2 mains uniquement",
-                "effet_2_mains": {"danger": 0, "degats": 0, "portee": 0, "texte": "Aucun (Prise fixe)"},
-                "proprietes": "Encombrante, Militaire"
-            }
-        }
-
         st.markdown("#### 🗡️ Galerie Tactique des Armes")
         liste_armes_possedees = f.get("inventaire_armes_complexe", [])
         
-        # Initialisation si l'inventaire du joueur est vide lors de sa première connexion
         if not liste_armes_possedees:
-            # On lui équipe un Wakizashi de référence par défaut avec ses statistiques de base initiales
             liste_armes_possedees = [{
                 "nom_modele": "Wakizashi", "degats_bonus": 0, "danger_bonus": 0, "portee_modifiee": "",
                 "props_ajoutees": "", "rarete_modifiee": 4, "notes_mj": "Objet ordinaire de départ.", "prise_choisie": "1 main"
             }]
             f["inventaire_armes_complexe"] = liste_armes_possedees
 
-        # 1. Module d'achat et d'intégration d'une nouvelle arme depuis le Catalogue
-                col_add_w1, col_add_w2 = st.columns(2)
+        col_add_w1, col_add_w2 = st.columns(2)
         arme_selectionnee_catalogue = col_add_w1.selectbox("Sélectionner un modèle à forger/acheter :", list(CATALOGUE_ARMES_AVANCE.keys()), key="cat_w_add")
         
         if col_add_w2.button("➕ Forger et ajouter à mon sac de transport"):
@@ -237,175 +210,71 @@ if role == "Joueur (Ma Fiche)":
 
         st.markdown("---")
         st.write("🔧 Sélectionnez l'arme que vous sortez de votre sac pour l'équiper, l'ajuster ou l'altérer :")
-        
         noms_armes_sac = [f"{idx} - {item['nom_modele']}" for idx, item in enumerate(liste_armes_possedees)]
         arme_index_choisie_str = st.selectbox("Arme active en main :", noms_armes_sac, key="w_active_index")
-        idx_arme = int(arme_index_choisie_str.split(" - ")[0])
+        idx_arme = int(arme_index_choisie_str.split(" - "))
         
-        # Arme en cours de manipulation par le joueur
         w_joueur = liste_armes_possedees[idx_arme]
         w_base = CATALOGUE_ARMES_AVANCE.get(w_joueur["nom_modele"], {"competence": "Inconnue", "portee": "1", "degats": 0, "danger": 0, "rareté": 1, "prise_autorisee": "1 main", "effet_2_mains": {"danger":0,"degats":0,"portee":0,"texte":"Aucun"}, "proprietes": "Ordinaire"})
 
-        # --- MODULE D'ALTÉRATIONS ET D'ENCHANTEMENTS MANUELS ---
         with st.expander("🛠️ Laboratoire d'Altération & Forgeron (Aiguiser, Enchantements, Éveiller)"):
             st.write("Modifiez manuellement la structure physique ou surnaturelle de cette arme :")
             col_alt1, col_alt2 = st.columns(2)
-            w_joueur["degats_bonus"] = col_alt1.number_input("Modifier / Augmenter les Dégâts de base :", value=int(w_joueur.get("degats_bonus", 0)))
-            w_joueur["danger_bonus"] = col_alt2.number_input("Modifier / Augmenter la Dangerosité de base :", value=int(w_joueur.get("danger_bonus", 0)))
+            w_joueur["degats_bonus"] = col_alt1.number_input("Modifier / Augmenter les Dégâts de base :", value=int(w_joueur.get("degats_bonus", 0)), key=f"alt_deg_{idx_arme}")
+            w_joueur["danger_bonus"] = col_alt2.number_input("Modifier / Augmenter la Dangerosité de base :", value=int(w_joueur.get("danger_bonus", 0)), key=f"alt_dang_{idx_arme}")
             
             col_alt3, col_alt4 = st.columns(2)
-            w_joueur["portee_modifiee"] = col_alt3.text_input("Altérer la Portée (Laissez vide pour garder la portée d'origine) :", value=w_joueur.get("portee_modifiee", ""))
-            w_joueur["rarete_modifiee"] = col_alt4.number_input("Altérer / Ajuster la Rareté de l'objet :", 0, 10, value=int(w_joueur.get("rarete_modifiee", w_base["rareté"])))
+            w_joueur["portee_modifiee"] = col_alt3.text_input("Altérer la Portée :", value=w_joueur.get("portee_modifiee", ""), key=f"alt_port_{idx_arme}")
+            w_joueur["rarete_modifiee"] = col_alt4.number_input("Altérer / Ajuster la Rareté :", 0, 10, value=int(w_joueur.get("rarete_modifiee", w_base["rareté"])), key=f"alt_rar_{idx_arme}")
             
-            w_joueur["props_ajoutees"] = st.text_input("Ajouter des propriétés surnaturelles ou physiques (Séparées par des virgules) :", value=w_joueur.get("props_ajoutees", ""), placeholder="Ex: Solide, Sacrée, Dissimulée")
-            w_joueur["notes_mj"] = st.text_area("Notes de l'objet (Éveillé, Histoire, Altérations magiques) :", value=w_joueur.get("notes_mj", ""))
-        # --- MODULE DE PRISE EN MAIN DYNAMIQUE (1 MAIN / 2 MAINS) ---
+            w_joueur["props_ajoutees"] = st.text_input("Ajouter des propriétés (Séparées par des virgules) :", value=w_joueur.get("props_ajoutees", ""), key=f"alt_prop_{idx_arme}")
+            w_joueur["notes_mj"] = st.text_area("Notes de l'objet :", value=w_joueur.get("notes_mj", ""), key=f"alt_notes_{idx_arme}")
+
         st.markdown("##### 🖐️ Configuration de la Prise en Main")
         prise_legale = w_base["prise_autorisee"]
-        st.write(f"ℹ️ *Prise d'origine du modèle : {prise_legale}*")
         
-        # Choix de la prise si l'arme est polyvalente
-        if "1 main ou 2 mains" in Prise_legale:
-            choix_prise = st.radio("Comment tenez-vous l'arme activement ?", ["1 main", "2 mains"], index=0 if w_joueur.get("prise_choisie", "1 main") == "1 main" else 1, key="prise_w_radio")
+        if "1 main ou 2 mains" in prise_legale:
+            choix_prise = st.radio("Comment tenez-vous l'arme activement ?", ["1 main", "2 mains"], index=0 if w_joueur.get("prise_choisie", "1 main") == "1 main" else 1, key=f"prise_w_radio_{idx_arme}")
             w_joueur["prise_choisie"] = choix_prise
         else:
             w_joueur["prise_choisie"] = "2 mains" if "2 mains" in prise_legale else "1 main"
             st.caption(f"🔒 Prise fixe : Cette arme est obligatoirement tenue à {w_joueur['prise_choisie']}.")
 
-        # --- CALCULATEUR PHYSIQUE DES STATISTIQUES FINALES D'ATTAQUE ---
-        # 1. Chargement des valeurs de base + altérations manuelles du forgeron
         degats_finals = w_base["degats"] + int(w_joueur.get("degats_bonus", 0))
         danger_final = w_base["danger"] + int(w_joueur.get("danger_bonus", 0))
         portee_finale = w_joueur["portee_modifiee"] if w_joueur.get("portee_modifiee", "").strip() else w_base["portee"]
         
-        # 2. Application automatique des règles de prise à 2 mains de l'arme
         if w_joueur["prise_choisie"] == "2 mains" and "1 main ou 2 mains" in prise_legale:
             modifs_2h = w_base.get("effet_2_mains", {"danger": 0, "degats": 0, "portee": 0})
             danger_final += modifs_2h.get("danger", 0)
             degats_finals += modifs_2h.get("degats", 0)
             st.success(f"⚔️ **Effet 2 mains actif :** {w_base['effet_2_mains']['texte']}")
 
-        # 3. Fusion des propriétés d'origine et des enchantements ajoutés
         props_totales = w_base["proprietes"]
         if w_joueur.get("props_ajoutees", "").strip():
             props_totales += f", {w_joueur['props_ajoutees']}"
 
-        # Affichage du profil complet final pour le joueur
-        st.info(f"📊 **Profil final calculé en main :** Affilié à : *{w_base['competence']}* | Dégâts : **{degats_finals}** | Dangerosité : **{danger_final}** | Portée : **{portee_finale}** | Rareté : {w_joueur['rarete_modifiee']}\n\n📜 **Propriétés de l'objet :** *{props_totales}*")
-        if w_joueur.get("notes_mj", "").strip():
-            st.caption(f"📖 **Notes / Éveil de l'arme :** {w_joueur['notes_mj']}")
+        st.info(f"📊 **Profil final calculé en main :** Dégâts : **{degats_finals}** | Dangerosité : **{danger_final}** | Portée : **{portee_finale}**\n\n📜 **Propriétés :** *{props_totales}*")
 
-        # Extraction des variables d'attaque pour la sauvegarde centrale globale
         arme_active_nom = w_joueur["nom_modele"]
         arme_active_degats = degats_finals
         arme_active_danger = danger_final
         arme_active_portee = portee_finale
-        arme_active_props = props_totales
-        arme_active_prise = w_joueur["prise_choisie"]
-        arme_active_notes = w_joueur.get("notes_mj", "")
-
-        # --- GESTION DE L'ARMURE DE RÉFÉRENCE ---
-        st.markdown("#### 👘 Gestion de l'Armure")
-        liste_armures_possedees = f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"])
-        col_add_arm, col_sel_arm = st.columns(2)
-        nouvelle_arm_cat = col_add_arm.selectbox("Acheter / Ajouter une armure au catalogue :", list(CATALOGUE_ARMURES.keys()))
-        if col_add_arm.button("➕ Ajouter l'armure"):
-            if nouvelle_arm_cat not in liste_armures_possedees:
-                liste_armures_possedees.append(nouvelle_arm_cat)
-                f["inventaire_armures"] = liste_armures_possedees
-        armure_active = col_sel_arm.selectbox("Armure portée :", liste_armures_possedees, index=liste_armures_possedees.index(f.get("armure_active")) if f.get("armure_active") in liste_armures_possedees else 0)
-        stats_armure = CATALOGUE_ARMURES.get(armure_active, {"res_p": 0, "res_s": 0, "proprietes": "Aucune"})
-        res_p, res_s = stats_armure["res_p"], stats_armure["res_s"]
-
-               # --- CATALOGUE ENRICHI DE VOS TECHNIQUES MAISON (RANG 1 À 5) ---
-        # Pour rajouter une technique : écrivez son nom entre guillemets, suivi d'une virgule.
-        CATALOGUE_COMPLET = {
-            "Katas": {
-                "Général": {
-                    "Rang 1": ["Posture de la Sentinelle", "Éclat de la Lame", "Esprit du Sabre"],
-                    "Rang 2": ["Danse des Ombres", "Esquive du Vent"]
-                },
-                "Corps-à-corps": {
-                    "Rang 1": ["Frappe du Tonnerre d'Acier", "L'Estoc de la Grue"],
-                    "Rang 2": ["Coup de l'Avalanche Crépusculaire", "Fend-l'Armure"]
-                },
-                "Distance": {
-                    "Rang 1": ["Visée du Faucon", "Flèche Silencieuse"],
-                    "Rang 3": ["Flèche de Tempête"]
-                },
-                "Non-humain": {
-                    "Rang 1": ["Esprit de la Meute"],
-                    "Rang 4": ["Griffe du Dragon"]
-                }
-            },
-            "Kíhos": {
-                "Air": {"Rang 1": ["Souffle de la Brise", "Volonté Céleste"]},
-                "Terre": {"Rang 1": ["Souffle de la Terre", "Peau de Pierre"]},
-                "Feu": {"Rang 2": ["Flamme Intérieure", "Poings de Feu"]},
-                "Eau": {"Rang 1": ["Pureté des Flots", "La Méditation du Lotus"]},
-                "Vide": {"Rang 3": ["Paume du Vide Éveillé"]}
-            },
-            "Invocations": {
-                "Air": {"Rang 1": ["Murmure du Vent d'Air"]},
-                "Terre": {"Rang 1": ["Communion de la Roche"]},
-                "Feu": {"Rang 1": ["Appel des Esprits du Feu"]},
-                "Eau": {"Rang 2": ["Colère des Flots d'Eau"]},
-                "Vide": {"Rang 5": ["Équilibre Cosmique"]}
-            },
-            "Rituels": {
-                "Général": {
-                    "Rang 1": ["Communion avec les Ancêtres", "Purification du Sel"],
-                    "Rang 2": ["Bénédiction de la Lignée"]
-                }
-            },
-            "Shujis": {
-                "Air": {"Rang 1": ["Insinuation Subtile"]},
-                "Terre": {"Rang 1": ["Présence Majestueuse"]},
-                "Feu": {"Rang 2": ["Parole Enflammée"]},
-                "Eau": {"Rang 1": ["Sagesse du Fleuve"]},
-                "Vide": {"Rang 6": ["Voix de l'Empereur"]}
-            },
-            "Mahos": {
-                "Général": {
-                    "Rang 1": ["Offrande de Sang", "Malédiction de la Chair"],
-                    "Rang 2": ["Éveil des Morts Déshonorés"]
-                }
-            },
-            "Ninjutsus": {
-                "Général": {
-                    "Rang 1": ["Pas Sans Trace", "Dissimulation du Lotus"],
-                    "Rang 2": ["Poison de l'Araignée Scorpion"]
-                }
-            },
-            "Inversions": {
-                "Général": {
-                    "Rang 1": ["Altération Mineure"],
-                    "Rang 5": ["Inversion des Éléments Éternels"]
-                }
-            }
-        }
-
-              # --- TITRE DE SECTION COMPLÈTEMENT CORRIGÉ ---
+        # --- SECTION GESTION DES TECHNIQUES ---
         st.subheader("📜 Gestion des techniques")
         st.write("Cochez les arts secrets que votre personnage étudie pour les ajouter à votre Grimoire Actif :")
 
-        # Initialisation propre des listes de techniques apprises
         for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
             if cle_g not in f: f[cle_g] = []
 
-        # Construction dynamique du Grimoire Actif
         grimoire_actif_total = (
             f.get("mes_katas", []) + f.get("mes_kihos", []) + f.get("mes_invocs", []) +
             f.get("mes_rituels", []) + f.get("mes_shujis", []) + f.get("mes_mahos", []) +
             f.get("mes_ninjutsus", []) + f.get("mes_inversions", [])
         )
 
-        # Création de la double colonne visuelle joueur
         col_catalogue, col_grimoire_actif = st.columns(2)
 
-        # ==============================================================================
-        # COLONNE GAUCHE : SÉLECTION DES CATALOGUES
-        # ==============================================================================
         with col_catalogue:
             st.markdown("### 📂 Choix des Catalogues")
             sh_grimoire = st.checkbox("👁️ Autoriser le MJ à voir mon Grimoire Actif et mes choix", value=f.get("sh_grimoire", True))
@@ -429,16 +298,12 @@ if role == "Joueur (Ma Fiche)":
             for coche, nom_cat, cle_sauvegardee in mapping_categories:
                 if coche:
                     st.markdown(f"#### 📂 Filtres : {nom_cat}")
-                    
-                    # 1. Sélection de la sous-catégorie
                     sub_options = list(CATALOGUE_COMPLET.get(nom_cat, {}).keys())
                     sub_sel = st.selectbox(f"Sous-catégorie ({nom_cat}) :", sub_options, key=f"sub_{nom_cat}")
                     
-                    # 2. Sélection du Rang
                     rangs_options = list(CATALOGUE_COMPLET.get(nom_cat, {}).get(sub_sel, {}).keys())
                     rang_sel = st.selectbox(f"Niveau d'apprentissage :", rangs_options, key=f"rng_{nom_cat}")
                     
-                    # Extraction des techniques correspondantes
                     techs_disponibles = CATALOGUE_COMPLET.get(nom_cat, {}).get(sub_sel, {}).get(rang_sel, [])
                     num_rang = int(rang_sel.split()[-1])
                     est_hors_rang = num_rang > rang_ecole
@@ -464,56 +329,36 @@ if role == "Joueur (Ma Fiche)":
                                     sauver_fiche(nom_id, f)
                                     st.rerun()
 
-               # ==============================================================================
-        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES FILTRÉ (VERSION DUPLIQUÉE)
-        # ==============================================================================
         with col_grimoire_actif:
             st.markdown("### 📖 Grimoire des techniques actives")
-            
             if grimoire_actif_total:
-                # Initialisation de la technique active sélectionnée dans la mémoire de session
-                if "tech_active_cliquee" not in f:
-                    f["tech_active_cliquee"] = "Aucune technique active"
-
                 st.write("🔍 Naviguez dans vos techniques apprises et cliquez sur l'une d'elles pour la préparer activement :")
                 
-                # 1. Filtre par grand type de technique apprise
                 cats_possedees = []
                 for cle_g, nom_cat in [("mes_katas", "Katas"), ("mes_kihos", "Kíhos"), ("mes_invocs", "Invocations"), ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Mahos"), ("mes_ninjutsus", "Ninjutsus"), ("mes_inversions", "Inversions")]:
-                    if f.get(cle_g):
-                        cats_possedees.append(nom_cat)
+                    if f.get(cle_g): cats_possedees.append(nom_cat)
                 
                 if cats_possedees:
                     g_cat = st.selectbox("Filtrer mon grimoire par Type :", sorted(cats_possedees), key="g_cat_filter")
-                    
-                    # Correspondance pour retrouver la bonne clé de fichier
                     cle_g_map = {"Katas": "mes_katas", "Kíhos": "mes_kihos", "Invocations": "mes_invocs", "Rituels": "mes_rituels", "Shujis": "mes_shujis", "Mahos": "mes_mahos", "Ninjutsus": "mes_ninjutsus", "Inversions": "mes_inversions"}[g_cat]
                     
-                    # Affichage des sous-choix
-                                       # --- AFFICHAGE NETTOYÉ DU GRIMOIRE ACTIF FILTRÉ ---
                     st.write(f"📂 Vos parchemins enregistrés en **{g_cat}** :")
-                    
-                    # On utilise la bonne clé de fichier filtrée par le sélecteur
                     liste_specifique = f.get(cle_g_map, [])
                     
                     for tech_apprise in liste_specifique:
-                        # Découpage précis et proportionnel de la ligne en 3 zones (Nom, Œil, Croix)
-                        c_t_nom, c_t_oeil, c_t_del = st.columns([3, 1, 1])
+                        c_t_nom, c_t_oeil, c_t_del = st.columns()
                         
                         est_active = f.get("tech_active_cliquee") == tech_apprise
                         label_click = f"🎯 {tech_apprise} (Prête)" if est_active else f"📜 {tech_apprise}"
                         
-                        # 1. Bouton pour sélectionner activement la technique
                         if c_t_nom.button(label_click, key=f"click_active_{tech_apprise}"):
                             f["tech_active_cliquee"] = tech_apprise
                             sauver_fiche(nom_id, f)
                             st.rerun()
                             
-                        # 2. Le petit œil magique pour ouvrir la description détaillée
                         if c_t_oeil.button("👁️", key=f"oeil_details_{tech_apprise}", help="Ouvrir la description détaillée"):
                             afficher_details_technique(tech_apprise)
                             
-                        # 3. La croix rouge de suppression
                         if c_t_del.button("❌", key=f"del_g_{tech_apprise}"):
                             if tech_apprise == f.get("tech_active_cliquee"):
                                 f["tech_active_cliquee"] = "Aucune technique active"
@@ -521,9 +366,9 @@ if role == "Joueur (Ma Fiche)":
                             sauver_fiche(nom_id, f)
                             st.rerun()
             else:
-                st.info("Votre grimoire actif est vide. Apprenez des techniques depuis le catalogue de gauche.")
+                st.info("Votre grimoire actif est vide. Sélectionnez des techniques à gauche pour les mémoriser.")
 
-        # --- MODULE DE REQUÊTES EN DIRECT EN BAS DE PAGE ---
+        # --- MODULE DE REQUÊTES EN DIRECT ---
         st.markdown("---")
         st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
         
@@ -531,7 +376,6 @@ if role == "Joueur (Ma Fiche)":
         comp_c = c_a1.text_input("Compétence (FACULTATIF) :", placeholder="Ex: Corps-à-corps")
         elem_c = c_a2.selectbox("Élément combiné (FACULTATIF) :", ["Aucun / Simple texte", "Air 💨", "Terre 🏔️", "Feu 🔥", "Eau 💧", "Vide 🌌"])
         
-        # Rappel automatique de la technique sur laquelle le joueur a cliqué dans son grimoire à droite
         tech_choisie_automatique = f.get("tech_active_cliquee", "Aucune technique active")
         c_a3.markdown(f"🎯 **Technique préparée à droite :**\n`{tech_choisie_automatique}`")
             
@@ -559,12 +403,12 @@ if role == "Joueur (Ma Fiche)":
         maj = {
             "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
             "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
-            "armure_active": armure_active, "res_p": res_p, "res_s": res_s, "arme_active": arme_active, "w_deg": w_deg, "deux_mains": deux_mains, "w_dang": w_dang_base, "w_por": w_por, 
+            "armure_active": armure_active, "res_p": res_p, "res_s": res_s, "arme_active": arme_active_nom, "w_deg": arme_active_degats, "deux_mains": "2 mains" in w_joueur["prise_choisie"], "w_dang": arme_active_danger, "w_por": arme_active_portee, 
             "ch_kat": c_kat, "ch_kih": c_kih, "ch_inv": c_inv, "ch_rit": c_rit, "ch_shu": c_shu, "ch_mah": c_mah, "ch_nin": c_nin, "ch_invs": c_invs,
             "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), "mes_rituels": f.get("mes_rituels", []),
             "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
             "tech_active_cliquee": tech_choisie_automatique, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire,
-            "inventaire_armes": f.get("inventaire_armes", ["Wakizashi"]), "inventaire_armures": f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"]),
+            "inventaire_armes_complexe": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
             "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
