@@ -317,38 +317,56 @@ if role == "Joueur (Ma Fiche)":
                                     sauver_fiche(nom_id, f)
                                     st.rerun()
 
-              # ==============================================================================
-        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES AVEC SUPPRESSION
+               # ==============================================================================
+        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES FILTRÉ (VERSION DUPLIQUÉE)
         # ==============================================================================
         with col_grimoire_actif:
             st.markdown("### 📖 Grimoire des techniques actives")
             
-            # Reconstruction des listes individuelles pour pouvoir supprimer précisément
-            categories_listes = [
-                ("mes_katas", "Katas"), ("mes_kihos", "Kíhos"), ("mes_invocs", "Invocations"),
-                ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Mahos"),
-                ("mes_ninjutsus", "Ninjutsus"), ("mes_inversions", "Inversions")
-            ]
-            
             if grimoire_actif_total:
-                st.write("Cliquez sur la croix pour retirer une technique de votre grimoire :")
+                # Initialisation de la technique active sélectionnée dans la mémoire de session
+                if "tech_active_cliquee" not in f:
+                    f["tech_active_cliquee"] = "Aucune technique active"
+
+                st.write("🔍 Naviguez dans vos techniques apprises et cliquez sur l'une d'elles pour la préparer activement :")
                 
-                for cle_sauvegardee, nom_cat in categories_listes:
-                    liste_specifique = f.get(cle_sauvegardee, [])
+                # 1. Filtre par grand type de technique apprise
+                cats_possedees = []
+                for cle_g, nom_cat in [("mes_katas", "Katas"), ("mes_kihos", "Kíhos"), ("mes_invocs", "Invocations"), ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Mahos"), ("mes_ninjutsus", "Ninjutsus"), ("mes_inversions", "Inversions")]:
+                    if f.get(cle_g):
+                        cats_possedees.append(nom_cat)
+                
+                if cats_possedees:
+                    g_cat = st.selectbox("Filtrer mon grimoire par Type :", sorted(cats_possedees), key="g_cat_filter")
                     
-                    for tech_apprise in liste_specifique:
-                        col_t_nom, col_t_del = st.columns([4, 1])
-                        col_t_nom.markdown(f"🔹 **{tech_apprise}** *({nom_cat})*")
+                    # Correspondance pour retrouver la bonne clé de fichier
+                    cle_g_map = {"Katas": "mes_katas", "Kíhos": "mes_kihos", "Invocations": "mes_invocs", "Rituels": "mes_rituels", "Shujis": "mes_shujis", "Mahos": "mes_mahos", "Ninjutsus": "mes_ninjutsus", "Inversions": "mes_inversions"}[g_cat]
+                    
+                    # Affichage des sous-choix
+                    st.write(f"📂 Vos parchemins enregistrés en **{g_cat}** :")
+                    for t_apprise in f.get(cle_g_map, []):
+                        c_t_click, c_t_del = st.columns([4, 1])
                         
-                        # Petite croix rouge à côté pour supprimer la technique
-                        if col_t_del.button("❌", key=f"del_tech_{cle_sauvegardee}_{tech_apprise}"):
-                            f[cle_sauvegardee].remove(tech_apprise)
+                        # Bouton de sélection active (le joueur clique sur le nom de sa technique)
+                        est_active = f.get("tech_active_cliquee") == t_apprise
+                        label_click = f"🎯 {t_apprise} (ACTIVE)" if est_active else f"📜 {t_apprise}"
+                        
+                        if c_t_click.button(label_click, key=f"click_active_{t_apprise}"):
+                            f["tech_active_cliquee"] = t_apprise
+                            sauver_fiche(nom_id, f)
+                            st.rerun()
+                            
+                        # Petite croix rouge à côté pour supprimer / désapprendre
+                        if c_t_del.button("❌", key=f"del_g_{t_apprise}"):
+                            if t_apprise == f.get("tech_active_cliquee"):
+                                f["tech_active_cliquee"] = "Aucune technique active"
+                            f[cle_g_map].remove(t_apprise)
                             sauver_fiche(nom_id, f)
                             st.rerun()
             else:
-                st.info("Votre grimoire actif est vide. Sélectionnez des techniques à gauche pour les mémoriser.")
+                st.info("Votre grimoire actif est vide. Apprenez des techniques depuis le catalogue de gauche.")
 
-        # --- MODULE DE REQUÊTES EN DIRECT ---
+        # --- MODULE DE REQUÊTES EN DIRECT EN BAS DE PAGE ---
         st.markdown("---")
         st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
         
@@ -356,12 +374,9 @@ if role == "Joueur (Ma Fiche)":
         comp_c = c_a1.text_input("Compétence (FACULTATIF) :", placeholder="Ex: Corps-à-corps")
         elem_c = c_a2.selectbox("Élément combiné (FACULTATIF) :", ["Aucun / Simple texte", "Air 💨", "Terre 🏔️", "Feu 🔥", "Eau 💧", "Vide 🌌"])
         
-        if grimoire_actif_total:
-            options_tech = ["Aucune technique associée"] + list(set(grimoire_actif_total))
-            tech_c = c_a3.selectbox("Technique issue du Grimoire Actif :", options_tech)
-        else:
-            c_a3.caption("📖 Grimoire Actif vide.")
-            tech_c = "Aucune technique associée"
+        # Rappel automatique de la technique sur laquelle le joueur a cliqué dans son grimoire à droite
+        tech_choisie_automatique = f.get("tech_active_cliquee", "Aucune technique active")
+        c_a3.markdown(f"🎯 **Technique préparée à droite :**\n`{tech_choisie_automatique}`")
             
         desc_a = st.text_area("Votre Message / Intention (Pourquoi faites-vous cela ?) :", placeholder="Écrivez ici vos détails...")
         
@@ -377,7 +392,7 @@ if role == "Joueur (Ma Fiche)":
                     except: actions = []
                 actions.append({
                     "id": len(actions) + 1, "joueur": nom_id, "perso": nom_perso, 
-                    "competence": comp_final, "element": elem_final, "technique": tech_c, "description": desc_a, 
+                    "competence": comp_final, "element": elem_final, "technique": tech_choisie_automatique, "description": desc_a, 
                     "anneaux": {"air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide}, "statut": "En attente", "description_mj": ""
                 })
                 with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
@@ -391,7 +406,8 @@ if role == "Joueur (Ma Fiche)":
             "ch_kat": c_kat, "ch_kih": c_kih, "ch_inv": c_inv, "ch_rit": c_rit, "ch_shu": c_shu, "ch_mah": c_mah, "ch_nin": c_nin, "ch_invs": c_invs,
             "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), "mes_rituels": f.get("mes_rituels", []),
             "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
-            "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire, "inventaire_armes": f.get("inventaire_armes", ["Wakizashi"]), "inventaire_armures": f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"]),
+            "tech_active_cliquee": tech_choisie_automatique, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire,
+            "inventaire_armes": f.get("inventaire_armes", ["Wakizashi"]), "inventaire_armures": f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"]),
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
             "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
@@ -403,7 +419,6 @@ if role == "Joueur (Ma Fiche)":
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
-    
     if st.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
         st.rerun()
 
@@ -449,49 +464,56 @@ elif role == "Maître du Jeu (Hôte)":
                         st.write(f"👁️ Vigilance : **{vi}** | 🧠 Attention : **{at}**")
                     else: st.caption("🔒 Masqué par le joueur")
                 with col3:
-                    st.markdown("**⚖️ Profil Social**")
-                    if p.get("sh_social", True): st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
-                    else: st.caption("🔒 Masqué par le joueur")
-                with col4:
-                    st.markdown("**⚔️ Arsenal Équipé**")
-                    if p.get("sh_equipement", True):
-                        df = (int(p.get('w_dang', 5)) + 2) if p.get('deux_mains', False) else int(p.get('w_dang', 5))
-                        st.write(f"🗡️ Arme : **{p.get('arme_active','Aucune')}** ({'2 mains ⚔️' if p.get('deux_mains',False) else '1 main'})")
-                        st.write(f"💥 Dégâts: {p.get('w_deg','3')} | Danger: **{df}** | 📏 Portée: {p.get('w_por','0 - 1')}")
-                        st.write(f"👘 Armure: {p.get('armure_active','Aucune')} (P: {p.get('res_p',1)}/S: {p.get('res_s',0)})")
-                    else: st.caption("🔒 Masqué par le joueur")
-                
-                # Récapitulatif du Grimoire Actif visible par le MJ (si autorisé)
-                if p.get("sh_grimoire", True):
-                    list_techs_mj = []
-                    for tk, tn in [("mes_katas", "Katas"), ("mes_kihos", "Kihos"), ("mes_invocs", "Invocations"), ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Maho ⚠️"), ("mes_ninjutsus", "Ninjutsu"), ("mes_inversions", "Inversions")]:
-                        if p.get(tk): list_techs_mj.append(f"**{tn} :** " + ", ".join(p.get(tk)))
-                    if list_techs_mj:
-                        st.markdown("📖 **Grimoire Actuel du Personnage (Autorisé) :**")
-                        for lt in list_techs_mj: st.write(lt)
-                else:
-                    st.caption("🔒 Grimoire Actif masqué par le joueur")
+                # BLOC 3 : PROFIL SOCIAL
+                st.markdown("**⚖️ Profil Social**")
+                if p.get("sh_social", True): 
+                    st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
+                else: 
+                    st.caption("🔒 Masqué par le joueur")
+            
+            with col4:
+                st.markdown("**⚔️ Arsenal Équipé**")
+                if p.get("sh_equipement", True):
+                    df = (int(p.get('w_dang', 5)) + 2) if p.get('deux_mains', False) else int(p.get('w_dang', 5))
+                    st.write(f"🗡️ Arme : **{p.get('arme_active','Aucune')}** ({'2 mains ⚔️' if p.get('deux_mains',False) else '1 main'})")
+                    st.write(f"💥 Dégâts: {p.get('w_deg','3')} | Danger: **{df}** | 📏 Portée: {p.get('w_por','0 - 1')}")
+                    st.write(f"👘 Armure: **{p.get('armure_active','Aucune')}** (P: {p.get('res_p',1)}/S: {p.get('res_s',0)})")
+                else: 
+                    st.caption("🔒 Masqué par le joueur")
+            
+            # --- AFFICHAGE ÉPURÉ DES TECHNIQUES CIBLEES ---
+            if p.get("sh_grimoire", True):
+                st.markdown("🎯 **Technique activement sélectionnée par le joueur :**")
+                st.info(f"`{p.get('tech_active_cliquee', 'Aucune technique active')}`")
+            else:
+                st.caption("🔒 Grimoire Actif masqué par le joueur")
+            
+            # Affichage uniquement des compétences strictement supérieures à 0
+            comp_visibles = []
+            dic_noms = {
+                "c_est": "Esthétique", "c_com": "Composition", "c_sty": "Stylisme", "c_forg": "Forge 🔨",
+                "c_for": "Forme", "c_cac": "Corps-à-corps", "c_dis": "Distance", "c_chu": "Corps Humain", "c_med": "Méditation", "c_tac": "Tactique",
+                "c_cul": "Culture", "c_gou": "Gouvernement", "c_mdc": "Médecine", "c_sen": "Sentiment", "c_the": "Théologie",
+                "c_cmd": "Commandement", "c_crt": "Courtoisie", "c_jeu": "Jeu", "c_org": "Organisation 📋",
+                "c_cmr": "Commerce", "c_tra": "Travail Manuel", "c_nav": "Navigation", "c_mag": "Magouille", "c_sur": "Survie"
+            }
+            for k_code, n_aff in dic_noms.items():
+                if p.get(k_code, 0) > 0: 
+                    comp_visibles.append(f"{n_aff}: **{p[k_code]}**")
+            
+            if comp_visibles:
+                st.caption(f"📊 **Compétences (Rang ≥ 1) :** " + " | ".join(comp_visibles))
 
-                # Affichage uniquement des compétences > 0 pour le MJ
-                comp_visibles = []
-                dic_noms = {
-                    "c_est": "Esthétique", "c_com": "Composition", "c_sty": "Stylisme", "c_forg": "Forge 🔨",
-                    "c_for": "Forme", "c_cac": "Corps-à-corps", "c_dis": "Distance", "c_chu": "Corps Humain", "c_med": "Méditation", "c_tac": "Tactique",
-                    "c_cul": "Culture", "c_gou": "Gouvernement", "c_mdc": "Médecine", "c_sen": "Sentiment", "c_the": "Théologie",
-                    "c_cmd": "Commandement", "c_crt": "Courtoisie", "c_jeu": "Jeu", "c_org": "Organisation 📋",
-                    "c_cmr": "Commerce", "c_tra": "Travail Manuel", "c_nav": "Navigation", "c_mag": "Magouille", "c_sur": "Survie"
-                }
-                for k_code, n_aff in dic_noms.items():
-                    if p.get(k_code, 0) > 0: comp_visibles.append(f"{n_aff}: **{p[k_code]}**")
-                if comp_visibles:
-                    st.caption(f"📊 **Compétences (Rang ≥ 1) :** " + " | ".join(comp_visibles))
-
+        # --- BOÎTE DE RÉCEPTION DES ACTIONS EN DIRECT ---
         st.markdown("---")
         st.subheader("🔔 Boîte de réception des Actions Soumises")
         if os.path.exists(ACTIONS_FILE):
             try:
-                with open(ACTIONS_FILE, "r", encoding="utf-8") as file: actions = json.load(file)
-            except: actions = []
+                with open(ACTIONS_FILE, "r", encoding="utf-8") as file: 
+                    actions = json.load(file)
+            except: 
+                actions = []
+                
             en_attente = [a for a in actions if a["statut"] == "En attente"]
             if not en_attente: 
                 st.info("Aucune action en attente.")
@@ -512,7 +534,7 @@ elif role == "Maître du Jeu (Hôte)":
                         
                         if c_btn1.button("✅ Autoriser", key=f"val_{act['id']}"):
                             for a in actions:
-                                if a["id"] == act["id"]: 
+                                if a["id"] == act["id"]:
                                     a["statut"] = "Validé"
                                     a["description_mj"] = commentaire_mj if commentaire_mj else "Approuvé."
                             with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
@@ -522,7 +544,7 @@ elif role == "Maître du Jeu (Hôte)":
                             
                         if c_btn2.button("⛔ Refuser", key=f"ref_{act['id']}"):
                             for a in actions:
-                                if a["id"] == act["id"]: 
+                                if a["id"] == act["id"]:
                                     a["statut"] = "Refusé"
                                     a["description_mj"] = commentaire_mj if commentaire_mj else "Refusé."
                             with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
