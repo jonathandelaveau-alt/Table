@@ -62,7 +62,17 @@ role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maît
 if role == "Joueur (Ma Fiche)":
     st.header("👤 Votre Feuille Dynamique")
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
-    
+        # --- MINUTEUR JOUEUR (RÉCEPTION DES REFUS / VALIDATIONS MJ EN DIRECT) ---
+    if nom_id:
+        st.components.v1.html("""
+            <script>
+                setTimeout(function() {
+                    // Actualise la fiche du joueur toutes les 3 secondes pour intercepter les réponses du MJ
+                    window.parent.postMessage({type: 'streamlit:render'}, '*');
+                }, 3000);
+            </script>
+        """, height=0, width=0)
+
     if nom_id:
         f = charger_fiche(nom_id) or {}
         
@@ -218,23 +228,18 @@ if role == "Joueur (Ma Fiche)":
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
     
-       # --- SYSTÈME D'ACTUALISATION HYBRIDE (AUTOMATIQUE TOUTES LES 3 SECONDES) ---
-    # 1. Le bouton manuel reste présent et visible en haut de votre écran
+         # --- SYSTÈME D'ACTUALISATION TACTIQUE DU MJ (VERSION INCASSABLE) ---
+    # Le bouton manuel reste disponible si vous êtes pressé
     if st.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
         st.rerun()
 
-    # 2. Le script de clic automatique ultra-robuste (Fréquence : 3000ms = 3 secondes)
+    # Minuteur réseau étanche qui force Python à recharger les fichiers JSON toutes les 3 secondes
     st.components.v1.html("""
         <script>
             setTimeout(function() {
-                // Étape 1 : On cherche tous les boutons dans l'interface de l'Hôte
-                const boutons = window.parent.document.querySelectorAll('button');
-                
-                // Étape 2 : On simule un clic automatique sur le tout premier bouton trouvé (votre bouton Actualiser)
-                if (boutons.length > 0) {
-                    boutons[0].click();
-                }
-            }, 3000); // 3000 millisecondes = 3 secondes
+                // Demande poliment à l'interface Streamlit de rafraîchir ses données locales
+                window.parent.postMessage({type: 'streamlit:render'}, '*');
+            }, 3000); // 3000ms = 3 secondes
         </script>
     """, height=0, width=0)
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
