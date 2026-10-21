@@ -205,20 +205,9 @@ if role == "Joueur (Ma Fiche)":
             }
         }
 
-        st.subheader("📜 Gestion des Parchemins d'École")
-        st.write("Cochez les arts secrets que votre personnage étudie :")
-
-        # Boutons "œil" de partage du grimoire complet au MJ
-        sh_grimoire = st.checkbox("👁️ Autoriser le MJ à voir mon Grimoire Actif et mes choix de catalogues", value=f.get("sh_grimoire", True))
-
-        c_kat = st.checkbox("🥋 Catalogue des Katas", value=f.get("ch_kat", False))
-        c_kih = st.checkbox("🧘 Catalogue des Kíhos", value=f.get("ch_kih", False))
-        c_inv = st.checkbox("🔥 Catalogue des Invocations", value=f.get("ch_inv", False))
-        c_rit = st.checkbox("📿 Catalogue des Rituels", value=f.get("ch_rit", False))
-        c_shu = st.checkbox("🗣️ Catalogue des Shujis", value=f.get("ch_shu", False))
-        c_mah = st.checkbox("🩸 Grimoire de la Maho", value=f.get("ch_mah", False))
-        c_nin = st.checkbox("🥷 Manuel de Ninjutsu", value=f.get("ch_nin", False))
-        c_invs = st.checkbox("🔮 Parchemins d'Inversion", value=f.get("ch_invs", False))
+              # --- TITRE DE SECTION COMPLÈTEMENT CORRIGÉ ---
+        st.subheader("📜 Gestion des techniques")
+        st.write("Cochez les arts secrets que votre personnage étudie pour les ajouter à votre Grimoire Actif :")
 
         # Initialisation propre des listes de techniques apprises
         for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
@@ -231,66 +220,88 @@ if role == "Joueur (Ma Fiche)":
             f.get("mes_ninjutsus", []) + f.get("mes_inversions", [])
         )
 
-        if grimoire_actif_total:
-            st.markdown("### 📖 Votre Grimoire Actif (Techniques Apprises)")
-            st.write(", ".join(list(set(grimoire_actif_total))))
+        # --- CRÉATION DE LA DOUBLE COLONNE VISUELLE JOUEUR ---
+        col_catalogue, col_grimoire_actif = st.columns(2)
 
-        # Configuration des options de sous-catégories selon votre liste
-        LISTE_SOUS_CATS = {
-            "Katas": ["Général", "Corps-à-corps", "Distance", "Non-humain"],
-            "Kíhos": ["Air", "Terre", "Feu", "Eau", "Vide"],
-            "Invocations": ["Air", "Terre", "Feu", "Eau", "Vide"],
-            "Rituels": ["Général"],
-            "Shujis": ["Air", "Terre", "Feu", "Eau", "Vide"],
-            "Mahos": ["Général"],
-            "Ninjutsus": ["Général"],
-            "Inversions": ["Général"]
-        }
+        # ==============================================================================
+        # COLONNE GAUCHE : SÉLECTION DES CATALOGUES
+        # ==============================================================================
+        with col_catalogue:
+            st.markdown("### 📂 Choix des Catalogues")
+            sh_grimoire = st.checkbox("👁️ Autoriser le MJ à voir mon Grimoire Actif et mes choix", value=f.get("sh_grimoire", True))
 
-        mapping_categories = [
-            (c_kat, "Katas", "mes_katas"), (c_kih, "Kíhos", "mes_kihos"),
-            (c_inv, "Invocations", "mes_invocs"), (c_rit, "Rituels", "mes_rituels"),
-            (c_shu, "Shujis", "mes_shujis"), (c_mah, "Mahos", "mes_mahos"),
-            (c_nin, "Ninjutsus", "mes_ninjutsus"), (c_invs, "Inversions", "mes_inversions")
-        ]
+            c_kat = st.checkbox("🥋 Catalogue des Katas", value=f.get("ch_kat", False))
+            c_kih = st.checkbox("🧘 Catalogue des Kíhos", value=f.get("ch_kih", False))
+            c_inv = st.checkbox("🔥 Catalogue des Invocations", value=f.get("ch_inv", False))
+            c_rit = st.checkbox("📿 Catalogue des Rituels", value=f.get("ch_rit", False))
+            c_shu = st.checkbox("🗣️ Catalogue des Shujis", value=f.get("ch_shu", False))
+            c_mah = st.checkbox("🩸 Grimoire de la Maho", value=f.get("ch_mah", False))
+            c_nin = st.checkbox("🥷 Manuel de Ninjutsu", value=f.get("ch_nin", False))
+            c_invs = st.checkbox("🔮 Parchemins d'Inversion", value=f.get("ch_invs", False))
 
-        for coche, nom_cat, cle_sauvegardee in mapping_categories:
-            if coche:
-                st.markdown(f"#### 📂 Filtres : {nom_cat}")
-                
-                # 1. Sélection de la sous-catégorie demandée
-                sub_options = LISTE_SOUS_CATS.get(nom_cat, ["Général"])
-                sub_sel = st.selectbox(f"Sous-catégorie ({nom_cat}) :", sub_options, key=f"sub_{nom_cat}")
-                
-                # 2. Sélection du Rang (1 à 6 pour les Shujis, 1 à 5 pour le reste)
-                max_rang = 6 if nom_cat == "Shujis" else 5
-                rangs_options = [f"Rang {i}" for i in range(1, max_rang + 1)]
-                rang_sel = st.selectbox(f"Niveau d'apprentissage :", rangs_options, key=f"rng_{nom_cat}")
-                
-                # Récupération ou génération d'une technique universelle si la case est vide
-                techs_disponibles = DATA_CLANS.get(nom_cat, {}).get(sub_sel, []) if nom_cat in DATA_CLANS and sub_sel in DATA_CLANS[nom_cat] else []
-                if not techs_disponibles:
-                    # Règle d'or : On génère une option pour qu'elle apparaisse quand même à l'écran
-                    techs_disponibles = [f"{nom_cat} de {sub_sel} ({rang_sel}) Enseigné par l'École"]
+            LISTE_SOUS_CATS = {
+                "Katas": ["Général", "Corps-à-corps", "Distance", "Non-humain"],
+                "Kíhos": ["Air", "Terre", "Feu", "Eau", "Vide"],
+                "Invocations": ["Air", "Terre", "Feu", "Eau", "Vide"],
+                "Rituels": ["Général"],
+                "Shujis": ["Air", "Terre", "Feu", "Eau", "Vide"],
+                "Mahos": ["Général"],
+                "Ninjutsus": ["Général"],
+                "Inversions": ["Général"]
+            }
 
-                num_rang = int(rang_sel.split()[-1])
-                est_hors_rang = num_rang > rang_ecole
+            mapping_categories = [
+                (c_kat, "Katas", "mes_katas"), (c_kih, "Kíhos", "mes_kihos"),
+                (c_inv, "Invocations", "mes_invocs"), (c_rit, "Rituels", "mes_rituels"),
+                (c_shu, "Shujis", "mes_shujis"), (c_mah, "Mahos", "mes_mahos"),
+                (c_nin, "Ninjutsus", "mes_ninjutsus"), (c_invs, "Inversions", "mes_inversions")
+            ]
 
-                for t in techs_disponibles:
-                    if t in f[cle_sauvegardee]:
-                        st.caption(f"🔹 {t} — [Inscrit dans votre Grimoire Actif]")
-                    else:
-                        c_txt, c_btn = st.columns(2)
-                        if est_hors_rang:
-                            c_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} — Bloqué (Nécessite le Rang d'École {num_rang})</span>*", unsafe_allow_html=True)
-                            label_btn = "➕ Inscrire au Grimoire (Exception Scénario)"
+            for coche, nom_cat, cle_sauvegardee in mapping_categories:
+                if coche:
+                    st.markdown(f"**📖 Sélection : {nom_cat}**")
+                    sub_options = LISTE_SOUS_CATS.get(nom_cat, ["Général"])
+                    sub_sel = st.selectbox(f"Sous-catégorie ({nom_cat}) :", sub_options, key=f"sub_{nom_cat}")
+                    
+                    max_rang = 6 if nom_cat == "Shujis" else 5
+                    rangs_options = [f"Rang {i}" for i in range(1, max_rang + 1)]
+                    rang_sel = st.selectbox(f"Niveau d'apprentissage :", rangs_options, key=f"rng_{nom_cat}")
+                    
+                    # Génération automatique ou récupération d'une option universelle cliquable
+                    techs_disponibles = [f"{nom_cat} - {sub_sel} ({rang_sel})"]
+
+                    num_rang = int(rang_sel.split()[-1])
+                    est_hors_rang = num_rang > rang_ecole
+
+                    for t in techs_disponibles:
+                        if t in f[cle_sauvegardee]:
+                            st.caption(f"🔹 {t} [Appris]")
                         else:
-                            c_txt.write(f"✨ **{t}**")
-                            label_btn = "➕ Inscrire au Grimoire Actif"
-                        
-                        if c_btn.button(label_btn, key=f"add_{nom_cat}_{t}"):
-                            f[cle_sauvegardee].append(t)
-                            st.rerun()
+                            c_t_txt, c_t_btn = st.columns([2, 1])
+                            if est_hors_rang:
+                                c_t_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} (Hors-Rang)</span>*", unsafe_allow_html=True)
+                                label_btn = "➕ Inscrire (Exception)"
+                            else:
+                                c_t_txt.write(f"✨ {t}")
+                                label_btn = "➕ Inscrire au Grimoire"
+                            
+                            if c_t_btn.button(label_btn, key=f"add_{nom_cat}_{t}"):
+                                f[cle_sauvegardee].append(t)
+                                st.rerun()
+
+        # ==============================================================================
+        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES
+        # ==============================================================================
+        with col_grimoire_actif:
+            st.markdown("### 📖 Grimoire des techniques actives")
+            if grimoire_actif_total:
+                st.write("Voici la liste complète de vos capacités actuellement prêtes à l'action autour de la table :")
+                # Affichage sous forme de liste à puces propre
+                for tech_apprise in sorted(list(set(grimoire_actif_total))):
+                    st.markdown(f"🔹 **{tech_apprise}**")
+            else:
+                st.info("Votre grimoire actif est vide pour le moment. Explorez et sélectionnez des techniques dans le catalogue de gauche pour les mémoriser.")
+
         # --- MODULE DE REQUÊTES EN DIRECT (AVEC GRIMOIRE ACTIF INTERCONNECTÉ) ---
         st.markdown("---")
         st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
