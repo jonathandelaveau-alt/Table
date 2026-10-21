@@ -290,31 +290,31 @@ if role == "Joueur (Ma Fiche)":
                 (c_nin, "Ninjutsus", "mes_ninjutsus"), (c_invs, "Inversions", "mes_inversions")
             ]
 
-            for coche, nom_cat, cle_sauvegardee in mapping_categories:
+                       for coche, nom_cat, cle_sauvegardee in mapping_categories:
                 if coche:
                     st.markdown(f"#### 📂 Filtres : {nom_cat}")
                     
-                    # 1. Le joueur choisit sa sous-catégorie (ex: Général, Corps-à-corps)
+                    # 1. Sélection de la sous-catégorie
                     sub_options = list(CATALOGUE_COMPLET.get(nom_cat, {}).keys())
                     sub_sel = st.selectbox(f"Sous-catégorie ({nom_cat}) :", sub_options, key=f"sub_{nom_cat}")
                     
-                    # 2. Le joueur choisit son niveau (ex: Rang 1, Rang 2)
+                    # 2. Sélection du Rang
                     rangs_options = list(CATALOGUE_COMPLET.get(nom_cat, {}).get(sub_sel, {}).keys())
                     rang_sel = st.selectbox(f"Niveau d'apprentissage :", rangs_options, key=f"rng_{nom_cat}")
                     
-                    # LIAISON DIRECTE : L'ordinateur extrait la liste exacte de vos techniques personnalisées
+                    # Extraction des techniques correspondantes
                     techs_disponibles = CATALOGUE_COMPLET.get(nom_cat, {}).get(sub_sel, {}).get(rang_sel, [])
 
                     num_rang = int(rang_sel.split()[-1])
                     est_hors_rang = num_rang > rang_ecole
 
-                    # Affichage des techniques correspondantes filtrées
                     if not techs_disponibles:
                         st.caption("ℹ️ Aucune technique enregistrée pour cette combinaison.")
                     else:
                         for t in techs_disponibles:
+                            # Si la technique est déjà dans le grimoire du joueur, on l'indique
                             if t in f.get(cle_sauvegardee, []):
-                                st.caption(f"🔹 {t} — [Inscrit dans votre Grimoire Actif]")
+                                st.caption(f"🔹 {t} — [Déjà présent dans votre Grimoire Actif]")
                             else:
                                 c_txt, c_btn = st.columns(2)
                                 if est_hors_rang:
@@ -324,10 +324,29 @@ if role == "Joueur (Ma Fiche)":
                                     c_txt.write(f"✨ **{t}**")
                                     label_btn = "➕ Inscrire au Grimoire Actif"
                                 
+                                # --- ACTION INTERCONNECTÉE DE L'INSCRIPTION ---
                                 if c_btn.button(label_btn, key=f"add_{nom_cat}_{t}"):
                                     if cle_sauvegardee not in f:
                                         f[cle_sauvegardee] = []
+                                    
+                                    # 1. Ajout de la technique dans la liste interne
                                     f[cle_sauvegardee].append(t)
+                                    
+                                    # 2. On recalcule immédiatement la liste totale pour la colonne de droite
+                                    grimoire_actif_total.append(t)
+                                    
+                                    # 3. Sauvegarde automatique immédiate du fichier .json
+                                    f["mes_katas"] = f.get("mes_katas", [])
+                                    f["mes_kihos"] = f.get("mes_kihos", [])
+                                    f["mes_invocs"] = f.get("mes_invocs", [])
+                                    f["mes_rituels"] = f.get("mes_rituels", [])
+                                    f["mes_shujis"] = f.get("mes_shujis", [])
+                                    f["mes_mahos"] = f.get("mes_mahos", [])
+                                    f["mes_ninjutsus"] = f.get("mes_ninjutsus", [])
+                                    f["mes_inversions"] = f.get("mes_inversions", [])
+                                    sauver_fiche(nom_id, f)
+                                    
+                                    # 4. Rafraîchissement instantané de la mise en page
                                     st.rerun()
                                     
             st.markdown("### 📖 Grimoire des techniques actives")
