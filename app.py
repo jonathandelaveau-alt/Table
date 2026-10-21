@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import os
 import time
+st.logo = st.empty()
 
 # 1. Configuration et Design Sombre L5A (Obligatoire tout en haut)
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
@@ -58,12 +59,14 @@ def charger_fiche(nom_joueur):
 
 role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maître du Jeu (Hôte)"])
 
-# --- BOUCLE DE SYNCHRONISATION INSTANTANÉE (TEMPS RÉEL AUTOMATIQUE) ---
-if "last_refresh" not in st.session_state:
-    st.session_state.last_refresh = time.time()
-if time.time() - st.session_state.last_refresh > 2:
-    st.session_state.last_refresh = time.time()
-    st.rerun()
+# --- SYNC IMMÉDIATE DU PANNEAU MJ ---
+# Force le navigateur à vérifier les fichiers toutes les 2 secondes sans toucher à la souris
+if "compteur" not in st.session_state:
+    st.session_state.compteur = 0
+
+time.sleep(2)
+st.session_state.compteur += 1
+st.rerun()
 
 # ==================== VUE JOUEUR ====================
 if role == "Joueur (Ma Fiche)":
