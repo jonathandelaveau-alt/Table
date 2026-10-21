@@ -55,6 +55,24 @@ def charger_fiche(nom_joueur):
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f: return json.load(f)
     return None
+# --- DICTIONNAIRE DES DESCRIPTIONS DE TECHNIQUES ---
+DESCRIPTIONS_LORE = {
+    "Posture de la Sentinelle": "Type : Kata (Général) | Rang 1\nEffet : Vous augmentez votre Vigilance de +1 tant que vous maintenez cette posture défensive.",
+    "Éclat de la Lame": "Type : Kata (Général) | Rang 1\nEffet : Votre première attaque de mêlée inflige +2 dégâts si vous avez l'initiative.",
+    "Frappe du Tonnerre d'Acier": "Type : Kata (Corps-à-corps) | Rang 1\nEffet : Attaque lourde. Si le coup touche, la cible est projetée au sol et subit l'état Étourdi.",
+    "Murmure du Vent d'Air": "Type : Invocation (Air) | Rang 1\nEffet : Vous écoutez les esprits de l'air. Permet d'entendre une conversation à travers un mur épais.",
+    "Purification du Sel": "Type : Rituel | Rang 1\nEffet : Protège une pièce contre les esprits malins ou la souillure de l'Outremonde pendant 24 heures."
+}
+
+# Fonction qui génère la sous-page au clic de l'œil
+@st.dialog("📜 Parchemin de Technique")
+def afficher_details_technique(nom_technique):
+    st.write(f"### {nom_technique}")
+    # Va chercher la description dans le dictionnaire, ou met un texte par défaut si elle n'y est pas
+    texte_details = DESCRIPTIONS_LORE.get(nom_technique, "Aucune description détaillée enregistrée pour cette capacité d'école.")
+    st.info(texte_details)
+    if st.button("Fermer le parchemin"):
+        st.rerun()
 
 role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maître du Jeu (Hôte)"])
 
