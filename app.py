@@ -200,67 +200,71 @@ if role == "Joueur (Ma Fiche)":
             c_mag = cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0))
             c_sur = cprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
 
-            st.subheader("🛡️ Arsenal & Inventaire Cliquable")
-            sh_equipement = st.checkbox("👁️ Partager mes équipements équipés avec le MJ", value=f.get("sh_equipement", True))
-            
-            st.markdown("#### 👘 Gestion des Armures")
-            liste_armures_possedees = f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"])
-            col_add_arm, col_sel_arm = st.columns(2)
-            nouvelle_arm_cat = col_add_arm.selectbox("Acheter / Ajouter une armure au catalogue :", list(CATALOGUE_ARMURES.keys()))
-            if col_add_arm.form_submit_button("➕ Ajouter l'armure"):
-                if nouvelle_arm_cat not in liste_armures_possedees:
-                    liste_armures_possedees.append(nouvelle_arm_cat)
-                    f["inventaire_armures"] = liste_armures_possedees
-            armure_active = col_sel_arm.selectbox("Armure portée :", liste_armures_possedees, index=liste_armures_possedees.index(f.get("armure_active")) if f.get("armure_active") in liste_armures_possedees else 0)
-            stats_armure = CATALOGUE_ARMURES.get(armure_active, {"res_p": 0, "res_s": 0, "proprietes": "Aucune"})
-            res_p, res_s = stats_armure["res_p"], stats_armure["res_s"]
+                   st.subheader("🛡️ Arsenal & Inventaire Cliquable")
+        sh_equipement = st.checkbox("👁️ Partager mes équipements équipés avec le MJ", value=f.get("sh_equipement", True))
+        
+        st.markdown("#### 👘 Gestion des Armures")
+        liste_armures_possedees = f.get("inventaire_armures", ["Armure de Tenue de Cérémonie"])
+        col_add_arm, col_sel_arm = st.columns(2)
+        nouvelle_arm_cat = col_add_arm.selectbox("Acheter / Ajouter une armure au catalogue :", list(CATALOGUE_ARMURES.keys()))
+        
+        # Le bouton d'ajout à l'inventaire devient un bouton normal indépendant
+        if col_add_arm.button("➕ Ajouter l'armure à mon sac"):
+            if nouvelle_arm_cat not in liste_armures_possedees:
+                liste_armures_possedees.append(nouvelle_arm_cat)
+                f["inventaire_armures"] = liste_armures_possedees
+                
+        armure_active = col_sel_arm.selectbox("Armure portée :", liste_armures_possedees, index=liste_armures_possedees.index(f.get("armure_active")) if f.get("armure_active") in liste_armures_possedees else 0)
+        stats_armure = CATALOGUE_ARMURES.get(armure_active, {"res_p": 0, "res_s": 0, "proprietes": "Aucune"})
+        res_p, res_s = stats_armure["res_p"], stats_armure["res_s"]
 
-            st.markdown("#### 🗡️ Gestion des Armes")
-            liste_armes_possedees = f.get("inventaire_armes", ["Wakizashi"])
-            col_add_w, col_sel_w = st.columns(2)
-            nouvelle_arme_cat = col_add_w.selectbox("Forger / Ajouter une arme au catalogue :", list(CATALOGUE_ARMES.keys()))
-            if col_add_w.form_submit_button("➕ Ajouter l'arme"):
-                if nouvelle_arme_cat not in liste_armes_possedees:
-                    liste_armes_possedees.append(nouvelle_arme_cat)
-                    f["inventaire_armes"] = liste_armes_possedees
-            arme_active = col_sel_w.selectbox("Arme équipée :", liste_armes_possedees, index=liste_armes_possedees.index(f.get("arme_active")) if f.get("arme_active") in liste_armes_possedees else 0)
-            stats_arme = CATALOGUE_ARMES.get(arme_active, {"degats": 0, "danger": 0, "portee": "0", "proprietes": "Aucune", "categorie": "Inconnue"})
-            w_deg, w_dang_base, w_por = stats_arme["degats"], stats_arme["danger"], stats_arme["portee"]
-            deux_mains = st.checkbox("Tenir cette arme à 2 mains ⚔️ (+2 Dangerosité)", value=f.get("deux_mains", False))
+        st.markdown("#### 🗡️ Gestion des Armes")
+        liste_armes_possedees = f.get("inventaire_armes", ["Wakizashi"])
+        col_add_w, col_sel_w = st.columns(2)
+        nouvelle_arme_cat = col_add_w.selectbox("Forger / Ajouter une arme au catalogue :", list(CATALOGUE_ARMES.keys()))
+        
+        if col_add_w.button("➕ Ajouter l'arme à mon sac"):
+            if nouvelle_arme_cat not in liste_armes_possedees:
+                liste_armes_possedees.append(nouvelle_arme_cat)
+                f["inventaire_armes"] = liste_armes_possedees
+                
+        arme_active = col_sel_w.selectbox("Arme équipée :", liste_armes_possedees, index=liste_armes_possedees.index(f.get("arme_active")) if f.get("arme_active") in liste_armes_possedees else 0)
+        stats_arme = CATALOGUE_ARMES.get(arme_active, {"degats": 0, "danger": 0, "portee": "0", "proprietes": "Aucune", "categorie": "Inconnue"})
+        w_deg, w_dang_base, w_por = stats_arme["degats"], stats_arme["danger"], stats_arme["portee"]
+        deux_mains = st.checkbox("Tenir cette arme à 2 mains ⚔️ (+2 Dangerosité)", value=f.get("deux_mains", False))
 
-            st.subheader("📜 Grimoire des Techniques Apprises")
-            with st.expander("Éditer mon catalogue de techniques secrètes"):
-                t_kat = st.text_area("Katas :", f.get("t_kat",""))
-                t_kih = st.text_area("Kihos :", f.get("t_kih",""))
-                t_inv = st.text_area("Invocations :", f.get("t_inv",""))
-                t_rit = st.text_area("Rituels :", f.get("t_rit",""))
-                t_shu = st.text_area("Shujis :", f.get("t_shu",""))
-                t_mah = st.text_area("Maho :", f.get("t_mah",""))
-                t_nin = st.text_area("Ninjutsu :", f.get("t_nin",""))
-                t_invs = st.text_area("Inversions :", f.get("t_invs",""))
+        st.subheader("📜 Grimoire des Techniques Apprises")
+        with st.expander("Éditer mon catalogue de techniques secrètes"):
+            t_kat = st.text_area("Katas :", f.get("t_kat",""))
+            t_kih = st.text_area("Kihos :", f.get("t_kih",""))
+            t_inv = st.text_area("Invocations :", f.get("t_inv",""))
+            t_rit = st.text_area("Rituels :", f.get("t_rit",""))
+            t_shu = st.text_area("Shujis :", f.get("t_shu",""))
+            t_mah = st.text_area("Maho :", f.get("t_mah",""))
+            t_nin = st.text_area("Ninjutsu :", f.get("t_nin",""))
+            t_invs = st.text_area("Inversions :", f.get("t_invs",""))
 
-                        # --- SAUVEGARDE AUTOMATIQUE INSTANTANÉE ---
-            # Ce bloc s'exécute dès qu'un curseur bouge ou qu'un texte change
-            maj = {
-                "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
-                "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
-                "armure_active": armure_active, "res_p": res_p, "res_s": res_s, "arme_active": arme_active, "w_deg": w_deg, "deux_mains": deux_mains, "w_dang": w_dang_base, "w_por": w_por, 
-                "t_kat": t_kat, "t_kih": t_kih, "t_inv": t_inv, "t_rit": t_rit, "t_shu": t_shu, "t_mah": t_mah, "t_nin": t_nin, "t_invs": t_invs, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite,
-                "sh_social": sh_social, "sh_equipement": sh_equipement, "inventaire_armes": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
-                "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
-                "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
-                "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
-            }
-            # Sauvegarde en tâche de fond immédiate
-            sauver_fiche(nom_id, maj)
+        # --- BLOC DE SAUVEGARDE AUTOMATIQUE EN DIRECT ---
+        # Plus besoin de cliquer sur un bouton pour enregistrer, Python gère tout seul
+        maj = {
+            "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
+            "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
+            "armure_active": armure_active, "res_p": res_p, "res_s": res_s, "arme_active": arme_active, "w_deg": w_deg, "deux_mains": deux_mains, "w_dang": w_dang_base, "w_por": w_por, 
+            "t_kat": t_kat, "t_kih": t_kih, "t_inv": t_inv, "t_rit": t_rit, "t_shu": t_shu, "t_mah": t_mah, "t_nin": t_nin, "t_invs": t_invs, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite,
+            "sh_social": sh_social, "sh_equipement": sh_equipement, "inventaire_armes": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
+            "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
+            "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
+            "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
+        }
+        sauver_fiche(nom_id, maj)
 
-        # --- REQUÊTE FACULTATIVE (COMPÉTENCE ET ÉLÉMENT FACULTATIFS) ---
+        # --- REQUÊTE FACULTATIVE ---
         st.markdown("---")
         st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
         c_a1, c_a2 = st.columns(2)
         comp_c = c_a1.text_input("Compétence (FACULTATIF) :", placeholder="Laissez vide pour une simple question")
         elem_c = c_a2.selectbox("Élément combiné (FACULTATIF) :", ["Aucun / Simple texte", "Air 💨", "Terre 🏔️", "Feu 🔥", "Eau 💧", "Vide 🌌"])
-        desc_a = st.text_area("Votre Message / Question / Technique :", placeholder="Écrivez ici ce que vous voulez demander ou faire...")
+        desc_a = st.text_area("Votre Message / Question / Technique :", placeholder="Écrivez ici ce que vous voulez demander...")
         
         if st.button("⚡ Soumettre la demande au MJ"):
             if desc_a and nom_perso:
