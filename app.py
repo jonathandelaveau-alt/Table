@@ -222,7 +222,7 @@ if role == "Joueur (Ma Fiche)":
         vide = ca5.slider("Vide 🌌", 1, 5, value=f.get("vide", 1))
         p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
 
-                end_m, sf_m, attn, vigi = (terre + feu) * 2, (terre + eau) * 2, air + feu, (air + eau) / 2
+        end_m, sf_m, attn, vigi = (terre + feu) * 2, (terre + eau) * 2, air + feu, (air + eau) / 2
         st.subheader("📊 Vitalité & Défenses")
         sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
         cv1, cv2 = st.columns(2)
