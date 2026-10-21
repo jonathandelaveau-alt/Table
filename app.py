@@ -275,6 +275,7 @@ elif role == "Maître du Jeu (Hôte)":
         st.subheader("🔔 Boîte de réception des Actions Soumises")
         if os.path.exists(ACTIONS_FILE):
             try:
+                
         # --- RÉCEPTION DES ACTIONS EN DIRECT (BOÎTE DE RÉCEPTION MJ) ---
         st.markdown("---")
         st.subheader("🔔 Boîte de réception des Actions Soumises")
