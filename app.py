@@ -317,17 +317,36 @@ if role == "Joueur (Ma Fiche)":
                                     sauver_fiche(nom_id, f)
                                     st.rerun()
 
-        # ==============================================================================
-        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES
+              # ==============================================================================
+        # COLONNE DROITE : LE GRIMOIRE DES TECHNIQUES ACTIVES AVEC SUPPRESSION
         # ==============================================================================
         with col_grimoire_actif:
             st.markdown("### 📖 Grimoire des techniques actives")
+            
+            # Reconstruction des listes individuelles pour pouvoir supprimer précisément
+            categories_listes = [
+                ("mes_katas", "Katas"), ("mes_kihos", "Kíhos"), ("mes_invocs", "Invocations"),
+                ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Mahos"),
+                ("mes_ninjutsus", "Ninjutsus"), ("mes_inversions", "Inversions")
+            ]
+            
             if grimoire_actif_total:
-                st.write("Voici la liste complète de vos capacités actuellement prêtes à l'action :")
-                for tech_apprise in sorted(list(set(grimoire_actif_total))):
-                    st.markdown(f"🔹 **{tech_apprise}**")
+                st.write("Cliquez sur la croix pour retirer une technique de votre grimoire :")
+                
+                for cle_sauvegardee, nom_cat in categories_listes:
+                    liste_specifique = f.get(cle_sauvegardee, [])
+                    
+                    for tech_apprise in liste_specifique:
+                        col_t_nom, col_t_del = st.columns([4, 1])
+                        col_t_nom.markdown(f"🔹 **{tech_apprise}** *({nom_cat})*")
+                        
+                        # Petite croix rouge à côté pour supprimer la technique
+                        if col_t_del.button("❌", key=f"del_tech_{cle_sauvegardee}_{tech_apprise}"):
+                            f[cle_sauvegardee].remove(tech_apprise)
+                            sauver_fiche(nom_id, f)
+                            st.rerun()
             else:
-                st.info("Votre grimoire actif est vide pour le moment. Sélectionnez des techniques à gauche pour les mémoriser.")
+                st.info("Votre grimoire actif est vide. Sélectionnez des techniques à gauche pour les mémoriser.")
 
         # --- MODULE DE REQUÊTES EN DIRECT ---
         st.markdown("---")
