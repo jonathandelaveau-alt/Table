@@ -27,7 +27,7 @@ DATA_CLANS = {
     "Phénix": ["Isawa", "Shiba", "Asako", "Agasha"],
     "Scorpion": ["Bayushi", "Shosuro", "Yogo", "Soshi"],
     "Licorne": ["Shinjo", "Utaku", "Ide", "Iuchi"],
-    "Mante / Mineur": ["Yoritomo", "Kitsune", "Kasuga"]
+    "Mante": ["Yoritomo", "Kitsune", "Kasuga"]
 }
 ROLES_LISTE = ["Bushi", "Courtisan", "Shugenja", "Moine", "Artisan", "Shinobi"]
 
