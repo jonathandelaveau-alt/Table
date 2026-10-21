@@ -275,3 +275,39 @@ elif role == "Maître du Jeu (Hôte)":
         st.subheader("🔔 Boîte de réception des Actions Soumises")
         if os.path.exists(ACTIONS_FILE):
             try:
+        # --- RÉCEPTION DES ACTIONS EN DIRECT (BOÎTE DE RÉCEPTION MJ) ---
+        st.markdown("---")
+        st.subheader("🔔 Boîte de réception des Actions Soumises")
+        
+        if os.path.exists(ACTIONS_FILE):
+            try:
+                with open(ACTIONS_FILE, "r", encoding="utf-8") as file: 
+                    actions = json.load(file)
+            except: 
+                actions = []
+                
+            en_attente = [a for a in actions if a["statut"] == "En attente"]
+            if not en_attente: 
+                st.info("Aucune action en attente.")
+            else:
+                for act in en_attente:
+                    cola, colb = st.columns(2)
+                    with cola:
+                        st.warning(f"⚔️ **{act['joueur']}** ({act['perso']}) veut agir !")
+                        st.write(f"🔹 **Jet :** Compétence **[{act['competence']}]** + Élément **[{act['element']}]**")
+                        aj = act.get("anneaux", {})
+                        st.caption(f"📈 *Anneaux du joueur :* Air: {aj.get('air',1)} | Terre: {aj.get('terre',1)} | Feu: {aj.get('feu',1)} | Eau: {aj.get('eau',1)} | Vide: {aj.get('vide',1)}")
+                        if act['description']: 
+                            st.info(f"📜 **Description / Technique :** {act['description']}")
+                    
+                    if colb.button("Valider l'Action", key=f"btn_act_{act['id']}"):
+                        for a in actions:
+                            if a["id"] == act["id"]: 
+                                a["statut"] = "Validé"
+                        with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
+                            json.dump(actions, file, indent=4, ensure_ascii=False)
+                        st.success("Action validée !"); st.rerun()
+        else: 
+            st.info("Aucune notification reçue.")
+else: 
+    st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")
