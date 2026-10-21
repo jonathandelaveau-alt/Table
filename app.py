@@ -218,25 +218,25 @@ if role == "Joueur (Ma Fiche)":
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
     
-    # --- SYSTÈME D'ACTUALISATION SANS TOUCHER AU NAVIGATEUR ---
+       # --- SYSTÈME D'ACTUALISATION HYBRIDE (AUTOMATIQUE TOUTES LES 3 SECONDES) ---
+    # 1. Le bouton manuel reste présent et visible en haut de votre écran
     if st.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
         st.rerun()
 
-    # Le minuteur invisible qui clique sur le bouton interne toutes les 7 secondes
+    # 2. Le script de clic automatique ultra-robuste (Fréquence : 3000ms = 3 secondes)
     st.components.v1.html("""
         <script>
             setTimeout(function() {
-                const liste_boutons = window.parent.document.querySelectorAll('button');
-                for (const bouton of liste_boutons) {
-                    if (bouton.textContent.includes("ACTUALISER LA TABLE")) {
-                        bouton.click();
-                        break;
-                    }
+                // Étape 1 : On cherche tous les boutons dans l'interface de l'Hôte
+                const boutons = window.parent.document.querySelectorAll('button');
+                
+                // Étape 2 : On simule un clic automatique sur le tout premier bouton trouvé (votre bouton Actualiser)
+                if (boutons.length > 0) {
+                    boutons[0].click();
                 }
-            }, 7000);
+            }, 3000); // 3000 millisecondes = 3 secondes
         </script>
     """, height=0, width=0)
-
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
     
     if not fichiers:
