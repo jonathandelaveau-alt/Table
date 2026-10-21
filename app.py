@@ -62,16 +62,10 @@ role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maît
 if role == "Joueur (Ma Fiche)":
     st.header("👤 Votre Feuille Dynamique")
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
-        # --- MINUTEUR JOUEUR (RÉCEPTION DES REFUS / VALIDATIONS MJ EN DIRECT) ---
-    if nom_id:
-        st.components.v1.html("""
-            <script>
-                setTimeout(function() {
-                    // Actualise la fiche du joueur toutes les 3 secondes pour intercepter les réponses du MJ
-                    window.parent.postMessage({type: 'streamlit:render'}, '*');
-                }, 3000);
-            </script>
-        """, height=0, width=0)
+        # --- BOUTON DE SOUS-VERSION JOUEUR (ACTUALISATION MANUELLE) ---
+    # Permet au joueur de forcer la réception des validations ou refus du MJ d'un seul clic
+    if st.button("🔄 ACTUALISER MON PARCHEMIN (Vérifier les réponses du MJ)"):
+        st.rerun()
 
     if nom_id:
         f = charger_fiche(nom_id) or {}
