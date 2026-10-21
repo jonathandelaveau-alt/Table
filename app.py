@@ -171,129 +171,175 @@ if role == "Joueur (Ma Fiche)":
         deux_mains = st.checkbox("Tenir cette arme à 2 mains ⚔️ (+2 Dangerosité)", value=f.get("deux_mains", False))
 
                # --- BASE DE DONNÉES DU CATALOGUE OFFICIEL DES TECHNIQUES ---
-        # Liste complète des techniques existantes dans le jeu (Rang 1 et 2)
-        CATALOGUE_TECHS = {
+               # --- BASE DE DONNÉES ENRICHIE ET STRUCTURÉE DU CATALOGUE (RANG 1 À 5) ---
+        CATALOGUE_COMPLET = {
             "Katas": {
-                "Rang 1": ["Frappe du Tonnerre d'Acier", "Posture de la Sentinelle", "Éclat de la Lame"],
-                "Rang 2": ["Danse des Ombres", "Coup de l'Avalanche Crépusculaire"]
+                "Général": {
+                    "Rang 1": ["Posture de la Sentinelle", "Éclat de la Lame"],
+                    "Rang 2": ["Danse des Ombres"]
+                },
+                "Corps-à-corps": {
+                    "Rang 1": ["Frappe du Tonnerre d'Acier"],
+                    "Rang 2": ["Coup de l'Avalanche Crépusculaire"]
+                },
+                "Distance": {
+                    "Rang 1": ["Visée du Faucon"],
+                    "Rang 3": ["Flèche de Tempête"]
+                },
+                "Non-humain": {
+                    "Rang 1": ["Esprit de la Meute"],
+                    "Rang 4": ["Griffe du Dragon"]
+                }
             },
             "Kíhos": {
-                "Rang 1": ["Harmonie de l'Esprit", "Souffle de la Terre"],
-                "Rang 2": ["Paume du Vide Éveillé"]
+                "Air": {"Rang 1": ["Souffle de la Brise"]},
+                "Terre": {"Rang 1": ["Souffle de la Terre"]},
+                "Feu": {"Rang 2": ["Flamme Intérieure"]},
+                "Eau": {"Rang 1": ["Pureté des Flots"]},
+                "Vide": {"Rang 3": ["Paume du Vide Éveillé"]}
             },
             "Invocations": {
-                "Rang 1": ["Appel des Esprits du Feu", "Murmure du Vent d'Air"],
-                "Rang 2": ["Colère des Flots d'Eau"]
+                "Air": {"Rang 1": ["Murmure du Vent d'Air"]},
+                "Terre": {"Rang 1": ["Communion de la Roche"]},
+                "Feu": {"Rang 1": ["Appel des Esprits du Feu"]},
+                "Eau": {"Rang 2": ["Colère des Flots d'Eau"]},
+                "Vide": {"Rang 5": ["Équilibre Cosmique"]}
             },
             "Rituels": {
-                "Rang 1": ["Communion avec les Ancêtres", "Purification du Sel"],
-                "Rang 2": ["Bénédiction de la Lignée"]
+                "Général": {
+                    "Rang 1": ["Communion avec les Ancêtres", "Purification du Sel"],
+                    "Rang 2": ["Bénédiction de la Lignée"]
+                }
             },
             "Shujis": {
-                "Rang 1": ["Présence Majestueuse", "Insinuation Subtile"],
-                "Rang 2": ["Voix de l'Empereur"]
+                "Air": {"Rang 1": ["Insinuation Subtile"]},
+                "Terre": {"Rang 1": ["Présence Majestueuse"]},
+                "Feu": {"Rang 2": ["Parole Enflammée"]},
+                "Eau": {"Rang 1": ["Sagesse du Fleuve"]},
+                "Vide": {"Rang 6": ["Voix de l'Empereur"]} # Rang 6 exceptionnel Shuji
             },
             "Mahos": {
-                "Rang 1": ["Offrande de Sang", "Malédiction de la Chair"],
-                "Rang 2": ["Éveil des Morts Déshonorés"]
+                "Général": {
+                    "Rang 1": ["Offrande de Sang", "Malédiction de la Chair"],
+                    "Rang 2": ["Éveil des Morts Déshonorés"]
+                }
             },
             "Ninjutsus": {
-                "Rang 1": ["Pas Sans Trace", "Dissimulation du Lotus"],
-                "Rang 2": ["Poison de l'Araignée Scorpion"]
+                "Général": {
+                    "Rang 1": ["Pas Sans Trace", "Dissimulation du Lotus"],
+                    "Rang 2": ["Poison de l'Araignée Scorpion"]
+                }
+            },
+            "Inversions": {
+                "Général": {
+                    "Rang 1": ["Altération Mineure"],
+                    "Rang 5": ["Inversion des Éléments Éternels"]
+                }
             }
         }
 
-        st.subheader("📜 Grimoire Tactique & Catalogue des Techniques")
-        st.write("Cochez les types de techniques que votre école vous autorise à maîtriser :")
+        st.subheader("📜 Grimoire Tactique & Catalogues de l'École")
+        st.write("Sélectionnez vos maîtrises pour déployer les parchemins d'apprentissage :")
 
-        # 1. Système de cases à cocher pour filtrer l'affichage du personnage
-        c_kat = st.checkbox("🥋 Maîtrise des Katas", value=f.get("ch_kat", False))
-        c_kih = st.checkbox("🧘 Maîtrise des Kíhos", value=f.get("ch_kih", False))
-        c_inv = st.checkbox("🔥 Maîtrise des Invocations", value=f.get("ch_inv", False))
-        c_rit = st.checkbox("📿 Maîtrise des Rituels", value=f.get("ch_rit", False))
-        c_shu = st.checkbox("🗣️ Maîtrise des Shujis", value=f.get("ch_shu", False))
-        c_mah = st.checkbox("🩸 Maîtrise de la Maho (Magie du sang)", value=f.get("ch_mah", False))
-        c_nin = st.checkbox("🥷 Maîtrise du Ninjutsu", value=f.get("ch_nin", False))
+        # Cases à cocher pour filtrer l'affichage
+        c_kat = st.checkbox("🥋 Ouvrir le Catalogue des Katas", value=f.get("ch_kat", False))
+        c_kih = st.checkbox("🧘 Ouvrir le Catalogue des Kíhos", value=f.get("ch_kih", False))
+        c_inv = st.checkbox("🔥 Ouvrir le Catalogue des Invocations", value=f.get("ch_inv", False))
+        c_rit = st.checkbox("📿 Ouvrir le Catalogue des Rituels", value=f.get("ch_rit", False))
+        c_shu = st.checkbox("🗣️ Ouvrir le Catalogue des Shujis", value=f.get("ch_shu", False))
+        c_mah = st.checkbox("🩸 Ouvrir le Grimoire de la Maho", value=f.get("ch_mah", False))
+        c_nin = st.checkbox("🥷 Ouvrir le Manuel de Ninjutsu", value=f.get("ch_nin", False))
+        c_invs = st.checkbox("🔮 Ouvrir les Parchemins d'Inversion", value=f.get("ch_invs", False))
 
-        # Initialisation des grimoires personnels dans le fichier du joueur si absents
-        if "mes_katas" not in f: f["mes_katas"] = []
-        if "mes_kihos" not in f: f["mes_kihos"] = []
-        if "mes_invocs" not in f: f["mes_invocs"] = []
-        if "mes_rituels" not in f: f["mes_rituels"] = []
-        if "mes_shujis" not in f: f["mes_shujis"] = []
-        if "mes_mahos" not in f: f["mes_mahos"] = []
-        if "mes_ninjutsus" not in f: f["mes_ninjutsus"] = []
-        # --- EXTENSION DU CATALOGUE AVEC LES SOUS-CATÉGORIES OFFICIELLES RANG 1 À 5 ---
-        CATALOGUE_TECHS["Inversions"] = {
-            "Rang 1": ["Altération Mineure", "Distorsion Temporelle"],
-            "Rang 5": ["Inversion des Éléments Éternels"]
-        }
-        
-        # Précision des sous-catégories dans le dictionnaire pour l'affichage MJ/Joueur
-        CATEGORIES_DETAILS = {
-            "Katas": ["Général", "Corps-à-corps", "Distance", "Non-humain"],
-            "Kíhos": ["Air", "Terre", "Feu", "Eau", "Vide"],
-            "Invocations": ["Air", "Terre", "Feu", "Eau", "Vide"],
-            "Rituels": ["Général"],
-            "Shujis": ["Air", "Terre", "Feu", "Eau", "Vide"],
-            "Mahos": ["Général"],
-            "Ninjutsus": ["Général"],
-            "Inversions": ["Général"]
-        }
+        # Assurer l'existence des listes de techniques apprises dans la mémoire du joueur
+        for cle_grimoire in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
+            if cle_grimoire not in f: f[cle_grimoire] = []
 
-        # Ajout de la case à cocher pour la maîtrise des Inversions
-        c_invs = st.checkbox("🔮 Maîtrise des Inversions", value=f.get("ch_invs", False))
-        if "mes_inversions" not in f: f["mes_inversions"] = []
+        # Fusion de toutes les techniques apprises pour remplir la boîte d'action
+        grimoire_actif_total = (
+            f.get("mes_katas", []) + f.get("mes_kihos", []) + f.get("mes_invocs", []) +
+            f.get("mes_rituels", []) + f.get("mes_shujis", []) + f.get("mes_mahos", []) +
+            f.get("mes_ninjutsus", []) + f.get("mes_inversions", [])
+        )
 
-        # --- SYSTÈME D'AFFICHAGE ET D'APPRENTISSAGE INTELLIGENT ---
-        # Tableau associatif pour relier les cases à cocher aux données de sauvegarde
-        associations = [
+        # Moteur d'affichage par Clicker/Sélecteur pour chaque catégorie cochée
+        mapping_categories = [
             (c_kat, "Katas", "mes_katas"), (c_kih, "Kíhos", "mes_kihos"),
             (c_inv, "Invocations", "mes_invocs"), (c_rit, "Rituels", "mes_rituels"),
             (c_shu, "Shujis", "mes_shujis"), (c_mah, "Mahos", "mes_mahos"),
             (c_nin, "Ninjutsus", "mes_ninjutsus"), (c_invs, "Inversions", "mes_inversions")
         ]
 
-        for coche, nom_cat, cle_sauvegardee in associations:
+        for coche, nom_cat, cle_sauvegardee in mapping_categories:
             if coche:
-                st.markdown(f"#### 📖 Catalogue des {nom_cat}")
+                st.markdown(f"### 📂 Catalogue : {nom_cat}")
                 
-                # Affichage des techniques déjà apprises par le personnage
-                deja_apprises = f.get(cle_sauvegardee, [])
-                if deja_apprises:
-                    st.write(f"✅ {nom_cat} connus : " + ", ".join(deja_apprises))
+                # Étape 1 : Choix de la sous-catégorie (ex: Général, Corps-à-corps...)
+                sous_cats_dispo = list(CATALOGUE_COMPLET[nom_cat].keys())
+                sub_sel = st.selectbox(f"Type de {nom_cat} :", sous_cats_dispo, key=f"sub_sel_{nom_cat}")
                 
-                # Déploiement du catalogue complet par Rang (1 à 5, Rang 6 réservé aux Shujis)
-                for rang_str, liste_techniques in CATALOGUE_TECHS.get(nom_cat, {}).items():
-                    numero_rang = int(rang_str.split()[-1])
-                    
-                    # Vérification de l'exception scénaristique (Technique d'un rang trop élevé)
-                    est_hors_rang = numero_rang > rang_ecole
-                    
-                    for tech in liste_techniques:
-                        # Si déjà apprise, on ne la propose plus dans la liste d'achat
-                        if tech in deja_apprises:
-                            continue
-                            
-                        col_t_nom, col_t_btn = st.columns([3, 1])
-                        
-                        # Règle visuelle : Grisée si hors-rang, mais reste fonctionnelle pour le scénario
-                        if est_hors_rang:
-                            col_t_nom.markdown(f"⚠️ *<span style='color:gray;'>{tech} ({rang_str}) - Hors de votre portée d'école</span>*", unsafe_allow_html=True)
-                            label_bouton = "➕ Apprendre (Exception Scénario)"
+                # Étape 2 : Choix du Rang de puissance
+                rangs_dispo = list(CATALOGUE_COMPLET[nom_cat][sub_sel].keys())
+                rang_sel = st.selectbox(f"Sélectionner le niveau de maîtrise :", rangs_dispo, key=f"rang_sel_{nom_cat}_{sub_sel}")
+                
+                # Étape 3 : Liste des techniques trouvées à cet endroit précis
+                liste_techs_trouvees = CATALOGUE_COMPLET[nom_cat][sub_sel][rang_sel]
+                
+                # Extraction du numéro de rang pour la règle visuelle
+                num_rang = int(rang_sel.split()[-1])
+                est_hors_ecole = num_rang > rang_ecole
+                
+                for t in liste_techs_trouvees:
+                    if t in f[cle_sauvegardee]:
+                        st.write(f"📜 {t} — *[Déjà appris et présent dans votre Grimoire Actif]*")
+                    else:
+                        c_txt, c_btn = st.columns([3, 1])
+                        if est_hors_ecole:
+                            c_txt.markdown(f"⚠️ *<span style='color:gray;'>{t} ({rang_sel}) — Exception (Scénario)</span>*", unsafe_allow_html=True)
                         else:
-                            # Ajout des détails de sous-catégories élémentaires ou martiales
-                            sous_cats = ", ".join(CATEGORIES_DETAILS.get(nom_cat, ["Général"]))
-                            col_t_nom.write(f"📜 **{tech}** ({rang_str}) | *Type : {sous_cats}*")
-                            label_bouton = "➕ Apprendre"
-                            
-                        # Clic d'apprentissage direct
-                        if col_t_btn.button(label_bouton, key=f"learn_{nom_cat}_{tech}"):
-                            deja_apprises.append(tech)
-                            f[cle_sauvegardee] = deja_apprises
+                            c_txt.write(f"✨ **{t}** ({rang_sel})")
+                        
+                        if c_btn.button("➕ Inscrire au Grimoire", key=f"btn_learn_{t}"):
+                            f[cle_sauvegardee].append(t)
                             st.rerun()
+        # --- REQUÊTE TACTIQUE (AVEC COLONNE TECHNIQUE APPRISE) ---
+        st.markdown("---")
+        st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
+        
+        # Organisation en colonnes pour intégrer la sélection de la technique apprise
+        c_a1, c_a2, c_a3 = st.columns(3)
+        comp_c = c_a1.text_input("Compétence (FACULTATIF) :", placeholder="Ex: Corps-à-corps")
+        elem_c = c_a2.selectbox("Élément combiné (FACULTATIF) :", ["Aucun / Simple texte", "Air 💨", "Terre 🏔️", "Feu 🔥", "Eau 💧", "Vide 🌌"])
+        
+        # Nouvelle colonne : choix parmi les techniques REELLEMENT apprises par le joueur
+        if grimoire_actif_total:
+            options_tech = ["Aucune technique associée"] + list(set(grimoire_actif_total))
+            tech_c = c_a3.selectbox("Technique issue du Grimoire Actif :", options_tech)
+        else:
+            c_a3.caption("📖 Grimoire Actif vide (Apprenez des techniques ci-dessus)")
+            tech_c = "Aucune technique associée"
+            
+        desc_a = st.text_area("Votre Message / Intention d'Attaque (Pourquoi faites-vous cela ?) :", placeholder="Écrivez ici vos détails...")
+        
+        if st.button("⚡ Soumettre la demande au MJ"):
+            if desc_a and nom_perso:
+                comp_final = comp_c if comp_c else "Texte pur"
+                elem_final = elem_c if elem_c else "Aucun"
+                
+                actions = []
+                if os.path.exists(ACTIONS_FILE):
+                    try:
+                        with open(ACTIONS_FILE, "r", encoding="utf-8") as file: actions = json.load(file)
+                    except: actions = []
+                actions.append({
+                    "id": len(actions) + 1, "joueur": nom_id, "perso": nom_perso, 
+                    "competence": comp_final, "element": elem_final, "technique": tech_c, "description": desc_a, 
+                    "anneaux": {"air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide}, "statut": "En attente", "description_mj": ""
+                })
+                with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
+                st.success("Action envoyée sur le panneau tactique du MJ.")
 
-        # --- BLOC DE SAUVEGARDE AUTOMATIQUE EN DIRECT ---
+        # Sauvegarde automatique des parchemins et catalogues
         maj = {
             "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
             "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
@@ -307,165 +353,77 @@ if role == "Joueur (Ma Fiche)":
         }
         sauver_fiche(nom_id, maj)
 
-        st.markdown("---")
-        st.subheader("📢 Poser une Question ou Lancer une Action au MJ")
-        c_a1, c_a2 = st.columns(2)
-        comp_c = c_a1.text_input("Compétence (FACULTATIF) :", placeholder="Laissez vide pour une simple question")
-        elem_c = c_a2.selectbox("Élément combiné (FACULTATIF) :", ["Aucun / Simple texte", "Air 💨", "Terre 🏔️", "Feu 🔥", "Eau 💧", "Vide 🌌"])
-        desc_a = st.text_area("Votre Message / Question / Technique :", placeholder="Écrivez ici ce que vous voulez demander...")
-        
-        if st.button("⚡ Soumettre la demande au MJ"):
-            if desc_a and nom_perso:
-                comp_final = comp_c if comp_c else "Texte pur"
-                elem_final = elem_c if elem_c else "Aucun"
-                actions = []
-                if os.path.exists(ACTIONS_FILE):
-                    try:
-                        with open(ACTIONS_FILE, "r", encoding="utf-8") as file: actions = json.load(file)
-                    except: actions = []
-                actions.append({
-                    "id": len(actions) + 1, "joueur": nom_id, "perso": nom_perso, "competence": comp_final, "element": elem_final, "description": desc_a, 
-                    "anneaux": {"air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide}, "statut": "En attente", "description_mj": ""
-                })
-                with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
-                st.success("Message envoyé au MJ !")
-
 # ==================== VUE MJ ====================
-# ==================== VUE MJ (ZONE 3 - PARTIE 1 SUR 2) ====================
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
     
-         # --- SYSTÈME D'ACTUALISATION TACTIQUE DU MJ (VERSION INCASSABLE) ---
-    # Le bouton manuel reste disponible si vous êtes pressé
     if st.button("🔄 ACTUALISER LA TABLE (Vérifier les PV, messages et actions)"):
         st.rerun()
 
-    # Minuteur réseau étanche qui force Python à recharger les fichiers JSON toutes les 3 secondes
-    st.components.v1.html("""
-        <script>
-            setTimeout(function() {
-                // Demande poliment à l'interface Streamlit de rafraîchir ses données locales
-                window.parent.postMessage({type: 'streamlit:render'}, '*');
-            }, 3000); // 3000ms = 3 secondes
-        </script>
-    """, height=0, width=0)
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
-    
     if not fichiers:
         st.info("Aucun samouraï n'a partagé de données.")
     else:
         st.subheader("📋 Informations Autorisées par les Joueurs")
         for f in fichiers:
             chemin_fichier = os.path.join(DB_DIR, f)
-            with open(chemin_fichier, "r", encoding="utf-8") as file: 
-                p = json.load(file)
+            with open(chemin_fichier, "r", encoding="utf-8") as file: p = json.load(file)
             nom_j = f.replace('.json', '').capitalize()
             
-            # --- ❌ BOUTON DE SUPPRESSION DE FICHE (CROIX DU MJ) ---
             col_head1, col_head2 = st.columns(2)
             col_head1.markdown(f"### 🏯 Fiche de {nom_j}")
             if col_head2.button(f"❌ Supprimer {nom_j}", key=f"del_{nom_j}"):
                 os.remove(chemin_fichier)
-                st.warning(f"La fiche de {nom_j} a été détruite."); st.rerun()
+                st.warning(f"Fiche détruite."); st.rerun()
             
-            # Chargement et calculs automatiques des attributs secondaires
-            air_v = p.get('air', 1)
-            terre_v = p.get('terre', 1)
-            feu_v = p.get('feu', 1)
-            eau_v = p.get('eau', 1)
-            
-            c_end_m = (terre_v + feu_v) * 2
-            c_sf_m = (terre_v + eau_v) * 2
-            c_attn = air_v + feu_v
-            c_vigi = (air_v + eau_v) / 2
-            
-            end_p = c_end_m - p.get('end_act', c_end_m)
-            sf_p = c_sf_m - p.get('sf_act', c_sf_m)
+            av, tv, fv, ev = p.get('air', 1), p.get('terre', 1), p.get('feu', 1), p.get('eau', 1)
+            em, sm, at, vi = (tv + fv) * 2, (tv + ev) * 2, av + fv, (av + ev) / 2
+            ep, sp = em - p.get('end_act', em), sm - p.get('sf_act', sm)
             
             roles_bruts = p.get('profil', ['Bushi'])
             roles_txt = ", ".join(roles_bruts) if isinstance(roles_bruts, list) else roles_bruts
-            
-            # En-tête dynamique affichant le Rang d'École, les Rôles et la Posture modifiés en direct
-            titre_cadre = f"💮 {nom_j} : {p.get('famille','Inconnu')} {p.get('perso','Inconnu')} (Clan {p.get('clan','Inconnu')}) — Rang École : {p.get('rang_ecole',1)} [{roles_txt}] | Posture Active : {p.get('posture','Air')}"
+            titre_cadre = f"💮 {nom_j} : {p.get('famille','Inconnu')} {p.get('perso','Inconnu')} (Clan {p.get('clan','Inconnu')}) — Rang {p.get('rang_ecole',1)} [{roles_txt}] | Posture : {p.get('posture','Air')}"
             
             with st.expander(titre_cadre, expanded=True):
                 col1, col2, col3, col4 = st.columns(4)
-                
-                # BLOC 1 : LES ANNEAUX & LE VIDE
                 with col1:
-                    st.markdown("**🌀 Éléments & Vide**")
+                    st.markdown("**🌀 Éléments**")
                     if p.get("sh_anneaux", True):
-                        st.write(f"💨 Air: **{air_v}** | 🏔️ Terre: **{terre_v}**")
-                        st.write(f"🔥 Feu: **{feu_v}** | 💧 Eau: **{eau_v}**")
-                        st.write(f"🌌 Vide Max: {p.get('vide',1)} | Actuel: **{p.get('p_vide',0)}**")
-                    else: 
-                        st.caption("🔒 Masqué par le joueur")
-                
-                # BLOC 2 : SANTÉ DYNAMIQUE, VIGILANCE & ATTENTION
+                        st.write(f"💨 A: {av} | 🏔️ T: {tv} | 🔥 F: {fv} | 💧 E: {ev}")
+                        st.write(f"🌌 Vide: {p.get('vide',1)} (Actuel: **{p.get('p_vide',0)}**)")
+                    else: st.caption("🔒 Masqué par le joueur")
                 with col2:
-                    st.markdown("**🩸 Vitalité & Défenses**")
+                    st.markdown("**🩸 Santé & Seuils**")
                     if p.get("sh_vitalite", True):
-                        st.write(f"❤️ Endurance : **{p.get('end_act',c_end_m)} / {c_end_m}**")
-                        if end_p > 0: st.error(f"-{end_p} PV Physiques")
-                        st.write(f"🧠 Sang-froid : **{p.get('sf_act',c_sf_m)} / {c_sf_m}**")
-                        if sf_p > 0: st.warning(f"Stress : -{sf_p}")
-                        st.write(f"👁️ Vigilance 👀 : **{c_vigi}** | 🧠 Attention : **{c_attn}**")
-                    else: 
-                        st.caption("🔒 Masqué par le joueur")
-                        
-                # BLOC 3 : HISTORIQUE SOCIAL (HONNEUR, GLOIRE, STATUT)
+                        st.write(f"❤️ Endurance : **{p.get('end_act',em)} / {em}**")
+                        if ep > 0: st.error(f"-{ep} PV")
+                        st.write(f"🧠 Sang-froid : **{p.get('sf_act',sm)} / {sm}**")
+                        if sp > 0: st.warning(f"Stress : -{sp}")
+                        st.write(f"👁️ Vigilance : **{vi}** | 🧠 Attention : **{at}**")
+                    else: st.caption("🔒 Masqué par le joueur")
                 with col3:
-                    st.markdown("**⚖️ Caractéristiques Sociales**")
-                    if p.get("sh_social", True): 
-                        st.write(f"🎖️ Honneur : **{p.get('hon',50)} / 100**")
-                        st.write(f"⭐ Gloire : **{p.get('glo',50)} / 100**")
-                        st.write(f"📜 Statut : **{p.get('sta',50)} / 100**")
-                    else: 
-                        st.caption("🔒 Masqué par le joueur")
-                # BLOC 4 : ARSENAL (ARME EN 1 OU 2 MAINS & ARMURE MODIFIÉE)
+                    st.markdown("**⚖️ Profil Social**")
+                    if p.get("sh_social", True): st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
+                    else: st.caption("🔒 Masqué par le joueur")
                 with col4:
                     st.markdown("**⚔️ Arsenal Équipé**")
                     if p.get("sh_equipement", True):
                         df = (int(p.get('w_dang', 5)) + 2) if p.get('deux_mains', False) else int(p.get('w_dang', 5))
-                        prise_txt = "À deux mains ⚔️ (+2 Danger)" if p.get('deux_mains', False) else "À une main"
-                        st.write(f"🗡️ Arme : **{p.get('arme_active','Aucune')}**")
-                        st.write(f"💥 Dégâts: {p.get('w_deg','3')} | Dangerosité: **{df}**")
-                        st.write(f"📏 Portée: {p.get('w_por','0 - 1')} | *Prise : {prise_txt}*")
-                        st.write(f"👘 Armure: **{p.get('armure_active','Aucune')}** (P: {p.get('res_p',1)}/S: {p.get('res_s',0)})")
-                    else: 
-                        st.caption("🔒 Masqué par le joueur")
+                        st.write(f"🗡️ Arme : **{p.get('arme_active','Aucune')}** ({'2 mains ⚔️' if p.get('deux_mains',False) else '1 main'})")
+                        st.write(f"💥 Dégâts: {p.get('w_deg','3')} | Danger: **{df}** | 📏 Portée: {p.get('w_por','0 - 1')}")
+                        st.write(f"👘 Armure: {p.get('armure_active','Aucune')} (P: {p.get('res_p',1)}/S: {p.get('res_s',0)})")
+                    else: st.caption("🔒 Masqué par le joueur")
                 
-                # --- FILTRAGE ET AFFICHAGE DES COMPÉTENCES SUPÉRIEURES À 0 ---
-                comp_visibles = []
-                dictionnaire_noms = {
-                    "c_est": "Esthétique", "c_com": "Composition", "c_sty": "Stylisme", "c_forg": "Forge 🔨",
-                    "c_for": "Forme", "c_cac": "Corps-à-corps", "c_dis": "Distance", "c_chu": "Corps Humain", "c_med": "Méditation", "c_tac": "Tactique",
-                    "c_cul": "Culture", "c_gou": "Gouvernement", "c_mdc": "Médecine", "c_sen": "Sentiment", "c_the": "Théologie",
-                    "c_cmd": "Commandement", "c_crt": "Courtoisie", "c_jeu": "Jeu", "c_org": "Organisation 📋",
-                    "c_cmr": "Commerce", "c_tra": "Travail Manuel", "c_nav": "Navigation", "c_mag": "Magouille", "c_sur": "Survie"
-                }
-                
-                for cle_code, nom_affichage in dictionnaire_noms.items():
-                    rang_competence = p.get(cle_code, 0)
-                    if rang_competence > 0: # N'affiche que si le niveau est entre 1 et 6
-                        comp_visibles.append(f"{nom_affichage} : **{rang_competence}**")
-                
-                if comp_visibles:
-                    st.markdown("📊 **Compétences maîtrisées (Rang ≥ 1) :**")
-                    st.write(" | ".join(comp_visibles))
-                else:
-                    st.caption("📊 Aucune compétence entraînée (Toutes à 0)")
+                # Récapitulatif des techniques apprises visibles par le MJ
+                list_techs_mj = []
+                for tk, tn in [("mes_katas", "Katas"), ("mes_kihos", "Kihos"), ("mes_invocs", "Invocations"), ("mes_rituels", "Rituels"), ("mes_shujis", "Shujis"), ("mes_mahos", "Maho ⚠️"), ("mes_ninjutsus", "Ninjutsu"), ("mes_inversions", "Inversions")]:
+                    if p.get(tk): list_techs_mj.append(f"**{tn} :** " + ", ".join(p.get(tk)))
+                if list_techs_mj:
+                    st.markdown("📖 **Grimoire Actuel du Personnage :**")
+                    for lt in list_techs_mj: st.write(lt)
 
-                # Section d'affichage des techniques apprises dans le grimoire
-                list_techs = []
-                for t_key, t_nom in [("t_kat", "Katas"), ("t_kih", "Kihos"), ("t_inv", "Invocations"), ("t_rit", "Rituels"), ("t_shu", "Shujis"), ("t_mah", "Maho ⚠️"), ("t_nin", "Ninjutsu"), ("t_invs", "Inversions")]:
-                    if p.get(t_key):
-                        list_techs.append(f"特 **{t_nom} :** {p.get(t_key)}")
-                if list_techs:
-                    st.markdown("📖 **Grimoire des techniques renseignées :**")
-                    for lt in list_techs: st.write(lt)
+                st.caption(f"📊 **Artisanat :** Esth: {p.get('c_est',0)}, Comp: {p.get('c_com',0)}, Sty: {p.get('c_sty',0)}, Forge: {p.get('c_forg',0)} | **Martial :** Forme: {p.get('c_for',0)}, CàC: {p.get('c_cac',0)}, Dist: {p.get('c_dis',0)}, Méd: {p.get('c_med',0)}, Tac: {p.get('c_tac',0)}")
 
-        # --- GESTIONNAIRE DE REQUÊTES (BOÎTE DE RÉCEPTION MJ) ---
         st.markdown("---")
         st.subheader("🔔 Boîte de réception des Actions Soumises")
         if os.path.exists(ACTIONS_FILE):
@@ -473,33 +431,51 @@ elif role == "Maître du Jeu (Hôte)":
                 with open(ACTIONS_FILE, "r", encoding="utf-8") as file: actions = json.load(file)
             except: actions = []
             en_attente = [a for a in actions if a["statut"] == "En attente"]
-            if not en_attente: st.info("Aucune action ou question en attente.")
+            if not en_attente: st.info("Aucune action en attente.")
             else:
                 for act in en_attente:
                     st.markdown("---")
                     cola, colb = st.columns(2)
                     with cola:
                         st.warning(f"⚔️ **{act['joueur']}** ({act['perso']}) veut agir !")
-                        st.write(f"🔹 **Jet demandé :** Compétence **[{act['competence']}]** + Élément **[{act['element']}]**")
+                        st.write(f"🔹 **Jet :** Compétence **[{act['competence']}]** + Élément **[{act['element']}]**")
+                        # Affichage de la technique cliquée par le joueur
+                        st.write(f"🎯 **Technique employée :** `{act.get('technique', 'Aucune')}`")
                         aj = act.get("anneaux", {})
-                        st.caption(f"📈 *Anneaux :* Air: {aj.get('air',1)} | Terre: {aj.get('terre',1)} | Feu: {aj.get('feu',1)} | Eau: {aj.get('eau',1)} | Vide: {aj.get('vide',1)}")
-                        st.info(f"💬 **Message :** {act['description']}")
+                        st.caption(f"📈 *Anneaux :* Air: {aj.get('air',1)} | Terre: {aj.get('terre',1)} | Feu: {aj.get('feu',1)} | Eau: {aj.get('eau',1)}")
+                        st.info(f"💬 **Message / Intention :** {act['description']}")
                     with colb:
                         commentaire_mj = st.text_input("Réponse ou contrainte du MJ :", key=f"txt_{act['id']}")
                         c_btn1, c_btn2 = st.columns(2)
+                        
+                        # Bouton vert : Autoriser la technique ou la question
                         if c_btn1.button("✅ Autoriser", key=f"val_{act['id']}"):
                             for a in actions:
                                 if a["id"] == act["id"]: 
                                     a["statut"] = "Validé"
                                     a["description_mj"] = commentaire_mj if commentaire_mj else "Approuvé."
-                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
-                            st.success("Validé !"); st.rerun()
+                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
+                                json.dump(actions, file, indent=4, ensure_ascii=False)
+                            st.success("Validé !")
+                            st.rerun()
+                        
+                        # Bouton rouge : Refuser la technique ou la question
                         if c_btn2.button("⛔ Refuser", key=f"ref_{act['id']}"):
                             for a in actions:
                                 if a["id"] == act["id"]: 
                                     a["statut"] = "Refusé"
                                     a["description_mj"] = commentaire_mj if commentaire_mj else "Refusé."
-                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
-                            st.error("Refusé !"); st.rerun()
-        else: st.info("Aucune notification reçue.")
-else: st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")
+                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
+                                json.dump(actions, file, indent=4, ensure_ascii=False)
+                            st.error("Refusé !")
+                            st.rerun()
+        else: 
+            st.info("Aucune notification reçue.")
+else: 
+    st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")
+        # --- FIN COMMANDE DU SECTEUR JOUEUR ---
+        # Ligne de fermeture obligatoire pour renvoyer un message d'accueil si aucun prénom n'est tapé
+        else:
+            st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
+
+
