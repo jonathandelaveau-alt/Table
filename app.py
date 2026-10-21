@@ -463,9 +463,9 @@ elif role == "Maître du Jeu (Hôte)":
                         if sp > 0: st.warning(f"Stress : -{sp}")
                         st.write(f"👁️ Vigilance : **{vi}** | 🧠 Attention : **{at}**")
                     else: st.caption("🔒 Masqué par le joueur")
+                        
+                # BLOC 3 : PROFIL SOCIAL        
                 with col3:
-                    
-                # BLOC 3 : PROFIL SOCIAL
                 st.markdown("**⚖️ Profil Social**")
                 if p.get("sh_social", True): 
                     st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
