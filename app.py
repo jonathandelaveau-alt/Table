@@ -158,6 +158,65 @@ if role == "Joueur (Ma Fiche)":
         ecole = col_civ4.text_input("Nom de l'École :", value=f.get("ecole", ""))
         rang_ecole = col_civ5.number_input("Rang d'École (1 à 6) :", 1, 6, value=f.get("rang_ecole", 1))
         roles_actuels = col_civ6.multiselect("Sélectionnez votre ou vos Rôles :", ROLES_LISTE, default=f.get("profil", ["Bushi"]))
+        # =====================================================================
+        # 🏫 SÉLECTION D'ÉCOLE (TRIÉE PAR CLAN ET PAR ORDRE ALPHABÉTIQUE)
+        # =====================================================================
+        db_ecoles_source = CATALOGUE_ECOLES if 'CATALOGUE_ECOLES' in globals() else {}
+        
+        # 1. Tri des écoles : d'abord par le nom du Clan, puis par le nom de l'École
+        ecoles_triees = sorted(
+            db_ecoles_source.items(), 
+            key=lambda x: (x[1].get("clan", ""), x[0])
+        )
+        
+        # 2. Construction de la liste pour le menu déroulant avec repère visuel du Clan
+        liste_choix_ecoles = ["-- Choisir une École Impériale --"]
+        for nom_ecole, data_ecole in ecoles_triees:
+            clan_nom = data_ecole.get("clan", "Sans Clan")
+            liste_choix_ecoles.append(f"[{clan_nom}] {nom_ecole}")
+            
+        # 3. Récupération de l'école actuellement enregistrée sur la fiche du joueur
+        ecole_actuelle = f.get("ecole", "")
+        # Recherche de l'index par défaut dans la liste déroulante
+        idx_defaut_ecole = 0
+        if ecole_actuelle:
+            for idx, option in enumerate(liste_choix_ecoles):
+                if ecole_actuelle in option:
+                    idx_defaut_ecole = idx
+                    break
+                    
+        # 4. Affichage du menu de sélection
+        sel_ecole_brute = st.selectbox(
+            "🏫 Sélectionner votre École d'Origine :", 
+            liste_choix_ecoles, 
+            index=idx_defaut_ecole, 
+            key="sb_selection_ecole_triee"
+        )
+        
+        # 5. Si une école est sélectionnée, on enregistre et on affiche ses caractéristiques
+        if sel_ecole_brute != "-- Choisir une École Impériale --":
+            # On extrait le vrai nom de l'école en enlevant le préfixe du clan
+            vrai_nom_ecole = sel_ecole_brute.split("] ")[1]
+            
+            # Sauvegarde automatique si le joueur change d'école
+            if f.get("ecole") != vrai_nom_ecole:
+                f["ecole"] = vrai_nom_ecole
+                sauver_fiche(nom_id, f)
+                st.rerun()
+                
+            # Affichage des informations de l'école sélectionnée
+            infos_ecole = db_ecoles_source[vrai_nom_ecole]
+            tech_autorisees = ", ".join(infos_ecole.get("techniques_autorisees", []))
+            
+            st.markdown(
+                f"ℹ️ **Informations de l'école :**\n"
+                f"• **Clan Supérieur :** {infos_ecole.get('clan')}\n"
+                f"• **Rôle / Profil :** *{infos_ecole.get('role')}*\n"
+                f"• **Enseignements autorisés :** `{tech_autorisees}`\n"
+                f"• **Notes de l'école :** _{infos_ecole.get('notes', 'Aucune note particulière.')}_"
+            )
+        else:
+            st.caption("⚠️ Aucune école sélectionnée pour le moment. Veuillez en choisir une dans la liste ci-dessus.")
 
         posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
         valeur_air_posture = 2 if int(rang_ecole) >= 4 else 1
