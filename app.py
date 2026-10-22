@@ -289,7 +289,6 @@ if role == "Joueur (Ma Fiche)":
 
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
-
         # --- BLOC RE-ALIGNÉ DES ANNEAUX ---
         st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
