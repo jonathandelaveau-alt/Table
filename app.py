@@ -221,16 +221,15 @@ st.sidebar.markdown("---")
 if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
     st.toast("⚡ Synchronisation avec le serveur réussie !", icon="🛸")
     st.rerun()
-    posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
-    valeur_air_posture = 2 if int(rang_ecole) >= 4 else 1
-    EFFETS_POSTURES = {
+        # --- BLOC DES POSTURES CORRIGÉ ET COORDONNÉ ---
+        EFFETS_POSTURES = {
             "Air": f"💨 **Posture de l'Air :** Le niveau de difficulté des tests d'attaque/manipulation contre vous augmente de {valeur_air_posture}.",
             "Terre": "🏔️ **Posture de la Terre :** Vos adversaires ne peuvent pas dépenser leurs aubaines pour des coups critiques ou des États.",
             "Feu": "🔥 **Posture du Feu :** En cas de réussite, vous gagnez un succès BONUS par conflit sur les dégâts et dés gardés.",
             "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action (sans test requis, ni même type).",
             "Vide": "🌌 **Posture du Vide :** Les conflits obtenus lors des tests ne vous infligent aucun point de stress."
         }
-    st.info(EFFETS_POSTURES[posture])
+        st.info(EFFETS_POSTURES[posture])
 
         st.subheader("📊 Vitalité & Défenses")
         sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
