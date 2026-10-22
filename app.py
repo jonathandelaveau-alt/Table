@@ -155,7 +155,6 @@ if role == "Joueur (Ma Fiche)":
         f["espece"] = st.text_input("Espèce :", value=f.get("espece", "Humain"), key="ti_mini_espece")
 
         col_civ4, col_civ5, col_civ6 = st.columns(3)
-        ecole = col_civ4.text_input("Nom de l'École :", value=f.get("ecole", ""))
         rang_ecole = col_civ5.number_input("Rang d'École (1 à 6) :", 1, 6, value=f.get("rang_ecole", 1))
         roles_actuels = col_civ6.multiselect("Sélectionnez votre ou vos Rôles :", ROLES_LISTE, default=f.get("profil", ["Bushi"]))
         # =====================================================================
