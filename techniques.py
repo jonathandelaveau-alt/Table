@@ -1,6 +1,6 @@
-CATALOGUE_COMPLET = {
+iCATALOGUE_COMPLET = {
     "Katas": {
-        "Général": {"Rang 1": ["Posture de la Sentinelle", "Éclat de la Lame", "Esprit du Sabre"], "Rang 2": ["Danse des Ombres", "Esquive du Vent"]},
+        "Général": {"Rang 1": ["offensive de l'eau", "offensive de la terre", "Esprit du Sabre"], "Rang 2": ["Danse des Ombres", "Esquive du Vent"]},
         "Corps-à-corps": {"Rang 1": ["Frappe du Tonnerre d'Acier", "L'Estoc de la Grue"], "Rang 2": ["Coup de l'Avalanche Crépusculaire", "Fend-l'Armure"]},
         "Distance": {"Rang 1": ["Visée du Faucon", "Flèche Silencieuse"], "Rang 3": ["Flèche de Tempête"]},
         "Non-humain": {"Rang 1": ["Esprit de la Meute"], "Rang 4": ["Griffe du Dragon"]}
@@ -33,8 +33,12 @@ CATALOGUE_COMPLET = {
 }
 # --- DICTIONNAIRE DES DESCRIPTIONS DE TECHNIQUES (DÉPORTÉ ICI) ---
 DESCRIPTIONS_LORE = {
-    "Posture de la Sentinelle": "Type : Kata (Général) | Rang 1\nEffet : Vous augmentez votre Vigilance de +1 tant que vous maintenez cette posture défensive.",
-    "Éclat de la Lame": "Type : Kata (Général) | Rang 1\nEffet : Votre première attaque de mêlée inflige +2 dégâts si vous avez l'initiative.",
+    "offensive de l'eau": "Type : Kata (Général) | Rang 1\nEffet : Activation : lorsque vous effectuez un test d’Arts martiaux (Corps à corps, Distance ou Mains nues) (Eau), vous pouvez dépenser  comme suit : 
+1 aubaine ou plus de l’Eau : diminuez la Résistance physique de la cible de 1 point par  dépensé de cette façon. L’effet persiste jusqu’à la fin de votre prochain tour
+.",
+    "offensive de la terre": "Type : Kata (Général) | Rang 1\nEffet : Activation : lorsque vous effectuez un test d’Arts martiaux (Corps à corps, Distance ou Mains nues) (Terre), vous pouvez dépenser  comme suit : 
+1 aubaine ou plus de la Terre : jusqu’au début de votre prochain tour, augmentez votre Résistance physique de 1 point par  dépensé de cette façon
+.",
     "Esprit du Sabre": "Type : Kata (Général) | Rang 1\nEffet : Concentre votre attention sur le fil de la lame. Réduit de 1 le coût des opportunités martiales.",
     "Frappe du Tonnerre d'Acier": "Type : Kata (Corps-à-corps) | Rang 1\nEffet : Attaque lourde. Si le coup touche, la cible est projetée au sol et subit l'état Étourdi.",
     "L'Estoc de la Grue": "Type : Kata (Corps-à-corps) | Rang 1\nEffet : Une fente d'une précision chirurgicale qui ignore 1 point de Résistance Physique adverse.",
