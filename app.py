@@ -231,7 +231,19 @@ if role == "Joueur (Ma Fiche)":
             
         valeur_air_posture = 2 if rang_ecole_calc >= 4 else 1
 
-        # --- SOLUTION RADICALE IMMUNISÉE ---
+        # --- SÉLECTION DE LA POSTURE ACTIVE DE COMBAT ---
+        liste_postures = ["Air", "Terre", "Feu", "Eau", "Vide"]
+        posture_sauvegardee = f.get("posture", "Air")
+        idx_posture = liste_postures.index(posture_sauvegardee) if posture_sauvegardee in liste_postures else 0
+        
+        posture = st.selectbox("Posture Active de combat :", liste_postures, index=idx_posture, key="sb_posture_combat_active")
+        
+        if f.get("posture") != posture:
+            f["posture"] = posture
+            sauver_fiche(nom_id, f)
+            st.rerun()
+
+        # --- AFFICHAGE DES EFFETS DES POSTURES ---
         texte_air = f"💨 **Posture de l'Air :** Le niveau de difficulté des tests augmente de {valeur_air_posture}."
         dict_postures = {"Air": texte_air, "Terre": "🏔️ **Posture de la Terre :** Pas de coups critiques face à vous.", "Feu": "🔥 **Posture du Feu :** +1 succès BONUS par conflit sur les dégâts.", "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action.", "Vide": "🌌 **Posture du Vide :** Pas de stress via les conflits."}
         st.info(dict_postures.get(posture, "Aucune posture active"))
