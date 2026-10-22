@@ -8,7 +8,7 @@ import streamlit as st
 DB_DIR = "sauvegardes_l5a"
 if not os.path.exists(DB_DIR): 
     os.makedirs(DB_DIR)
-ACTIONS_FILE = "notifications_mj.json"
+ACTIONS_FILE = "notifications_mj.json"f
 
 # =====================================================================
 # 📜 2. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
@@ -339,10 +339,10 @@ if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_s
     st.rerun()
     
         # --- CALCUL AUTOMATIQUE DU BONUS DE POSTURE DE L'AIR ---
-        try:
-            rang_ecole_calc = int(f.get("rang_ecole", f.get("rang", 1)))
-        except (ValueError, TypeError):
-            rang_ecole_calc = 1
+    try:
+        rang_ecole_calc = int(f.get("rang_ecole", f.get("rang", 1)))
+    except (ValueError, TypeError):
+        rang_ecole_calc = 1
             
         valeur_air_posture = 2 if rang_ecole_calc >= 4 else 1
 
