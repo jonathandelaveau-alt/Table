@@ -1,6 +1,12 @@
 import json
 import os
 
+# 1. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
+from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE, CATALOGUE_DIVERS
+from techniques import CATALOGUE_COMPLET, DESCRIPTIONS_LORE
+from etats_blessures import CATALOGUE_ETATS_BLESSURES
+from ecoles import CATALOGUE_ECOLES
+
 def charger_fiche(nom_id):
     """Charge la fiche du joueur et garantit la présence de TOUTES les clés mécaniques L5R."""
     nom_fichier = f"fiche_{nom_id.lower()}.json"
@@ -39,12 +45,6 @@ def sauver_fiche(nom_id, dictionnaire_fiche):
     nom_fichier = f"fiche_{nom_id.lower()}.json"
     with open(nom_fichier, "w", encoding="utf-8") as f_json:
         json.dump(dictionnaire_fiche, f_json, ensure_ascii=False, indent=4)
-
-# 1. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
-from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE, CATALOGUE_DIVERS
-from techniques import CATALOGUE_COMPLET, DESCRIPTIONS_LORE
-from etats_blessures import CATALOGUE_ETATS_BLESSURES
-from ecoles import CATALOGUE_ECOLES
 
 def sauver_fiche(nom_joueur, data):
     with open(os.path.join(DB_DIR, f"{nom_joueur.lower().strip()}.json"), "w", encoding="utf-8") as f:
