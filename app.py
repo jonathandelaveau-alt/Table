@@ -349,10 +349,10 @@ if role == "Joueur (Ma Fiche)":
                 if md_est_grisee:
                     st.caption("✋ **Main Droite :** 😴 *Arme rangée au fourreau (Inutilisable actuellement)*")
                 else:
-                    w_base_md = CATALOGUE_ARMES_AVANCE.get(arme_md_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Arts Martiaux (Mêlée)"})
+                    w_base_md = CATALOGUE_ARMES_AVANCE.get(arme_md_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "competence": "Martiales (Corps-à-corps)", "portee": "1"})
                     bonus_2m_md = 1 if st.session_state["w_md_2mains"] else 0
                     degats_totaux_md = w_base_md["degats"] + arme_md_finale.get("bonus_degats", 0) + bonus_2m_md
-                    st.write(f"✋ **Main Droite ({sel_md}) :** Dégâts : `{degats_totaux_md}` | Danger : `{w_base_md['danger'] + arme_md_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_md.get('comp_requise', 'Mêlée')}`")
+                    st.write(f"✋ **Main Droite ({sel_md}) :** Dégâts : `{degats_totaux_md}` | Danger : `{w_base_md['danger'] + arme_md_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_md.get('competence', 'Mêlée')}` | Portée : `{w_base_md.get('portee', '1')}`")
             else:
                 st.caption("✋ **Main Droite :** Vide")
 
@@ -361,10 +361,10 @@ if role == "Joueur (Ma Fiche)":
                 if mg_est_grisee:
                     st.caption("🛡️ **Main Gauche :** 😴 *Arme rangée au fourreau (Inutilisable actuellement)*")
                 else:
-                    w_base_mg = CATALOGUE_ARMES_AVANCE.get(arme_mg_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Arts Martiaux (Mêlée)"})
+                    w_base_mg = CATALOGUE_ARMES_AVANCE.get(arme_mg_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "competence": "Martiales (Corps-à-corps)", "portee": "1"})
                     bonus_2m_mg = 1 if st.session_state["w_mg_2mains"] else 0
                     degats_totaux_mg = w_base_mg["degats"] + arme_mg_finale.get("bonus_degats", 0) + bonus_2m_mg
-                    st.write(f"🛡️ **Main Gauche ({sel_mg}) :** Dégâts : `{degats_totaux_mg}` | Danger : `{w_base_mg['danger'] + arme_mg_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_mg.get('comp_requise', 'Mêlée')}`")
+                    st.write(f"🛡️ **Main Gauche ({sel_mg}) :** Dégâts : `{degats_totaux_mg}` | Danger : `{w_base_mg['danger'] + arme_mg_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_mg.get('competence', 'Mêlée')}` | Portée : `{w_base_mg.get('portee', '1')}`")
             else:
                 st.caption("🛡️ **Main Gauche :** Vide")
             # --- 5. COMPILATION DES DONNÉES ENVOYÉES AU RAPPORT MJ ---
@@ -660,3 +660,67 @@ if role == "Joueur (Ma Fiche)":
         # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
         st.markdown("---")
         sauver_fiche(nom_id, f)
+        # =====================================================================
+        # 💎 COMPTEUR D'EXPÉRIENCE ACCUMULÉE
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("💎 Suivi de l'Expérience de Mission")
+        if "xp_mission" not in f:
+            f["xp_mission"] = 0
+            
+        f["xp_mission"] = st.slider("Points d'Expérience (XP) accumulés :", min_value=0, max_value=100, value=f["xp_mission"], key="slider_xp_joueur")
+        st.caption(f"💡 Vous avez actuellement `{f['xp_mission']}` points d'XP en réserve pour vos calculs d'améliorations.")
+
+        # =====================================================================
+        # 🎲 INTERFACE TACTIQUE : SIMULATEUR D'AIDE À L'ACTION
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("🎲 Aide à l'Action : Calculateur de Dés Tactique")
+        st.caption("Cette section calcule automatiquement votre réserve de dés théorique pour vos jets de dés.")
+        
+        type_action = st.radio("Sélectionner la complexité de l'action :", ["Action Simple / Standard", "Action Spéciale / Narrative"], key="rad_type_action")
+        
+        if type_action == "Action Spéciale / Narrative":
+            st.text_input("📝 Écrivez l'action spécifique que votre personnage tente de réaliser :", placeholder="Ex: Grimper discrètement le mur du temple pendant l'alerte...", key="ti_action_speciale")
+            st.info("ℹ️ Pour cette action narrative, exposez votre approche au Maître du Jeu pour valider le choix final des dés.")
+            
+        else:
+            col_act1, col_act2, col_act3 = st.columns(3)
+            
+            with col_act1:
+                anneau_choisi = st.selectbox("☯️ 1. Choisir l'Anneau (D6) :", ["Air", "Terre", "Feu", "Eau", "Vide"], key="sb_action_anneau")
+                # Lecture automatique des scores de l'anneau depuis la fiche joueur (valeur par défaut 1 si absent)
+                score_anneau = f.get(anneau_choisi.lower(), f.get(f"anneau_{anneau_choisi.lower()}", 2))
+                
+            with col_act2:
+                # Vos 5 compétences officielles L5R 5e
+                liste_competences_l5r = ["Artisanale", "Martial", "Savante", "Sociale", "Professionnelle"]
+                comp_choisie = st.selectbox("📚 2. Choisir la Compétence (D12) :", ["Aucune"] + liste_competences_l5r, key="sb_action_comp")
+                
+                score_comp = 0
+                if comp_choisie != "Aucune":
+                    # Lecture automatique de la compétence dans la fiche
+                    score_comp = f.get(comp_choisie.lower(), f.get(f"comp_{comp_choisie.lower()}", 0))
+                    
+            with col_act3:
+                # Extraction dynamique des armes possédées dans le sac
+                liste_armes_sac_sim = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
+                arme_choisie_sim = st.selectbox("⚔️ 3. Arme utilisée (Facultatif) :", liste_armes_sac_sim, key="sb_action_arme")
+                
+                txt_arme_bonus = ""
+                if arme_choisie_sim != "Aucune":
+                    obj_w_sim = next((w for w in f["inventaire_sac"] if w["nom"] == arme_choisie_sim), None)
+                    if obj_w_sim:
+                        w_racine = obj_w_sim.get("modele_racine", "Katana")
+                        data_racine = CATALOGUE_ARMES_AVANCE.get(w_racine, {})
+                        txt_arme_bonus = f"\n• **Propriétés de l'arme :** *{data_racine.get('proprietes', 'Aucune')}* (Portée: {data_racine.get('portee', '1')})"
+
+            # Affichage du bilan de dés indicatif (Sans bouton de validation, calcul automatique en temps réel)
+            st.markdown("##### 📊 Composition de votre Réserve de Dés :")
+            st.success(
+                f"🔥 **Sous l'approche du {anneau_choisi} :**\n"
+                f"• Vous lancez **{score_anneau} Dés d'Anneau (D6)**\n"
+                f"• Vous ajoutez **{score_comp} Dés de Compétence (D12)** *(via votre score en {comp_choisie})*\n"
+                f"👉 **Total théorique à lancer :** `{score_anneau} D6` + `{score_comp} D12`"
+                f"{txt_arme_bonus}"
+            )
