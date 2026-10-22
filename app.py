@@ -731,9 +731,13 @@ if role == "Joueur (Ma Fiche)":
         if 'armure_active' not in locals(): armure_active = "Aucune"
         if 'armes_equipees' not in locals(): armes_equipees = []
 
-        sauver_fiche(nom_id, maj)
-    else:
-        st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
+                # Sauvegarde finale de fermeture de l'hôte
+        if 'sauver_fiche' in globals() and 'f' in locals():
+            sauver_fiche(nom_id, f)
+
+# --- FIN ABSOLUE DU FICHIER : COMPLÈTEMENT COLLÉ À GAUCHE (0 ESPACE) ---
+else:
+    st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
 
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
