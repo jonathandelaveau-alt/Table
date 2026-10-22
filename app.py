@@ -442,20 +442,20 @@ if role == "Joueur (Ma Fiche)":
         with st.expander("📖 Consulter les Grands Catalogues impériaux (Armes, Armures, Divers)"):
             onglet_cat = st.tabs(["🗡️ Catalogue des Armes", "👘 Catalogue des Armures", "📦 Catalogue des Objets Divers"])
             
-            with onglet_cat:
-                st.markdown("##### Base de données officielle des Armes")
-                for nom_w, stats_w in CATALOGUE_ARMES_AVANCE.items():
-                    st.write(f"• **{nom_w}** | Dégâts : `{stats_w['degats']}` | Danger : `{stats_w['danger']}` | Portée : `{stats_w['portee']}` | Rareté : `{stats_w['rareté']}`")
-                    st.caption(f"  *Propriétés : {stats_w['proprietes']} | Prise : {stats_w['prise_autorisee']}*")
+        with onglet_cat:
+            st.markdown("##### Base de données officielle des Armes")
+            for nom_w, stats_w in CATALOGUE_ARMES_AVANCE.items():
+                st.write(f"• **{nom_w}** | Dégâts : `{stats_w['degats']}` | Danger : `{stats_w['danger']}` | Portée : `{stats_w['portee']}` | Rareté : `{stats_w['rareté']}`")
+                st.caption(f"  *Propriétés : {stats_w['proprietes']} | Prise : {stats_w['prise_autorisee']}*")
             
-            with onglet_cat:
-                st.markdown("##### Base de données officielle des Armures")
-                for nom_a, stats_a in CATALOGUE_ARMURES.items():
-                    st.write(f"• **{nom_a}** | Résistance Physique : `{stats_a['res_p']}` | Résistance Surnaturelle : `{stats_a['res_s']}`")
-                    st.caption(f"  *Propriétés : {stats_a['proprietes']}*")
+         with onglet_cat:
+            st.markdown("##### Base de données officielle des Armures")
+            for nom_a, stats_a in CATALOGUE_ARMURES.items():
+                st.write(f"• **{nom_a}** | Résistance Physique : `{stats_a['res_p']}` | Résistance Surnaturelle : `{stats_a['res_s']}`")
+                st.caption(f"  *Propriétés : {stats_a['proprietes']}*")
             
-            with onglet_cat:
-                st.markdown("##### Base de données officielle des Objets Divers")
+        with onglet_cat:
+            st.markdown("##### Base de données officielle des Objets Divers")
                 if 'CATALOGUE_DIVERS' in globals() and CATALOGUE_DIVERS:
                     for nom_d, stats_d in CATALOGUE_DIVERS.items():
                         st.write(f"• **{nom_d}** | Catégorie : `{stats_d['type']}` | Rareté : `{stats_d['rarete']}`")
