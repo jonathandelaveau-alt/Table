@@ -338,7 +338,6 @@ if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_s
     st.toast("🛸 Données synchronisées avec la dernière sauvegarde !", icon="⚡")
     st.rerun()
     
-        # --- SOLUTION RADICALE IMMUNISÉE CONTRE LES INDENTATIONS ---
         # --- CALCUL AUTOMATIQUE DU BONUS DE POSTURE DE L'AIR ---
         try:
             rang_ecole_calc = int(f.get("rang_ecole", f.get("rang", 1)))
