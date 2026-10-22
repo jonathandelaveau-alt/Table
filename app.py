@@ -221,7 +221,7 @@ st.sidebar.markdown("---")
 if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
     st.toast("⚡ Synchronisation avec le serveur réussie !", icon="🛸")
     st.rerun()
-        # --- BLOC DES POSTURES CORRIGÉ ET COORDONNÉ ---
+ # --- BLOC DES POSTURES CORRIGÉ ET COORDONNÉ ---
         EFFETS_POSTURES = {
             "Air": f"💨 **Posture de l'Air :** Le niveau de difficulté des tests d'attaque/manipulation contre vous augmente de {valeur_air_posture}.",
             "Terre": "🏔️ **Posture de la Terre :** Vos adversaires ne peuvent pas dépenser leurs aubaines pour des coups critiques ou des États.",
