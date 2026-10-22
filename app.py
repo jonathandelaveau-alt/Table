@@ -281,12 +281,13 @@ if role == "Joueur (Ma Fiche)":
         if b_grave: messages_blessures.append("• **Blessure Grave :** La difficulté de tous vos tests physiques augmente de +1.")
         if b_mutilante: messages_blessures.append("• **Blessure Mutilante :** Malus permanent sur l'anneau associé (Défini par le MJ).")
 
-        if messages_blessures:
+                if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
-            # --- BLOC RE-ALIGNÉ DES ANNEAUX ---
+
+        # --- BLOC RE-ALIGNÉ DES ANNEAUX (CORRECT) ---
         st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
-
+        
         # Affichage direct et robuste aligné sur le bord de la page
         air = st.slider("Air 💨", 1, 5, value=f.get("air", 1))
         score_b_air = st.selectbox("Score de Blessure Critique - Air (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_air", 0)), key="sb_air")
