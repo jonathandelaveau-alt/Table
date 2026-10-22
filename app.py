@@ -257,12 +257,12 @@ if role == "Joueur (Ma Fiche)":
         with col_arsenal_droite:
             st.markdown("##### 🎯 Équipements Activement Portés")
             
-            # Repérage des états actuels
-            armes_md = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Droite"]
-            nom_w_md = armes_md["nom"] if armes_md else "Aucune"
+            # Repérage direct et sécurisé des dictionnaires d'armes équipées
+            arme_md_equipee_obj = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Droite"), None)
+            nom_w_md = arme_md_equipee_obj["nom"] if arme_md_equipee_obj else "Aucune"
             
-            armes_mg = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Gauche"]
-            nom_w_mg = armes_mg["nom"] if armes_mg else "Aucune"
+            arme_mg_equipee_obj = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Gauche"), None)
+            nom_w_mg = arme_mg_equipee_obj["nom"] if arme_mg_equipee_obj else "Aucune"
 
             if "w_md_2mains" not in st.session_state: st.session_state["w_md_2mains"] = False
             if "w_mg_2mains" not in st.session_state: st.session_state["w_mg_2mains"] = False
