@@ -494,7 +494,7 @@ if role == "Joueur (Ma Fiche)":
 
     # --- SÉCURITÉ : LE BLOC DU MJ REPREND ICI SON ALIGNEMENT D'ORIGINE ---
     elif role == "Maître du Jeu (Hôte)":
-    st.header("👁️ Panneau Tactique de l'Hôte")
+        st.header("👁️ Panneau Tactique de l'Hôte")
     if st.button("🔄 ACTUALISER LA TABLE"): st.rerun()
 
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
