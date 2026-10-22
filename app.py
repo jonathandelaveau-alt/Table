@@ -720,10 +720,22 @@ elif role == "Maître du Jeu (Hôte)":
                             st.rerun()
         else: 
             st.info("Aucune notification reçue.")
-else: 
-                    sauver_fiche(nom_id, f)
-                    st.success(f"✨ {d_achat} glissé dans le sac !")
-                    st.rerun()
+
+        # --- FERMETURE SÉCURISÉE DE LA BOUTIQUE / COLONNE 3 DIVERS ---
+        # Note : On s'assure ici que l'action d'achat est bien isolée
+        if 'd_achat' in locals() and st.button("➕ Ajouter l'Objet Divers", key="btn_buy_d_sac_final"):
+            f["inventaire_sac"].append({
+                "id_obj": int(time.time()), 
+                "nom": d_achat, 
+                "type_cat": "Divers", 
+                "details": f"Type : {d_stats['type']}. Niveau de Rareté : {d_stats['rarete']}.", 
+                "proprietes": d_stats["effet"], 
+                "equipe": False
+            })
+            sauver_fiche(nom_id, f)
+            st.success(f"✨ {d_achat} glissé dans le sac !")
+            st.rerun()
+
         # --- RETOUR À L'ALIGNEMENT PRINCIPAL DE LA FICHE ---
         st.markdown("---")
         st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")        
@@ -732,6 +744,7 @@ else:
         for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
             if cle_g not in f: 
                 f[cle_g] = []
+
 
         grimoire_actif_total = f.get("mes_katas", []) + f.get("mes_kihos", []) + f.get("mes_invocs", []) + f.get("mes_rituels", []) + f.get("mes_shujis", []) + f.get("mes_mahos", []) + f.get("mes_ninjutsus", []) + f.get("mes_inversions", [])
         col_catalogue, col_grimoire_actif = st.columns(2)
