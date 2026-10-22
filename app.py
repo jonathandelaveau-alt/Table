@@ -6,6 +6,7 @@ import time
 # 1. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
 from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE, CATALOGUE_DIVERS
 from techniques import CATALOGUE_COMPLET, DESCRIPTIONS_LORE
+from etats_blessures import CATALOGUE_ETATS_BLESSURES
 
 # 2. Configuration et Design Sombre L5A
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
@@ -75,20 +76,21 @@ if role == "Joueur (Ma Fiche)":
         st.sidebar.markdown("---")
         st.sidebar.subheader("📌 Navigation")
         
-        # Le sélecteur est maintenant parfaitement isolé et sécurisé à 8 espaces d'alignement
-                # Le sélecteur étendu à 5 onglets indépendants
+        # Le sélecteur étendu à 7 onglets indépendants
         onglet_actif = st.sidebar.radio(
             "Choisir la zone à afficher :",
             [
                 "📜 Ma Feuille de Personnage", 
-                "🔨 Laboratoire de Forge & Recyclage",
+                "🔨 Forge et Modification",
                 "🎲 Calculateur de Dés Tactique",
                 "🏛️ Grand Catalogue des Techniques", 
-                "🛒 Marché d'Émeraude"
+                "🛒 Marché d'Émeraude",
+                "💎 Progression & Expérience",
+                "🎖️ Titres Honorifiques"
             ],
             key="radio_navigation_globale"
         )
-        
+     
         if onglet_actif == "📜 Ma Feuille de Personnage":
             st.header(f"👤 Votre Feuille Dynamique — {nom_id}")
             # (Ici continue votre code habituel avec vos anneaux, caractéristiques, etc.)
@@ -716,14 +718,29 @@ if role == "Joueur (Ma Fiche)":
                     st.rerun()
 
         # =====================================================================
-        # 💎 COMPTEUR D'EXPÉRIENCE ACCUMULÉE
+        # 💎 INTERCEPTION DE L'ONGLET : PROGRESSION & EXPÉRIENCE
         # =====================================================================
-        st.markdown("---")
-        st.subheader("💎 Suivi de l'Expérience de Mission")
-        if "xp_mission" not in f: f["xp_mission"] = 0
-        f["xp_mission"] = st.slider("Points d'Expérience (XP) accumulés :", min_value=0, max_value=100, value=f["xp_mission"], key="slider_xp_joueur")
-        st.caption(f"💡 Vous avez actuellement `{f['xp_mission']}` points d'XP en réserve.")
-             # =====================================================================
+        if onglet_actif == "💎 Progression & Expérience":
+            st.title("💎 Gestion et Allocation de l'Expérience")
+            st.info("Suivez l'évolution de vos points d'apprentissage accumulés et dépensés au cours de vos chroniques.")
+            
+            if "xp_accumulee" not in f: f["xp_accumulee"] = 0
+            if "xp_depensee_rang" not in f: f["xp_depensee_rang"] = 0
+            if "xp_depensee_libre" not in f: f["xp_depensee_libre"] = 0
+            
+            f["xp_accumulee"] = st.slider("1. Points d'Expérience (XP) Accumulés au total :", min_value=0, max_value=100, value=f["xp_accumulee"], key="sl_xp_acc")
+            f["xp_depensee_rang"] = st.slider("2. XP dépensés dans le Rang d'École actuel :", min_value=0, max_value=100, value=f["xp_depensee_rang"], key="sl_xp_rng")
+            f["xp_depensee_libre"] = st.slider("3. Expérience dépensée librement (Avantages/Compétences annexes) :", min_value=0, max_value=100, value=f["xp_depensee_libre"], key="sl_xp_lib")
+            
+            xp_restante = f["xp_accumulee"] - (f["xp_depensee_rang"] + f["xp_depensee_libre"])
+            
+            st.markdown("### 📊 Bilan du Parchemin d'Apprentissage")
+            if xp_restante < 0:
+                st.error(f"⚠️ Alerte : Vos dépenses dépassent votre XP accumulée ! (Déficit de {xp_restante} XP)")
+            else:
+                st.success(f"🔮 Il vous reste **{xp_restante} XP libres** à allouer pour vos prochaines augmentations de caractéristiques.")
+
+        # =====================================================================
         # 🎲 INTERCEPTION DE L'ONGLET : CALCULATEUR DE DÉS TACTIQUE
         # =====================================================================
         if onglet_actif == "🎲 Calculateur de Dés Tactique":
@@ -790,6 +807,42 @@ if role == "Joueur (Ma Fiche)":
                     f"👉 **Total théorique à lancer :** `{score_anneau} D6` + `{score_comp} D12`"
                     f"{txt_arme_bonus}"
                 )
+                
+        # =====================================================================
+        # 🎖️ INTERCEPTION DE L'ONGLET : TITRES HONORIFIQUES
+        # =====================================================================
+        if onglet_actif == "🎖️ Titres Honorifiques":
+            st.title("🎖️ Titres Impériaux & Distinctions")
+            st.caption("Consultez et revendiquez les titres de gloire décernés à votre samouraï.")
+            
+            if "titres_obtenus" not in f: f["titres_obtenus"] = []
+            
+            # Catalogue interne temporaire (évolutif)
+            catalogue_titres_l5r = {
+                "Magistrat d'Émeraude (Adjoint)": "Accorde une autorité légale sur les terres impériales. +5 en Gloire.",
+                "Héros du Mur des Bâtisseurs": "Reconnaissance de bravoure face à l'Outremonde. +1 en Endurance Maximale.",
+                "Chamberlain Intérimaire du Clan": "Accorde un accès privilégié aux requêtes logistiques de votre maison de Clan."
+            }
+            
+            st.markdown("### 📜 Vos Titres Actuels")
+            if f["titres_obtenus"]:
+                for t_nom in f["titres_obtenus"]:
+                    with st.expander(f"🏅 {t_nom}"):
+                        st.write(catalogue_titres_l5r.get(t_nom, "Effet narratif spécifique validé par le MJ."))
+            else:
+                st.info("Votre personnage n'a pas encore obtenu de titre honorifique au cours de cette chronique.")
+                
+            st.markdown("---")
+            st.markdown("##### 🔍 Revendiquer un Titre du Catalogue")
+            liste_titres_choix = ["-- Sélectionner un titre --"] + [t for t in catalogue_titres_l5r.keys() if t not in f["titres_obtenus"]]
+            sel_t_honor = st.selectbox("Titres disponibles dans cette aventure :", liste_titres_choix, key="sb_titres_h")
+            
+            if sel_t_honor != "-- Sélectionner un titre --" and st.button("🏅 S'octroyer ce Titre", key="btn_add_titre_h"):
+                f["titres_obtenus"].append(sel_t_honor)
+                sauver_fiche(nom_id, f)
+                st.success(f"Le titre '{sel_t_honor}' est désormais inscrit dans vos annales !")
+                st.rerun()
+
         # =====================================================================
         # 🏛️ INTERCEPTION DE L'ONGLET : GRAND CATALOGUE DES TECHNIQUES
         # =====================================================================
