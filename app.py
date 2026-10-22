@@ -471,12 +471,43 @@ if role == "Joueur (Ma Fiche)":
                     sauver_fiche(nom_id, f)
                     st.rerun()
             
-            if f.get("objet_regarde_id"):
+                       if f.get("objet_regarde_id"):
                 obj_analyse = next((obj for obj in f["inventaire_sac"] if obj["id_obj"] == f["objet_regarde_id"]), None)
                 if obj_analyse:
-                    st.info(f"🔍 **Analyse de l'objet :** *{obj_analyse['nom']}*\n\n"
-                            f"• **Catégorie :** {obj_analyse.get('type_cat')} | Racine : `{obj_analyse.get('modele_racine','Inconnue')}`\n"
-                            f"• **Propriétés :** *{obj_analyse.get('proprietes','Aucune')}*")
+                    st.markdown("---")
+                    with st.chat_message("assistant", avatar="🔍"):
+                        st.markdown(f"#### 🔍 Analyse de l'objet : **{obj_analyse['nom']}**")
+                        
+                        if obj_analyse.get("type_cat") == "Arme":
+                            # Extraction synchronisée en direct depuis le fichier equipement.py
+                            w_racine = obj_analyse.get("modele_racine", "Katana")
+                            w_base = CATALOGUE_ARMES_AVANCE.get(w_racine, {"degats": 3, "danger": 5, "competence": "Martiales (Corps-à-corps)", "portee": "1", "proprietes": "Aucune"})
+                            
+                            degats_calcul_visu = w_base["degats"] + obj_analyse.get("bonus_degats", 0)
+                            danger_calcul_visu = w_base["danger"] + obj_analyse.get("bonus_danger", 0)
+                            
+                            st.markdown(
+                                f"• **Catégorie :** Armes (Type : Sabre / Matériel)\n"
+                                f"• **Modèle Racine :** `{w_racine}`\n"
+                                f"• **Compétence requise :** *{w_base.get('competence')}*\n"
+                                f"• **Portée tactique :** `{w_base.get('portee')}`\n"
+                                f"• **Dégâts globaux :** `{degats_calcul_visu}` *(Base {w_base['degats']} + Forge {obj_analyse.get('bonus_degats', 0)})*\n"
+                                f"• **Dangerosité :** `{danger_calcul_visu}` *(Base {w_base['danger']} + Forge {obj_analyse.get('bonus_danger', 0)})*\n"
+                                f"• **Méthode de Forge appliquée :** *{obj_analyse.get('methode_forge', 'Aucune')}*\n"
+                                f"• **Propriétés de l'arme :** _{obj_analyse.get('proprietes_custom', w_base.get('proprietes'))}_\n"
+                                f"• **Effets magiques / spéciaux :** _{obj_analyse.get('effet_custom', 'Aucun effet magique actif.')}_"
+                            )
+                        else:
+                            # Analyse standard pour les objets divers ou armures
+                            st.markdown(
+                                f"• **Catégorie :** {obj_analyse.get('type_cat', 'Divers')}\n"
+                                f"• **Propriétés enregistrées :** {obj_analyse.get('proprietes', 'Aucune')}\n"
+                                f"• **Détails :** {obj_analyse.get('details', 'Aucun.')}"
+                            )
+                        
+                        if st.button("❌ Fermer l'analyse", key="btn_close_analyse_obj_sac"):
+                            f["objet_regarde_id"] = None
+                            st.rerun()
 
         # =====================================================================
         # 📜 LE GRIMOIRE DES TECHNIQUES IMPÉRIALES
@@ -564,32 +595,73 @@ if role == "Joueur (Ma Fiche)":
                         sauver_fiche(nom_id, f)
                         st.success(f"✨ {d_achat} glissé dans le sac !")
                         st.rerun()
-         # =====================================================================
-        # 🔨 INTERCEPTION DE L'ONGLET : LABORATOIRE DE FORGE & RECYCLAGE
+        # =====================================================================
+        # 🔨 INTERCEPTION DE L'ONGLET : FORGE ET MODIFICATION
         # =====================================================================
         if onglet_actif == "🔨 Laboratoire de Forge & Recyclage":
-            st.title("🔨 Laboratoire de Forge Impériale & Recyclage")
-            st.info("🔧 Modifiez, renommez et augmentez la puissance de vos armes et armures ici. Vos modifications s'enregistrent sur votre fiche.")
+            st.title("🔨 Forge et Modification")
+            st.info("🔧 Modifiez, personnalisez et appliquez des techniques de forge ancestrales sur vos équipements.")
             
             liste_armes_sac_forge = [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
             if liste_armes_sac_forge:
-                w_a_forger = st.selectbox("Sélectionner l'arme à améliorer ou modifier :", liste_armes_sac_forge, key="sb_forge_w")
+                w_a_forger = st.selectbox("Sélectionner l'arme à travailler :", liste_armes_sac_forge, key="sb_forge_w_v2")
                 arme_forge_obj = next((w for w in f["inventaire_sac"] if w["nom"] == w_a_forger), None)
                 
                 if arme_forge_obj:
+                    st.markdown(f"### ⚔️ Travail sur : **{arme_forge_obj['nom']}**")
+                    
+                    # Récupération des statistiques de base du fichier equipement.py
+                    w_racine = arme_forge_obj.get("modele_racine", "Katana")
+                    w_base = CATALOGUE_ARMES_AVANCE.get(w_racine, {"degats": 3, "danger": 5, "competence": "Martiales (Corps-à-corps)", "portee": "1", "proprietes": "Aucune"})
+                    
+                    # Rappel des caractéristiques brutes de la pièce
+                    st.caption(f"📦 Modèle d'origine : {w_racine} | Type : Sabre / Arme | Portée d'usine : {w_base.get('portee')}")
+                    
+                    # 1. Variables de combat (Dégâts & Danger côte à côte)
                     col_f1, col_f2 = st.columns(2)
                     with col_f1:
-                        arme_forge_obj["bonus_degats"] = st.number_input("➕ Bonus de Dégâts :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_degats", 0), key=f"f_deg_{arme_forge_obj['id_obj']}")
+                        arme_forge_obj["bonus_degats"] = st.number_input("➕ Modifier le bonus de Dégâts :", min_value=-5, max_value=10, value=arme_forge_obj.get("bonus_degats", 0), key=f"f_deg_{arme_forge_obj['id_obj']}")
                     with col_f2:
-                        arme_forge_obj["bonus_danger"] = st.number_input("⚠️ Bonus de Danger :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_danger", 0), key=f"f_dng_{arme_forge_obj['id_obj']}")
+                        arme_forge_obj["bonus_danger"] = st.number_input("⚠️ Modifier le bonus de Danger :", min_value=-5, max_value=10, value=arme_forge_obj.get("bonus_danger", 0), key=f"f_dng_{arme_forge_obj['id_obj']}")
                     
-                    new_nom_w = st.text_input("📝 Renommer l'arme (Ex: Katana Ancestral) :", value=arme_forge_obj["nom"], key=f"f_nom_{arme_forge_obj['id_obj']}")
+                    # 2. Identité de l'arme
+                    new_nom_w = st.text_input("📝 Renommer l'arme sur l'enclume :", value=arme_forge_obj["nom"], key=f"f_nom_{arme_forge_obj['id_obj']}")
                     if new_nom_w != arme_forge_obj["nom"]:
                         arme_forge_obj["nom"] = new_nom_w
                         sauver_fiche(nom_id, f)
                         st.rerun()
+                        
+                    # 3. Méthodes de forge (Catalogue évolutif L5R)
+                    dict_methodes_forge = {
+                        "Aucune": "Aucune modification de structure.",
+                        "Pliage de l'Acier Kakita": "Ajoute la propriété 'Acérée'. Réduit de 1 la rareté théorique.",
+                        "Forge Spirituelle Asahina": "Ajoute l'effet : Vous pouvez dépenser 1 aubaine du Vide pour infliger des dégâts surnaturels.",
+                        "Trempe à l'Eau Kaiu": "Ajoute la propriété 'Solide'. L'arme ne peut jamais être brisée par un effet critique."
+                    }
+                    methode_actuelle = arme_forge_obj.get("methode_forge", "Aucune")
+                    idx_default = list(dict_methodes_forge.keys()).index(methode_actuelle) if methode_actuelle in dict_methodes_forge else 0
+                    
+                    sel_methode = st.selectbox("⚒️ Sélectionner la Méthode de Forge :", list(dict_methodes_forge.keys()), index=idx_default, key=f"f_methode_{arme_forge_obj['id_obj']}")
+                    
+                    if sel_methode != methode_actuelle:
+                        arme_forge_obj["methode_forge"] = sel_methode
+                        arme_forge_obj["effet_methode"] = dict_methodes_forge[sel_methode]
+                        sauver_fiche(nom_id, f)
+                        st.rerun()
+                        
+                    if sel_methode != "Aucune":
+                        st.info(f"✨ **Bonus de méthode actif :** {dict_methodes_forge[sel_methode]}")
+
+                    # 4. Saisie manuelle des Effets et Propriétés spécifiques
+                    arme_forge_obj["proprietes_custom"] = st.text_area("🔮 Propriétés additionnelles de l'arme (Ex: Cérémoniale, Encombrante) :", value=arme_forge_obj.get("proprietes_custom", w_base.get("proprietes", "Aucune")), key=f"f_prop_{arme_forge_obj['id_obj']}")
+                    arme_forge_obj["effet_custom"] = st.text_area("📜 Effets spéciaux narratifs ou magiques :", value=arme_forge_obj.get("effet_custom", ""), key=f"f_eff_{arme_forge_obj['id_obj']}")
+                    
+                    if st.button("💾 Valider et Forger l'arme", key=f"btn_save_forge_{arme_forge_obj['id_obj']}"):
+                        sauver_fiche(nom_id, f)
+                        st.success("🔥 L'arme a été retrempée et mise à jour avec succès dans votre sac !")
+                        st.rerun()
             else:
-                st.warning("⚠️ Aucune arme dans votre sac à dos pour utiliser le laboratoire de forge.")
+                st.warning("⚠️ Aucune arme dans votre sac à dos pour utiliser la forge.")
 
         # =====================================================================
         # 📖 MON GRIMOIRE PERSONNEL (TECHNIQUES MAÎTRISÉES ENRICHIES)
