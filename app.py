@@ -76,9 +76,16 @@ if role == "Joueur (Ma Fiche)":
         st.sidebar.subheader("📌 Navigation")
         
         # Le sélecteur est maintenant parfaitement isolé et sécurisé à 8 espaces d'alignement
+                # Le sélecteur étendu à 5 onglets indépendants
         onglet_actif = st.sidebar.radio(
             "Choisir la zone à afficher :",
-            ["📜 Ma Feuille de Personnage", "🏛️ Grand Catalogue des Techniques", "🛒 Marché d'Émeraude"],
+            [
+                "📜 Ma Feuille de Personnage", 
+                "🔨 Laboratoire de Forge & Recyclage",
+                "🎲 Calculateur de Dés Tactique",
+                "🏛️ Grand Catalogue des Techniques", 
+                "🛒 Marché d'Émeraude"
+            ],
             key="radio_navigation_globale"
         )
         
@@ -557,31 +564,32 @@ if role == "Joueur (Ma Fiche)":
                         sauver_fiche(nom_id, f)
                         st.success(f"✨ {d_achat} glissé dans le sac !")
                         st.rerun()
+         # =====================================================================
+        # 🔨 INTERCEPTION DE L'ONGLET : LABORATOIRE DE FORGE & RECYCLAGE
         # =====================================================================
-        # 🔨 LE GRAND LABORATOIRE DE FORGE & D'AMÉLIORATION
-        # =====================================================================
-        st.markdown("---")
-        st.subheader("🔨 Laboratoire de Forge Impériale & Recyclage")
-        
-        liste_armes_sac_forge = [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
-        if liste_armes_sac_forge:
-            w_a_forger = st.selectbox("Sélectionner l'arme à améliorer ou modifier :", liste_armes_sac_forge, key="sb_forge_w")
-            arme_forge_obj = next((w for w in f["inventaire_sac"] if w["nom"] == w_a_forger), None)
+        if onglet_actif == "🔨 Laboratoire de Forge & Recyclage":
+            st.title("🔨 Laboratoire de Forge Impériale & Recyclage")
+            st.info("🔧 Modifiez, renommez et augmentez la puissance de vos armes et armures ici. Vos modifications s'enregistrent sur votre fiche.")
             
-            if arme_forge_obj:
-                col_f1, col_f2 = st.columns(2)
-                with col_f1:
-                    arme_forge_obj["bonus_degats"] = st.number_input("➕ Bonus de Dégâts :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_degats", 0), key=f"f_deg_{arme_forge_obj['id_obj']}")
-                with col_f2:
-                    arme_forge_obj["bonus_danger"] = st.number_input("⚠️ Bonus de Danger :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_danger", 0), key=f"f_dng_{arme_forge_obj['id_obj']}")
+            liste_armes_sac_forge = [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
+            if liste_armes_sac_forge:
+                w_a_forger = st.selectbox("Sélectionner l'arme à améliorer ou modifier :", liste_armes_sac_forge, key="sb_forge_w")
+                arme_forge_obj = next((w for w in f["inventaire_sac"] if w["nom"] == w_a_forger), None)
                 
-                new_nom_w = st.text_input("📝 Renommer l'arme (Ex: Katana Ancestral) :", value=arme_forge_obj["nom"], key=f"f_nom_{arme_forge_obj['id_obj']}")
-                if new_nom_w != arme_forge_obj["nom"]:
-                    arme_forge_obj["nom"] = new_nom_w
-                    sauver_fiche(nom_id, f)
-                    st.rerun()
-        else:
-            st.info("Aucune arme dans votre sac pour utiliser le laboratoire de forge.")
+                if arme_forge_obj:
+                    col_f1, col_f2 = st.columns(2)
+                    with col_f1:
+                        arme_forge_obj["bonus_degats"] = st.number_input("➕ Bonus de Dégâts :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_degats", 0), key=f"f_deg_{arme_forge_obj['id_obj']}")
+                    with col_f2:
+                        arme_forge_obj["bonus_danger"] = st.number_input("⚠️ Bonus de Danger :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_danger", 0), key=f"f_dng_{arme_forge_obj['id_obj']}")
+                    
+                    new_nom_w = st.text_input("📝 Renommer l'arme (Ex: Katana Ancestral) :", value=arme_forge_obj["nom"], key=f"f_nom_{arme_forge_obj['id_obj']}")
+                    if new_nom_w != arme_forge_obj["nom"]:
+                        arme_forge_obj["nom"] = new_nom_w
+                        sauver_fiche(nom_id, f)
+                        st.rerun()
+            else:
+                st.warning("⚠️ Aucune arme dans votre sac à dos pour utiliser le laboratoire de forge.")
 
         # =====================================================================
         # 📖 MON GRIMOIRE PERSONNEL (TECHNIQUES MAÎTRISÉES ENRICHIES)
@@ -643,74 +651,73 @@ if role == "Joueur (Ma Fiche)":
         if "xp_mission" not in f: f["xp_mission"] = 0
         f["xp_mission"] = st.slider("Points d'Expérience (XP) accumulés :", min_value=0, max_value=100, value=f["xp_mission"], key="slider_xp_joueur")
         st.caption(f"💡 Vous avez actuellement `{f['xp_mission']}` points d'XP en réserve.")
+             # =====================================================================
+        # 🎲 INTERCEPTION DE L'ONGLET : CALCULATEUR DE DÉS TACTIQUE
         # =====================================================================
-        # 🎲 INTERFACE TACTIQUE : SIMULATEUR D'AIDE À L'ACTION (26 COMPÉTENCES)
-        # =====================================================================
-        st.markdown("---")
-        st.subheader("🎲 Aide à l'Action : Calculateur de Dés Tactique")
-        st.caption("Cette section calcule votre réserve de dés théorique selon vos compétences spécifiques de L5R.")
-        
-        type_action = st.radio("Sélectionner la complexité de l'action :", ["Action Simple / Standard", "Action Spéciale / Narrative"], key="rad_type_action")
-        
-        if type_action == "Action Spéciale / Narrative":
-            st.text_input("📝 Écrivez l'action spécifique que votre personnage tente de réaliser :", placeholder="Ex: Infiltrer le dojo de nuit...", key="ti_action_speciale")
-            st.info("ℹ️ Exposez votre approche narrative au Maître du Jeu pour valider les modificateurs.")
-        else:
-            col_act1, col_act2, col_act3 = st.columns(3)
+        if onglet_actif == "🎲 Calculateur de Dés Tactique":
+            st.title("🎲 Calculateur de Dés Tactique")
+            st.caption("Préparez vos lancers de dés L5R en sélectionnant votre approche narrative.")
             
-            with col_act1:
-                anneau_choisi = st.selectbox("☯️ 1. Choisir l'Anneau (D6) :", ["Air", "Terre", "Feu", "Eau", "Vide"], key="sb_action_anneau")
-                score_anneau = f.get(anneau_choisi.lower(), f.get(f"anneau_{anneau_choisi.lower()}", 2))
+            type_action = st.radio("Sélectionner la complexité de l'action :", ["Action Simple / Standard", "Action Spéciale / Narrative"], key="rad_type_action")
+            
+            if type_action == "Action Spéciale / Narrative":
+                st.text_input("📝 Écrivez l'action spécifique que votre personnage tente de réaliser :", placeholder="Ex: Infiltrer le dojo de nuit...", key="ti_action_speciale")
+                st.info("ℹ️ Exposez votre approche narrative au Maître du Jeu pour valider les modificateurs.")
+            else:
+                col_act1, col_act2, col_act3 = st.columns(3)
                 
-            with col_act2:
-                dict_toutes_competences = {
-                    "Artisanales 🎨": ["Artisanat", "Composition", "Design", "Esthétique", "Forgeron"],
-                    "Martiales ⚔️": ["Armes de poing", "Armes de jet", "Arts martiaux (Corps à corps)", "Arts martiaux (Distance)", "Arts martiaux (Mains nues)", "Méditation"],
-                    "Savantes 📜": ["Commerce", "Culture", "Théologie", "Médecine", "Sentiment", "Tactique"],
-                    "Sociales 🎭": ["Commandement", "Courtoisie", "Jeux", "Ruse", "Performance"],
-                    "Professionnelles ⚒️": ["Commerce (Pro)", "Chasse", "Navigation", "Survie", "Travail manuel"]
-                }
-                
-                liste_deroulante_comp = ["Aucune (0 dé)"]
-                for categorie, liste_sous_comps in dict_toutes_competences.items():
-                    for comp in liste_sous_comps:
-                        liste_deroulante_comp.append(f"{comp} ({categorie.split()[0]})")
-                
-                comp_choisie_brute = st.selectbox("📚 2. Choisir la Compétence Spécifique (D12) :", liste_deroulante_comp, key="sb_action_comp_advanced")
-                
-                score_comp = 0
-                nom_competence_propre = "Aucune"
-                
-                if comp_choisie_brute != "Aucune (0 dé)":
-                    nom_competence_propre = comp_choisie_brute.split(" (")[0]
-                    cat_parente_brute = comp_choisie_brute.split("(")[1].replace(")", "").lower()
+                with col_act1:
+                    anneau_choisi = st.selectbox("☯️ 1. Choisir l'Anneau (D6) :", ["Air", "Terre", "Feu", "Eau", "Vide"], key="sb_action_anneau")
+                    score_anneau = f.get(anneau_choisi.lower(), f.get(f"anneau_{anneau_choisi.lower()}", 2))
                     
-                    score_comp = f.get(nom_competence_propre.lower(), f.get(f"comp_{nom_competence_propre.lower()}", 0))
-                    if score_comp == 0:
-                        cat_cle = cat_parente_brute[:-1] if cat_parente_brute.endswith("s") else cat_parente_brute
-                        score_comp = f.get(cat_cle, f.get(f"comp_{cat_cle}", 0))
+                with col_act2:
+                    dict_toutes_competences = {
+                        "Artisanales 🎨": ["Artisanat", "Composition", "Design", "Esthétique", "Forgeron"],
+                        "Martiales ⚔️": ["Armes de poing", "Armes de jet", "Arts martiaux (Corps à corps)", "Arts martiaux (Distance)", "Arts martiaux (Mains nues)", "Méditation"],
+                        "Savantes 📜": ["Commerce", "Culture", "Théologie", "Médecine", "Sentiment", "Tactique"],
+                        "Sociales 🎭": ["Commandement", "Courtoisie", "Jeux", "Ruse", "Performance"],
+                        "Professionnelles ⚒️": ["Commerce (Pro)", "Chasse", "Navigation", "Survie", "Travail manuel"]
+                    }
                     
-            with col_act3:
-                liste_armes_sac_sim = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
-                arme_choisie_sim = st.selectbox("⚔️ 3. Arme en main (Facultatif) :", liste_armes_sac_sim, key="sb_action_arme")
-                
-                txt_arme_bonus = ""
-                if arme_choisie_sim != "Aucune":
-                    obj_w_sim = next((w for w in f["inventaire_sac"] if w["nom"] == arme_choisie_sim), None)
-                    if obj_w_sim:
-                        w_racine = obj_w_sim.get("modele_racine", "Katana")
-                        data_racine = CATALOGUE_ARMES_AVANCE.get(w_racine, {})
-                        txt_arme_bonus = f"\n• **Propriétés de l'arme :** *{data_racine.get('proprietes', 'Aucune')}* (Portée: {data_racine.get('portee', '1')})"
+                    liste_deroulante_comp = ["Aucune (0 dé)"]
+                    for categorie, liste_sous_comps in dict_toutes_competences.items():
+                        for comp in liste_sous_comps:
+                            liste_deroulante_comp.append(f"{comp} ({categorie.split()})")
+                    
+                    comp_choisie_brute = st.selectbox("📚 2. Choisir la Compétence Spécifique (D12) :", liste_deroulante_comp, key="sb_action_comp_advanced")
+                    
+                    score_comp = 0
+                    nom_competence_propre = "Aucune"
+                    
+                    if comp_choisie_brute != "Aucune (0 dé)":
+                        nom_competence_propre = comp_choisie_brute.split(" (")[0]
+                        cat_parente_brute = comp_choisie_brute.split("(")[1].replace(")", "").lower()
+                        
+                        score_comp = f.get(nom_competence_propre.lower(), f.get(f"comp_{nom_competence_propre.lower()}", 0))
+                        if score_comp == 0:
+                            cat_cle = cat_parente_brute[:-1] if cat_parente_brute.endswith("s") else cat_parente_brute
+                            score_comp = f.get(cat_cle, f.get(f"comp_{cat_cle}", 0))
+                        
+                with col_act3:
+                    liste_armes_sac_sim = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
+                    arme_choisie_sim = st.selectbox("⚔️ 3. Arme en main (Facultatif) :", liste_armes_sac_sim, key="sb_action_arme")
+                    
+                    txt_arme_bonus = ""
+                    if arme_choisie_sim != "Aucune":
+                        obj_w_sim = next((w for w in f["inventaire_sac"] if w["nom"] == arme_choisie_sim), None)
+                        if obj_w_sim:
+                            w_racine = obj_w_sim.get("modele_racine", "Katana")
+                            data_racine = CATALOGUE_ARMES_AVANCE.get(w_racine, {})
+                            txt_arme_bonus = f"\n• **Propriétés de l'arme :** *{data_racine.get('proprietes', 'Aucune')}* (Portée: {data_racine.get('portee', '1')})"
 
-            st.markdown("##### 📊 Composition de votre Réserve de Dés :")
-            st.success(
-                f"🔥 **Sous l'approche de l'Anneau de {anneau_choisi} :**\n"
-                f"• Vous lancez **{score_anneau} Dés d'Anneau (D6)**\n"
-                f"• Vous ajoutez **{score_comp} Dés de Compétence (D12)** *(via votre maîtrise en : {nom_competence_propre})*\n"
-                f"👉 **Total théorique à lancer :** `{score_anneau} D6` + `{score_comp} D12`"
-                f"{txt_arme_bonus}"
-            )
-
+                st.markdown("##### 📊 Composition de votre Réserve de Dés :")
+                st.success(
+                    f"🔥 **Sous l'approche de l'Anneau de {anneau_choisi} :**\n"
+                    f"• Vous lancez **{score_anneau} Dés d'Anneau (D6)**\n"
+                    f"• Vous ajoutez **{score_comp} Dés de Compétence (D12)** *(via votre maîtrise en : {nom_competence_propre})*\n"
+                    f"👉 **Total théorique à lancer :** `{score_anneau} D6` + `{score_comp} D12`"
+                    f"{txt_arme_bonus}"
+                )
         # =====================================================================
         # 🏛️ INTERCEPTION DE L'ONGLET : GRAND CATALOGUE DES TECHNIQUES
         # =====================================================================
