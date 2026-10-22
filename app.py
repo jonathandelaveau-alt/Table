@@ -480,18 +480,6 @@ if role == "Joueur (Ma Fiche)":
                     st.success(f"✨ {d_achat} glissé dans le sac !")
                     st.rerun()
 
-        # --- SYSTÈME DE NOTIFICATIONS ET DE VALIDATION DU MJ ---
-        # Réintégration sécurisée de votre code de validation
-        st.markdown("---")
-        st.subheader("🔔 Notifications du Maître du Jeu")
-        if 'ACTIONS_FILE' in globals() and 'actions' in locals():
-            # Code de traitement des notifications (Accepté / Refusé)
-            if 'commentaire_mj' in locals():
-                # Exemple de structure de votre ancien code de traitement
-                pass 
-        else:
-            st.info("Aucune notification reçue ou système de messagerie MJ en attente.")
-
         # --- RETOUR À L'ALIGNEMENT PRINCIPAL DE LA FICHE ---
         st.markdown("---")
         st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")        
@@ -501,15 +489,11 @@ if role == "Joueur (Ma Fiche)":
             if cle_g not in f: 
                 f[cle_g] = []
 
-        # Sauvegarde finale de sécurité de la fiche du joueur
+        # Sauvegarde finale de la fiche Joueur
         sauver_fiche(nom_id, f)
 
-# --- FIN ABSOLUE DU FICHIER : RECULÉ DE TOUS ESPACES (COLLÉ À GAUCHE) ---
-else:
-    st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")    
-
-# ==================== VUE MJ ====================
-elif role == "Maître du Jeu (Hôte)":
+    # --- SÉCURITÉ : LE BLOC DU MJ REPREND ICI SON ALIGNEMENT D'ORIGINE ---
+    elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
     if st.button("🔄 ACTUALISER LA TABLE"): st.rerun()
 
@@ -862,5 +846,5 @@ elif role == "Maître du Jeu (Hôte)":
                             st.rerun()
         else: 
             st.info("Aucune notification reçue.")
-else: 
-    st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")
+else:
+    st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
