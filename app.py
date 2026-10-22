@@ -4,7 +4,7 @@ import os
 import time
 
 # 1. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
-from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE
+from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE, CATALOGUE_DIVERS
 from techniques import CATALOGUE_COMPLET, DESCRIPTIONS_LORE
 
 # 2. Configuration et Design Sombre L5A
