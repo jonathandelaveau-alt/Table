@@ -52,39 +52,39 @@ def afficher_details_technique(nom_technique):
     if st.button("Fermer le parchemin"):
         st.rerun()
 
-role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maître du Jeu (Hôte)"])
 # =====================================================================
-# 🗺️ AJOUT DE LA NAVIGATION INTER-ONGLETS
+# ⛩️ CONFIGURATION DE LA BARRE LATÉRALE ET DE LA NAVIGATION
 # =====================================================================
-st.sidebar.markdown("---")
-st.sidebar.subheader("📌 Navigation dans la Session")
-onglet_actif = st.sidebar.radio(
-    "Choisir la zone à afficher :",
-    ["📜 Ma Feuille de Personnage", "🏛️ Grand Catalogue des Techniques", "🛒 Marché d'Émeraude"],
-    key="radio_navigation_globale"
+role = st.sidebar.selectbox(
+    "👤 Choisissez votre rôle :", 
+    ["Accueil", "Joueur (Ma Fiche)", "Maître du Jeu (Hôte)"], 
+    key="sb_role_global"
 )
-st.sidebar.markdown("---")
-# ==================== VUE JOUEUR ====================
+
+# Initialisation par défaut pour éviter les erreurs de lecture plus bas
+onglet_actif = "📜 Ma Feuille de Personnage"
+
 if role == "Joueur (Ma Fiche)":
-    # 1. Demande du prénom dans la barre latérale pour verrouiller la session
     nom_id = st.sidebar.text_input("⛩️ Saisissez votre prénom :", key="input_prenom_joueur").strip()
     
     if nom_id:
-        # 2. Chargement de la fiche du joueur
         f = charger_fiche(nom_id)
         if not f: 
             f = {}
+            
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("📌 Navigation")
         
-        # 3. Création du menu de navigation radio (Vérifiez bien cet alignement à 8 espaces)
+        # Le sélecteur est maintenant parfaitement isolé et sécurisé à 8 espaces d'alignement
         onglet_actif = st.sidebar.radio(
             "Choisir la zone à afficher :",
             ["📜 Ma Feuille de Personnage", "🏛️ Grand Catalogue des Techniques", "🛒 Marché d'Émeraude"],
             key="radio_navigation_globale"
         )
         
-        # 4. Premier onglet principal
         if onglet_actif == "📜 Ma Feuille de Personnage":
             st.header(f"👤 Votre Feuille Dynamique — {nom_id}")
+            # (Ici continue votre code habituel avec vos anneaux, caractéristiques, etc.)
         
         # --- RÉCUPÉRATION DES SÉCURITÉS INITIALES ---
         air_score = int(f.get("air", 1))
