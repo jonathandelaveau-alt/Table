@@ -72,8 +72,8 @@ if role == "Joueur (Ma Fiche)":
 
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
     
-    if nom_id:
-        f = charger_fiche(nom_id) or {}
+        if nom_id:
+            f = charger_fiche(nom_id) or {}
         
         # --- RÉCUPÉRATION DES SÉCURITÉS INITIALES ---
         air_score = int(f.get("air", 1))
