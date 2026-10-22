@@ -389,7 +389,6 @@ if role == "Joueur (Ma Fiche)":
                     "id_obj": int(time.time()), "nom": w_achat, "type_cat": "Arme", 
                     "details": "Achetée au catalogue d'école standard.", "equipe": False
                 })
-                sauver_fiche(nom_id, f)
                 st.success(f"{w_achat} ajouté au sac !")
                 st.rerun()
                 
@@ -401,7 +400,6 @@ if role == "Joueur (Ma Fiche)":
                     "id_obj": int(time.time()), "nom": a_achat, "type_cat": "Armure", 
                     "details": "Achetée au catalogue de protection standard.", "equipe": False
                 })
-                sauver_fiche(nom_id, f)
                 st.success(f"{a_achat} ajoutée au sac !")
                 st.rerun()
 
@@ -419,7 +417,6 @@ if role == "Joueur (Ma Fiche)":
                         "details": f"Type : {d_stats['type']}. Niveau de Rareté : {d_stats['rarete']}.", 
                         "proprietes": d_stats["effet"], "equipe": False
                     })
-                    sauver_fiche(nom_id, f)
                     st.success(f"{d_achat} glissé dans le sac !")
                     st.rerun()
             else:
