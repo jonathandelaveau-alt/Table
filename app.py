@@ -46,6 +46,23 @@ from techniques import CATALOGUE_COMPLET, DESCRIPTIONS_LORE
 from etats_blessures import CATALOGUE_ETATS_BLESSURES
 from ecoles import CATALOGUE_ECOLES
 
+def sauver_fiche(nom_joueur, data):
+    with open(os.path.join(DB_DIR, f"{nom_joueur.lower().strip()}.json"), "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+def charger_fiche(nom_joueur):
+    path = os.path.join(DB_DIR, f"{nom_joueur.lower().strip()}.json")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f: return json.load(f)
+    return None
+
+@st.dialog("📜 Parchemin de Technique")
+def afficher_details_technique(nom_technique):
+    st.write(f"### {nom_technique}")
+    texte_details = DESCRIPTIONS_LORE.get(nom_technique, "Aucune description détaillée enregistrée pour cette capacité d'école.")
+    st.info(texte_details)
+    if st.button("Fermer le parchemin"):
+        st.rerun()
 # 2. Configuration et Design Sombre L5A
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
 st.markdown("""
@@ -72,24 +89,6 @@ DATA_CLANS = {
     "Mante / Mineur": ["Yoritomo", "Kitsune", "Kasuga"]
 }
 ROLES_LISTE = ["Bushi", "Courtisan", "Shugenja", "Moine", "Artisan", "Shinobi"]
-
-def sauver_fiche(nom_joueur, data):
-    with open(os.path.join(DB_DIR, f"{nom_joueur.lower().strip()}.json"), "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-def charger_fiche(nom_joueur):
-    path = os.path.join(DB_DIR, f"{nom_joueur.lower().strip()}.json")
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f: return json.load(f)
-    return None
-
-@st.dialog("📜 Parchemin de Technique")
-def afficher_details_technique(nom_technique):
-    st.write(f"### {nom_technique}")
-    texte_details = DESCRIPTIONS_LORE.get(nom_technique, "Aucune description détaillée enregistrée pour cette capacité d'école.")
-    st.info(texte_details)
-    if st.button("Fermer le parchemin"):
-        st.rerun()
 
 # =====================================================================
 # ⛩️ CONFIGURATION DE LA BARRE LATÉRALE ET DE LA NAVIGATION
