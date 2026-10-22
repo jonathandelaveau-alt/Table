@@ -721,10 +721,17 @@ elif role == "Maître du Jeu (Hôte)":
         else: 
             st.info("Aucune notification reçue.")
 else: 
-    st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")        
-    st.subheader("📜 Gestion des techniques")
+                    sauver_fiche(nom_id, f)
+                    st.success(f"✨ {d_achat} glissé dans le sac !")
+                    st.rerun()
+        # --- RETOUR À L'ALIGNEMENT PRINCIPAL DE LA FICHE ---
+        st.markdown("---")
+        st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")        
+        st.subheader("📜 Gestion des techniques")
+        
         for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
-            if cle_g not in f: f[cle_g] = []
+            if cle_g not in f: 
+                f[cle_g] = []
 
         grimoire_actif_total = f.get("mes_katas", []) + f.get("mes_kihos", []) + f.get("mes_invocs", []) + f.get("mes_rituels", []) + f.get("mes_shujis", []) + f.get("mes_mahos", []) + f.get("mes_ninjutsus", []) + f.get("mes_inversions", [])
         col_catalogue, col_grimoire_actif = st.columns(2)
