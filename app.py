@@ -72,24 +72,58 @@ if role == "Joueur (Ma Fiche)":
 
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
     
-    if nom_id:
+       if nom_id:
         f = charger_fiche(nom_id) or {}
         
-        # --- SYNCHRONISATION AUTOMATIQUE TOUTES LES 10 SECONDES ---
-        # Permet de recevoir les réponses du MJ et de sauvegarder sans recharger le navigateur
-               # --- PROTOCOLE DE SYNCHRONISATION AUTOMATIQUE (TOUTES LES 10 SECONDES) ---
-        if "dernier_check_auto" not in st.session_state:
-            st.session_state["dernier_check_auto"] = time.time()
-            
-        # Déclencheur temporel Streamlit (S'exécute silencieusement en tâche de fond)
-        st.fragment(run_every=10)(lambda: None)()
+        # --- RÉCUPÉRATION DES SÉCURITÉS INITIALES ---
+        air_score = int(f.get("air", 1))
+        terre_score = int(f.get("terre", 1))
+        feu_score = int(f.get("feu", 1))
+        eau_score = int(f.get("eau", 1))
+        vide_score = int(f.get("vide", 1))
         
-        # Si 10 secondes se sont écoulées depuis la dernière écriture, on applique la sauvegarde
-        if time.time() - st.session_state["dernier_check_auto"] >= 10:
-            if 'maj' in locals():
-                sauver_fiche(nom_id, maj)
-                st.session_state["dernier_check_auto"] = time.time()
-                st.toast("💾 Synchronisation automatique effectuée (Fiche sauvegardée).", icon="🔄")
+        # --- CENTRALISATION IMMÉDIATE DU DICTIONNAIRE DE SAUVEGARDE (MAJ) ---
+        # Placé ici, il est disponible instantanément pour tous les boutons de la page
+        maj = {
+            "perso": f.get("perso", ""), "clan": f.get("clan", "Grue"), "famille": f.get("famille", ""), 
+            "profil": f.get("profil", ["Bushi"]), "ecole": f.get("ecole", ""), "rang_ecole": f.get("rang_ecole", 1), 
+            "posture": f.get("posture", "Air"), "air": air_score, "terre": terre_score, "feu": feu_score, "eau": eau_score, "vide": vide_score, 
+            "p_vide": f.get("p_vide", 1), "end_act": f.get("end_act", (terre_score + feu_score) * 2), "sf_act": f.get("sf_act", (terre_score + eau_score) * 2), 
+            "hon": f.get("hon", 50), "glo": f.get("glo", 50), "sta": f.get("sta", 50), 
+            "armure_active": f.get("armure_active", "Aucune"), "res_p": f.get("res_p", 1), "res_s": f.get("res_s", 0), 
+            "arme_active": f.get("arme_active", "Aucune"), "w_deg": f.get("w_deg", 3), "deux_mains": f.get("deux_mains", False), 
+            "w_dang": f.get("w_dang", 5), "w_por": f.get("w_por", "1"), 
+            "ch_kat": f.get("ch_kat", False), "ch_kih": f.get("ch_kih", False), "ch_inv": f.get("ch_inv", False), 
+            "ch_rit": f.get("ch_rit", False), "ch_shu": f.get("ch_shu", False), "ch_mah": f.get("ch_mah", False), 
+            "ch_nin": f.get("ch_nin", False), "ch_invs": f.get("ch_invs", False),
+            "score_b_air": f.get("score_b_air", 0), "score_b_terre": f.get("score_b_terre", 0), "score_b_feu": f.get("score_b_feu", 0), 
+            "score_b_eau": f.get("score_b_eau", 0), "score_b_vide": f.get("score_b_vide", 0),
+            "e_saignant": f.get("e_saignant", False), "e_etourdi": f.get("e_etourdi", False), "e_compromis": f.get("e_compromis", False), 
+            "e_inconscient": f.get("e_inconscient", False), "e_aveugle": f.get("e_aveugle", False),
+            "b_legere": f.get("b_legere", False), "b_grave": f.get("b_grave", False), "b_mutilante": f.get("b_mutilante", False),
+            "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), 
+            "mes_rituels": f.get("mes_rituels", []), "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), 
+            "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
+            "tech_active_cliquee": f.get("tech_active_cliquee", "Aucune technique active"), 
+            "sh_anneaux": f.get("sh_anneaux", True), "sh_vitalite": f.get("sh_vitalite", True), "sh_social": f.get("sh_social", True), 
+            "sh_equipement": f.get("sh_equipement", True), "sh_grimoire": f.get("sh_grimoire", True), 
+            "inventaire_sac": f.get("inventaire_sac", []),
+            "c_est": f.get("c_est", 0), "c_com": f.get("c_com", 0), "c_sty": f.get("c_sty", 0), "c_forg": f.get("c_forg", 0), 
+            "c_for": f.get("c_for", 0), "c_cac": f.get("c_cac", 0), "c_dis": f.get("c_dis", 0), "c_chu": f.get("c_chu", 0), 
+            "c_med": f.get("c_med", 0), "c_tac": f.get("c_tac", 0), "c_cul": f.get("c_cul", 0), "c_gou": f.get("c_gou", 0), 
+            "c_mdc": f.get("c_mdc", 0), "c_sen": f.get("c_sen", 0), "c_the": f.get("c_the", 0), "c_cmd": f.get("c_cmd", 0), 
+            "c_crt": f.get("c_crt", 0), "c_jeu": f.get("c_jeu", 0), "c_org": f.get("c_org", 0), "c_cmr": f.get("c_cmr", 0), 
+            "c_tra": f.get("c_tra", 0), "c_nav": f.get("c_nav", 0), "c_mag": f.get("c_mag", 0), "c_sur": f.get("c_sur", 0)
+        }
+
+        # --- TOUR DE CONTRÔLE : RAFRAÎCHISSEMENT & SAUVEGARDE MANUELLE ---
+        col_ctrl1, col_ctrl2 = st.columns(2)
+        if col_ctrl1.button("🔄 Actualiser mes données en direct", key="refresh_joueur_manuel"):
+            st.rerun()
+            
+        if col_ctrl2.button("💾 Enregistrer mon Parchemin (Sécurité)", key="save_joueur_manuel"):
+            sauver_fiche(nom_id, maj)
+            st.success("📝 Vos données ont été gravées avec succès dans la base !")
 
         st.subheader("📝 État-Civil Tactique")
         col_civ1, col_civ2, col_civ3 = st.columns(3)
@@ -528,22 +562,6 @@ if role == "Joueur (Ma Fiche)":
         if 'armure_active' not in locals(): armure_active = "Aucune"
         if 'armes_equipees' not in locals(): armes_equipees = []
 
-        maj = {
-            "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
-            "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
-            "armure_active": armure_active, "res_p": res_p, "res_s": res_s, 
-            "arme_active": arme_active_nom, "w_deg": arme_active_degats, 
-            "deux_mains": "2 mains" in arme_active_nom if armes_equipees else False, 
-            "w_dang": arme_active_danger, "w_por": arme_active_portee, 
-            "ch_kat": c_kat, "ch_kih": c_kih, "ch_inv": c_inv, "ch_rit": c_rit, "ch_shu": c_shu, "ch_mah": c_mah, "ch_nin": c_nin, "ch_invs": c_invs,
-            "score_b_air": score_b_air, "score_b_terre": score_b_terre, "score_b_feu": score_b_feu, "score_b_eau": score_b_eau, "score_b_vide": score_b_vide,
-            "e_saignant": e_blinde, "e_etourdi": e_etourdi, "e_compromis": e_compromis, "e_inconscient": e_inconscient, "e_aveugle": e_aveugle,
-            "b_legere": b_legere, "b_grave": b_grave, "b_mutilante": b_mutilante,
-            "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), "mes_rituels": f.get("mes_rituels", []), "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
-            "tech_active_cliquee": tech_choisie_automatique, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire, 
-            "inventaire_sac": f.get("inventaire_sac", []),
-            "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac, "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org, "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
-        }
         sauver_fiche(nom_id, maj)
     else:
         st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
