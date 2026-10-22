@@ -608,9 +608,6 @@ if role == "Joueur (Ma Fiche)":
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
             "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur 
-            "score_b_air": score_b_air, "score_b_terre": score_b_terre, "score_b_feu": score_b_feu, "score_b_eau": score_b_eau, "score_b_vide": score_b_vide,
-            
-
         }
         sauver_fiche(nom_id, maj)
     else:
