@@ -35,6 +35,7 @@ CATALOGUE_KIHOS = CATALOGUE_COMPLET.get("Kihos", {})
 CATALOGUE_INVOCATIONS = CATALOGUE_COMPLET.get("Invocations", {})
 CATALOGUE_RITUELS = CATALOGUE_COMPLET.get("Rituels", {})
 CATALOGUE_SHUJIS = CATALOGUE_COMPLET.get("Shujis", {})
+CATALOGUE_INVERSIONS = CATALOGUE_COMPLET.get("Inversions", {})
 
 DATA_CLANS = {
     "Crabe": ["Hida", "Hiruma", "Kaiu", "Kuni", "Yasuki"],
