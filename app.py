@@ -446,7 +446,7 @@ elif role == "Maître du Jeu (Hôte)":
                         commentaire_mj = st.text_input("Réponse ou contrainte du MJ :", key=f"txt_{act['id']}")
                         c_btn1, c_btn2 = st.columns(2)
                         if c_btn1.button("✅ Autoriser", key=f"val_{act['id']}"):
-                            for a in actions:
+                    for a in actions:
                         if c_btn1.button("✅ Autoriser", key=f"val_{act['id']}"):
                             for a in actions:
                                 if a["id"] == act["id"]: 
