@@ -57,12 +57,11 @@ def charger_fiche(nom_joueur):
     return None
 
 @st.dialog("📜 Parchemin de Technique")
-def afficher_details_technique(nom_technique):
-    st.write(f"### {nom_technique}")
-    texte_details = DESCRIPTIONS_LORE.get(nom_technique, "Aucune description détaillée enregistrée pour cette capacité d'école.")
-    st.info(texte_details)
-    if st.button("Fermer le parchemin"):
+def afficher_parchemin_dialogue(texte_lore):
+    st.markdown(texte_lore)
+    if st.button("Fermer"):
         st.rerun()
+
 # 2. Configuration et Design Sombre L5A
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
 st.markdown("""
