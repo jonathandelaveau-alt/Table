@@ -239,7 +239,7 @@ if role == "Joueur (Ma Fiche)":
         p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
 
         end_m, sf_m, attn, vigi = (terre + feu) * 2, (terre + eau) * 2, air + feu, (air + eau) / 2
-            st.subheader("📊 Vitalité & Défenses")
+        st.subheader("📊 Vitalité & Défenses")
         sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
         cv1, cv2 = st.columns(2)
         end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
@@ -315,6 +315,7 @@ if role == "Joueur (Ma Fiche)":
         score_b_vide = st.selectbox("Score de Blessure Critique - Vide (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_vide", 0)), key="sb_vide")
         
         st.markdown("---")
+
 
         # --- RAPPEL DES CARACTÉRISTIQUES DE L'ARMURE PORTÉE (NOUVEAUTÉ) ---
         armure_actuelle_nom = f.get("armure_active", "Armure de Tenue de Cérémonie")
