@@ -31,3 +31,13 @@ CATALOGUE_COMPLET = {
         "Général": {"Rang 1": ["Altération Mineure"], "Rang 5": ["Inversion des Éléments Éternels"]}
     }
 }
+# --- DICTIONNAIRE DES DESCRIPTIONS DE TECHNIQUES (DÉPORTÉ ICI) ---
+DESCRIPTIONS_LORE = {
+    "Posture de la Sentinelle": "Type : Kata (Général) | Rang 1\nEffet : Vous augmentez votre Vigilance de +1 tant que vous maintenez cette posture défensive.",
+    "Éclat de la Lame": "Type : Kata (Général) | Rang 1\nEffet : Votre première attaque de mêlée inflige +2 dégâts si vous avez l'initiative.",
+    "Esprit du Sabre": "Type : Kata (Général) | Rang 1\nEffet : Concentre votre attention sur le fil de la lame. Réduit de 1 le coût des opportunités martiales.",
+    "Frappe du Tonnerre d'Acier": "Type : Kata (Corps-à-corps) | Rang 1\nEffet : Attaque lourde. Si le coup touche, la cible est projetée au sol et subit l'état Étourdi.",
+    "L'Estoc de la Grue": "Type : Kata (Corps-à-corps) | Rang 1\nEffet : Une fente d'une précision chirurgicale qui ignore 1 point de Résistance Physique adverse.",
+    "Murmure du Vent d'Air": "Type : Invocation (Air) | Rang 1\nEffet : Vous écoutez les esprits de l'air. Permet d'entendre une conversation à travers un mur épais.",
+    "Purification du Sel": "Type : Rituel | Rang 1\nEffet : Protège une pièce contre les esprits malins ou la souillure de l'Outremonde pendant 24 heures."
+}
