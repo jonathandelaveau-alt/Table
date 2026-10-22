@@ -105,8 +105,8 @@ role = st.sidebar.selectbox(
         # =====================================================================
         # 📜 ONGLET 1 : MA FEUILLE DE PERSONNAGE (STRUCTURE COMPLÈTE ET RESTAURÉE)
         # =====================================================================
-        if onglet_actif == "📜 Ma Feuille de Personnage":
-            st.header(f"👤 Votre Feuille Dynamique — {nom_id}")
+if onglet_actif == "📜 Ma Feuille de Personnage":
+    st.header(f"👤 Votre Feuille Dynamique — {nom_id}")
             
             # --- 1. BIOGRAPHIE ET ÉTAT CIVIL ---
             st.subheader("📔 Biographie Impériale")
