@@ -57,19 +57,18 @@ role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maît
 # ==================== VUE JOUEUR ====================
 if role == "Joueur (Ma Fiche)":
     st.header("👤 Votre Feuille Dynamique")
+        # --- BOUTON DE RAFRAÎCHISSEMENT MANUEL INSTANTANÉ ---
+    if st.button("🔄 Actualiser mes données en direct", key="refresh_joueur_manuel"):
+        st.rerun()
+
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
     
     if nom_id:
         f = charger_fiche(nom_id) or {}
         
-        # --- MINUTEUR JOUEUR (RÉCEPTION DES REFUS / VALIDATIONS MJ EN DIRECT) ---
-        st.components.v1.html("""
-            <script>
-                setTimeout(function() {
-                    window.parent.postMessage({type: 'streamlit:render'}, '*');
-                }, 3000);
-            </script>
-        """, height=0, width=0)
+        # --- SYNCHRONISATION AUTOMATIQUE TOUTES LES 10 SECONDES ---
+        # Permet de recevoir les réponses du MJ et de sauvegarder sans recharger le navigateur
+        st.fragment(run_every=10)(lambda: None)()
 
         st.subheader("📝 État-Civil Tactique")
         col_civ1, col_civ2, col_civ3 = st.columns(3)
