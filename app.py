@@ -283,43 +283,38 @@ if role == "Joueur (Ma Fiche)":
 
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
-            st.subheader("🌀 Les Cinq Anneaux")
+                    st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         
-        # Création des 5 colonnes pour aligner verticalement l'Anneau et son Score de Blessure
+        # Alignement vertical strict des 5 colonnes pour les Anneaux et les Gravités 1 à 16
         ca1, ca2, ca3, ca4, ca5 = st.columns(5)
         
         with ca1:
             air = st.slider("Air 💨", 1, 5, value=f.get("air", 1))
-            # Sélecteur de score de blessure de 1 à 16 lié à l'élément Air
             score_b_air = st.selectbox("Blessure Air :", list(range(0, 17)), index=int(f.get("score_b_air", 0)), key="sb_air")
             if score_b_air > 0:
                 st.caption(f"🩸 Gravité Air : **{score_b_air}/16**")
 
         with ca2:
             terre = st.slider("Terre 🏔️", 1, 5, value=f.get("terre", 1))
-            # Sélecteur de score de blessure de 1 à 16 lié à l'élément Terre
             score_b_terre = st.selectbox("Blessure Terre :", list(range(0, 17)), index=int(f.get("score_b_terre", 0)), key="sb_terre")
             if score_b_terre > 0:
                 st.caption(f"🩸 Gravité Terre : **{score_b_terre}/16**")
 
         with ca3:
             feu = st.slider("Feu 🔥", 1, 5, value=f.get("feu", 1))
-            # Sélecteur de score de blessure de 1 à 16 lié à l'élément Feu
             score_b_feu = st.selectbox("Blessure Feu :", list(range(0, 17)), index=int(f.get("score_b_feu", 0)), key="sb_feu")
             if score_b_feu > 0:
                 st.caption(f"🩸 Gravité Feu : **{score_b_feu}/16**")
 
         with ca4:
             eau = st.slider("Eau 💧", 1, 5, value=f.get("eau", 1))
-            # Sélecteur de score de blessure de 1 à 16 lié à l'élément Eau
             score_b_eau = st.selectbox("Blessure Eau :", list(range(0, 17)), index=int(f.get("score_b_eau", 0)), key="sb_eau")
             if score_b_eau > 0:
                 st.caption(f"🩸 Gravité Eau : **{score_b_eau}/16**")
 
         with ca5:
             vide = st.slider("Vide 🌌", 1, 5, value=f.get("vide", 1))
-            # Sélecteur de score de blessure de 1 à 16 lié à l'élément Vide
             score_b_vide = st.selectbox("Blessure Vide :", list(range(0, 17)), index=int(f.get("score_b_vide", 0)), key="sb_vide")
             if score_b_vide > 0:
                 st.caption(f"🩸 Gravité Vide : **{score_b_vide}/16**")
