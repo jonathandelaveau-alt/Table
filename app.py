@@ -477,7 +477,17 @@ if role == "Joueur (Ma Fiche)":
                 with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
                 st.success("Action envoyée au MJ !")
 
-                maj = {
+        # --- SÉCURISATION DES VALEURS PAR DÉFAUT AVANT SAUVEGARDE ---
+        if 'res_p' not in locals(): res_p = 1
+        if 'res_s' not in locals(): res_s = 0
+        if 'arme_active_nom' not in locals(): arme_active_nom = "Aucune"
+        if 'arme_active_degats' not in locals(): arme_active_degats = 3
+        if 'arme_active_danger' not in locals(): arme_active_danger = 5
+        if 'arme_active_portee' not in locals(): arme_active_portee = "1"
+        if 'armure_active' not in locals(): armure_active = "Aucune"
+        if 'armes_equipees' not in locals(): armes_equipees = []
+
+        maj = {
             "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
             "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
             "armure_active": armure_active, "res_p": res_p, "res_s": res_s, 
@@ -493,7 +503,7 @@ if role == "Joueur (Ma Fiche)":
             "inventaire_sac": f.get("inventaire_sac", []),
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac, "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org, "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
         }
-    sauver_fiche(nom_id, maj)
+        sauver_fiche(nom_id, maj)
     else:
         st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
 
