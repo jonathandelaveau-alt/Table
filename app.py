@@ -193,7 +193,7 @@ if role == "Joueur (Ma Fiche)":
         )
         
         # 5. Si une école est sélectionnée, on enregistre et on affiche ses caractéristiques
-        if sel_ecole_brute != "-- Choisir une École Impériale --":
+        if sel_ecole_brute != "-- Choisir une École Rokugan --":
             # On extrait le vrai nom de l'école en enlevant le préfixe du clan
             vrai_nom_ecole = sel_ecole_brute.split("] ")[1]
             
@@ -209,7 +209,7 @@ if role == "Joueur (Ma Fiche)":
             
             st.markdown(
                 f"ℹ️ **Informations de l'école :**\n"
-                f"• **Clan Supérieur :** {infos_ecole.get('clan')}\n"
+                f"• **Clan Majeur :** {infos_ecole.get('clan')}\n"
                 f"• **Rôle / Profil :** *{infos_ecole.get('role')}*\n"
                 f"• **Enseignements autorisés :** `{tech_autorisees}`\n"
                 f"• **Notes de l'école :** _{infos_ecole.get('notes', 'Aucune note particulière.')}_"
