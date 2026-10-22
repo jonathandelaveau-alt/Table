@@ -528,15 +528,59 @@ if role == "Joueur (Ma Fiche)":
                     sauver_fiche(nom_id, f)
                     st.rerun()
 
-        # --- GESTION DES TECHNIQUES FINALE DU JOUEUR ---
+             # =====================================================================
+        # 📜 LE GRIMOIRE DES TECHNIQUES IMPÉRIALES (LIEN CATALOGUES)
+        # =====================================================================
         st.markdown("---")
-        st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")        
-        st.subheader("📜 Gestion des techniques")
+        st.subheader("📖 Le Grimoire des Techniques Impériales")
         
-        for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
-            if cle_g not in f: 
-                f[cle_g] = []
+        # Liste de correspondance entre vos clés de fiche et vos catalogues importés
+        categories_list = [
+            ("Katas", "mes_katas", CATALOGUE_KATAS if 'CATALOGUE_KATAS' in globals() else {}),
+            ("Kihos", "mes_kihos", CATALOGUE_KIHOS if 'CATALOGUE_KIHOS' in globals() else {}),
+            ("Invocations", "mes_invocs", CATALOGUE_INVOCATIONS if 'CATALOGUE_INVOCATIONS' in globals() else {}),
+            ("Rituels", "mes_rituels", CATALOGUE_RITUELS if 'CATALOGUE_RITUELS' in globals() else {}),
+            ("Shujis", "mes_shujis", CATALOGUE_SHUJIS if 'CATALOGUE_SHUJIS' in globals() else {}),
+            ("Mahos", "mes_mahos", CATALOGUE_MAHOS if 'CATALOGUE_MAHOS' in globals() else {}),
+            ("Ninjutsus", "mes_ninjutsus", CATALOGUE_NINJUTSUS if 'CATALOGUE_NINJUTSUS' in globals() else {}),
+            ("Inversions", "mes_inversions", CATALOGUE_INVERSIONS if 'CATALOGUE_INVERSIONS' in globals() else {})
+        ]
 
+        for nom_cat, cle_fiche, cat_ref in categories_list:
+            if cle_fiche not in f:
+                f[cle_fiche] = []
+                
+            # Création d'un volet déroulant par catégorie de technique
+            with st.expander(f"✨ {nom_cat} Maîtrisés ({len(f[cle_fiche])})"):
+                # 1. Affichage des techniques déjà apprises par le joueur
+                if f[cle_fiche]:
+                    for tech in f[cle_fiche]:
+                        col_t_txt, col_t_btn = st.columns([3, 1])
+                        col_t_txt.write(f"• **{tech}**")
+                        # Bouton de suppression en croix pour oublier la technique
+                        if col_t_btn.button("❌", key=f"del_t_{cle_fiche}_{tech}"):
+                            f[cle_fiche].remove(tech)
+                            sauver_fiche(nom_id, f)
+                            st.rerun()
+                else:
+                    st.caption(f"Aucun {nom_cat[:-1]} connu.")
+
+                # 2. Formulaire pour apprendre une nouvelle technique depuis le catalogue racine
+                if cat_ref:
+                    # On filtre pour ne pas proposer des techniques que le joueur connaît déjà
+                    liste_choix = ["-- Apprendre une technique --"] + [t for t in cat_ref.keys() if t not in f[cle_fiche]]
+                    sel_t = st.selectbox(f"Choisir dans le catalogue des {nom_cat} :", liste_choix, key=f"add_select_{cle_fiche}")
+                    
+                    if sel_t != "-- Apprendre une technique --" and st.button("🧠 Valider l'apprentissage", key=f"btn_add_val_{cle_fiche}"):
+                        f[cle_fiche].append(sel_t)
+                        sauver_fiche(nom_id, f)
+                        st.success(f"🔮 Technique apprise avec succès !")
+                        st.rerun()
+                else:
+                    st.warning(f"⚠️ Le fichier technique.py ne contient pas de catalogue pour {nom_cat}.")
+
+        # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
+        st.markdown("---")
         sauver_fiche(nom_id, f)
 
 # =====================================================================
