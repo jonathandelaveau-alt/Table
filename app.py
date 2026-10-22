@@ -102,118 +102,97 @@ role = st.sidebar.selectbox(
 )
 
 # Initialisation par défaut pour éviter les erreurs de lecture plus bas
-onglet_actif = "📜 Ma Feuille de Personnage"
-
-if role == "Joueur (Ma Fiche)":
-    nom_id = st.sidebar.text_input("⛩️ Saisissez votre prénom :", key="input_prenom_joueur").strip()
-    
-    if nom_id:
-        # On charge les données existantes du joueur de manière persistante
-        if "fiche_active" not in st.session_state or st.session_state.get("joueur_courant") != nom_id:
-            st.session_state["fiche_active"] = charger_fiche(nom_id)
-            st.session_state["joueur_courant"] = nom_id
-            
-        f = st.session_state["fiche_active"]
-        
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("📌 Navigation")
-        onglet_actif = st.sidebar.radio(
-            "Choisir la zone à afficher :",
-            [
-                "📜 Ma Feuille de Personnage", 
-                "🔨 Forge et Modification",
-                "🎲 Calculateur de Dés Tactique",
-                "🏛️ Grand Catalogue des Techniques", 
-                "🛒 Marché d'Émeraude",
-                "🩸 S'infliger un État / Blessure"
-            ],
-            key="radio_navigation_globale"
-        )
-
+        # =====================================================================
+        # 📜 ONGLET 1 : MA FEUILLE DE PERSONNAGE (STRUCTURE COMPLÈTE ET RESTAURÉE)
+        # =====================================================================
         if onglet_actif == "📜 Ma Feuille de Personnage":
             st.header(f"👤 Votre Feuille Dynamique — {nom_id}")
-            # (Ici continue votre code habituel avec vos anneaux, caractéristiques, etc.)
-        
-        # --- RÉCUPÉRATION DES SÉCURITÉS INITIALES ---
-        air_score = int(f.get("air", 1))
-        terre_score = int(f.get("terre", 1))
-        feu_score = int(f.get("feu", 1))
-        eau_score = int(f.get("eau", 1))
-        vide_score = int(f.get("vide", 1))
-        # =====================================================================
-        # 🧮 CALCULATEUR DE STATISTIQUES SECONDAIRES & HAUTS FAITS (L5R 5E)
-        # =====================================================================
-        # Récupération stricte et conversion des 5 Anneaux en entiers
-        val_air = int(f.get("anneau_air", 2))
-        val_terre = int(f.get("anneau_terre", 2))
-        val_feu = int(f.get("anneau_feu", 2))
-        val_eau = int(f.get("anneau_eau", 2))
-        val_vide = int(f.get("anneau_vide", 2))
-
-        # --- EXÉCUTION DES 5 FORMULES OFFICIELLES ---
-        endurance_max = (val_terre + val_feu) * 2     # Formule 1 : Endurance
-        sang_froid_max = (val_terre + val_eau) * 2     # Formule 2 : Sang-Froid
-        attention_max = val_air + val_feu             # Formule 3 : Attention (Focus)
-        vigilance_max = (val_air + val_eau) / 2       # Formule 4 : Vigilance Passive
-        points_vide_max = val_vide                    # Formule 5 : Points de Vide max = Anneau de Vide
-
-        st.markdown("---")
-        st.subheader("📊 Vitalité & Défenses Sacrées")
-
-        # Ajustement automatique si la fatigue dépasse le nouveau maximum calculé
-        if int(f.get("endurance_actuelle", endurance_max)) > endurance_max:
-            f["endurance_actuelle"] = endurance_max
-        if int(f.get("sang_froid_actuel", sang_froid_max)) > sang_froid_max:
-            f["sang_froid_actuel"] = sang_froid_max
-        if int(f.get("points_vide_actuels", points_vide_max)) > points_vide_max:
-            f["points_vide_actuels"] = points_vide_max
-
-        # Affichage visuel en double colonne
-        col_vit1, col_vit2 = st.columns(2)
-        with col_vit1:
-            st.markdown(f"❤️ **Endurance Maximale :** `{endurance_max}`")
-            f["endurance_actuelle"] = st.number_input(
-                "Endurance Actuelle (Points de Vie) :", 
-                min_value=0, max_value=endurance_max, 
-                value=int(f.get("endurance_actuelle", endurance_max)),
-                key="num_endurance_live_v5"
-            )
-            st.progress(f["endurance_actuelle"] / endurance_max if endurance_max > 0 else 0)
             
-            st.markdown(f"🎯 **Attention (Focus Initiative) :** `{attention_max}`")
-            
-        with col_vit2:
-            st.markdown(f"🧠 **Sang-Froid Maximal :** `{sang_froid_max}`")
-            f["sang_froid_actuel"] = st.number_input(
-                "Sang-Froid Actuel (Résistance au Stress) :", 
-                min_value=0, max_value=sang_froid_max, 
-                value=int(f.get("sang_froid_actuel", sang_froid_max)),
-                key="num_sangfroid_live_v5"
-            )
-            st.progress(f["sang_froid_actuel"] / sang_froid_max if sang_froid_max > 0 else 0)
-            
-            st.markdown(f"👁️ **Vigilance Passive :** `{vigilance_max}`")
+            # --- 1. BIOGRAPHIE ET ÉTAT CIVIL ---
+            st.subheader("📔 Biographie Impériale")
+            col_bio1, col_bio2 = st.columns(2)
+            with col_bio1:
+                f["clan"] = st.text_input("Clan Majeur / Mineur :", value=f.get("clan", "Clan de la Grue"), key="ti_b_clan")
+                f["famille"] = st.text_input("Lignée / Famille :", value=f.get("famille", "Kakita"), key="ti_b_famille")
+                f["genre"] = st.text_input("Genre :", value=f.get("genre", "Homme"), key="ti_b_genre")
+            with col_bio2:
+                f["espece"] = st.text_input("Espèce :", value=f.get("espece", "Humain"), key="ti_b_espece")
+                f["ecole"] = st.text_input("École d'Origine :", value=f.get("ecole", ""), key="ti_b_ecole")
 
-        st.markdown("---")
-        st.markdown(f"🌌 **Points de Vide Disponibles :** Max théorique `{points_vide_max}`")
-        f["points_vide_actuels"] = st.slider(
-            "Points de Vide dépensés / restants :",
-            min_value=0, max_value=points_vide_max,
-            value=int(f.get("points_vide_actuels", points_vide_max)),
-            key="slider_points_vide_l5r"
-        )
+            # --- 2. LES 5 ANNEAUX ÉLÉMENTAIRES ---
+            st.markdown("---")
+            st.subheader("☯️ Anneaux Élémentaires")
+            col_an1, col_an2, col_an3, col_an4, col_an5 = st.columns(5)
+            with col_an1: f["anneau_air"] = st.number_input("Air 💨", min_value=1, max_value=6, value=int(f.get("anneau_air", 2)), key="num_an_air")
+            with col_an2: f["anneau_terre"] = st.number_input("Terre 🏔️", min_value=1, max_value=6, value=int(f.get("anneau_terre", 2)), key="num_an_terre")
+            with col_an3: f["anneau_feu"] = st.number_input("Feu 🔥", min_value=1, max_value=6, value=int(f.get("anneau_feu", 2)), key="num_an_feu")
+            with col_an4: f["anneau_eau"] = st.number_input("Eau 💧", min_value=1, max_value=6, value=int(f.get("anneau_eau", 2)), key="num_an_eau")
+            with col_an5: f["anneau_vide"] = st.number_input("Vide 🌌", min_value=1, max_value=6, value=int(f.get("anneau_vide", 2)), key="num_an_vide")
 
-        # =====================================================================
-        # 🩸 LE BOUTON ROUGE : ENREGISTRER EN PARCHEMIN & SYNCHRONISER
-        # =====================================================================
-        st.markdown("---")
-        if st.button("🧧 ENREGISTRER EN PARCHEMIN (Sauvegarde et Actualisation)", key="btn_rouge_sauvegarde_parchemin", use_container_width=True):
-            # 1. On fige le dictionnaire en mémoire vive de session
-            st.session_state["fiche_active"] = f
-            # 2. On écrit physiquement le fichier JSON dans sauvegardes_l5a/
-            sauver_fiche(nom_id, f)
-            st.toast("📜 Le Parchemin Ancestral a été scellé et enregistré sur le serveur !", icon="🔥")
-            st.rerun()
+            # --- 3. CALCUL DES STATISTIQUES SECONDAIRES ---
+            val_air = int(f.get("anneau_air", 2))
+            val_terre = int(f.get("anneau_terre", 2))
+            val_feu = int(f.get("anneau_feu", 2))
+            val_eau = int(f.get("anneau_eau", 2))
+            val_vide = int(f.get("anneau_vide", 2))
+
+            endurance_max = (val_terre + val_feu) * 2
+            sang_froid_max = (val_terre + val_eau) * 2
+            attention_max = val_air + val_feu
+            vigilance_max = (val_air + val_eau) / 2
+            points_vide_max = val_vide
+
+            # --- 4. EXÉCUTION DU CALCUL DE LA POSTURE DE L'AIR ---
+            try: rang_ecole_calc = int(f.get("rang_ecole", f.get("rang", 1)))
+            except (ValueError, TypeError): rang_ecole_calc = 1
+            val_air_posture = 2 if rang_ecole_calc >= 4 else 1
+
+            # --- 5. POSTURE DE COMBAT ---
+            st.markdown("---")
+            liste_postures = ["Air", "Terre", "Feu", "Eau", "Vide"]
+            posture = st.selectbox("Posture Active de combat :", liste_postures, index=liste_postures.index(f.get("posture", "Air")), key="sb_posture_combat_v6")
+            f["posture"] = posture
+
+            dict_postures = {
+                "Air": f"💨 **Posture de l'Air :** Le niveau de difficulté des tests augmente de {val_air_posture}.",
+                "Terre": "🏔️ **Posture de la Terre :** Pas de coups critiques face à vous.",
+                "Feu": "🔥 **Posture du Feu :** +1 succès BONUS par conflit sur les dégâts.",
+                "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action.",
+                "Vide": "🌌 **Posture du Vide :** Pas de stress via les conflits."
+            }
+            st.info(dict_postures.get(posture, "Aucune posture active"))
+
+            # --- 6. VITALITÉ & DÉFENSES ---
+            st.subheader("📊 Vitalité & Défenses Sacrées")
+            col_vit1, col_vit2 = st.columns(2)
+            with col_vit1:
+                st.markdown(f"❤️ **Endurance Maximale :** `{endurance_max}`")
+                f["endurance_actuelle"] = st.number_input("Endurance Actuelle :", min_value=0, max_value=endurance_max, value=int(f.get("endurance_actuelle", endurance_max)), key="n_end_live")
+                st.markdown(f"🎯 **Attention (Focus) :** `{attention_max}`")
+            with col_vit2:
+                st.markdown(f"🧠 **Sang-Froid Maximal :** `{sang_froid_max}`")
+                f["sang_froid_actuel"] = st.number_input("Sang-Froid Actuel :", min_value=0, max_value=sang_froid_max, value=int(f.get("sang_froid_actuel", sang_froid_max)), key="n_sf_live")
+                st.markdown(f"👁️ **Vigilance Passive :** `{vigilance_max}`")
+
+            st.markdown(f"🌌 **Points de Vide Disponibles :** Max `{points_vide_max}`")
+            f["points_vide_actuels"] = st.slider("Ajuster vos Points de Vide :", min_value=0, max_value=points_vide_max, value=int(f.get("points_vide_actuels", points_vide_max)), key="sl_vide_v6")
+
+            # --- 7. AFFICHAGE DES ÉTATS SUBIS ---
+            st.markdown("---")
+            st.subheader("🩸 États & Blessures Actifs")
+            if f.get("mes_etats"):
+                for affliction in f["mes_etats"]:
+                    st.write(f"• **{affliction}**")
+            else:
+                st.info("✨ Aucun état handicapant ou blessure majeure.")
+
+            # --- 8. LE BOUTON ROUGE DE SAUVEGARDE PARCHEMIN ---
+            st.markdown("---")
+            if st.button("🧧 ENREGISTRER EN PARCHEMIN", key="btn_sauve_parchemin_v6", use_container_width=True):
+                st.session_state["fiche_active"] = f
+                sauver_fiche(nom_id, f)
+                st.toast("📜 Fiche enregistrée !", icon="🔥")
+                st.rerun()
         
         # --- CENTRALISATION IMMÉDIATE DU DICTIONNAIRE DE SAUVEGARDE (MAJ) ---
         maj = {
