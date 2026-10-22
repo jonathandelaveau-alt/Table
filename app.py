@@ -216,12 +216,12 @@ if role == "Joueur (Ma Fiche)":
         else:
             st.caption("⚠️ Aucune école sélectionnée pour le moment. Veuillez en choisir une dans la liste ci-dessus.")
             
-# --- BOUTON D'ACTUALISATION ET SYNCHRONISATION EN DIRECT ---
-st.sidebar.markdown("---")
-if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
-    st.toast("⚡ Synchronisation avec le serveur réussie !", icon="🛸")
-    st.rerun()
- # --- BLOC DES POSTURES CORRIGÉ ET COORDONNÉ ---
+        # --- SYNCHRONISATION EN DIRECT DE L'ONGLET ---
+        st.sidebar.markdown("---")
+        if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
+            st.toast("⚡ Synchronisation avec le serveur réussie !", icon="🛸")
+            st.rerun()
+
         # --- SOLUTION RADICALE IMMUNISÉE CONTRE LES INDENTATIONS ---
         texte_air = f"💨 **Posture de l'Air :** Le niveau de difficulté des tests augmente de {valeur_air_posture}."
         dict_postures = {"Air": texte_air, "Terre": "🏔️ **Posture de la Terre :** Pas de coups critiques face à vous.", "Feu": "🔥 **Posture du Feu :** +1 succès BONUS par conflit sur les dégâts.", "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action.", "Vide": "🌌 **Posture du Vide :** Pas de stress via les conflits."}
