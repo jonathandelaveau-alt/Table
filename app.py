@@ -284,7 +284,7 @@ if role == "Joueur (Ma Fiche)":
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
             st.subheader("🌀 Les Cinq Anneaux")
-            sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
+        sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         
         # Affichage direct et robuste aligné sur le bord de la page
         air = st.slider("Air 💨", 1, 5, value=f.get("air", 1))
