@@ -361,19 +361,25 @@ if role == "Joueur (Ma Fiche)":
                 st.success(f"{a_achat} ajoutée au sac !")
                 st.rerun()
 
-        with col_cat3:
+                with col_cat3:
             st.markdown("**3. Catégorie : Objets Divers**")
-            d_achat = st.selectbox("Sélectionner un objet utilitaire :", list(CATALOGUE_DIVERS.keys()), key="buy_d_sel")
-            d_stats = CATALOGUE_DIVERS[d_achat]
-            if st.button("➕ Ajouter l'Objet Divers", key="btn_buy_d"):
-                f["inventaire_sac"].append({
-                    "id_obj": int(time.time()), "nom": d_achat, "type_cat": "Divers", 
-                    "details": f"Type : {d_stats['type']}. Niveau de Rareté : {d_stats['rarete']}.", 
-                    "proprietes": d_stats["effet"], "equipe": False
-                })
-                sauver_fiche(nom_id, f)
-                st.success(f"{d_achat} glissé dans le sac !")
-                st.rerun()
+            # Sécurité au cas où le catalogue externe met du temps à charger
+            liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
+            
+            if liste_divers:
+                d_achat = st.selectbox("Sélectionner un objet utilitaire :", liste_divers, key="boutique_divers_unique_sel")
+                d_stats = CATALOGUE_DIVERS[d_achat]
+                if st.button("➕ Ajouter l'Objet Divers", key="btn_buy_d_sac"):
+                    f["inventaire_sac"].append({
+                        "id_obj": int(time.time()), "nom": d_achat, "type_cat": "Divers", 
+                        "details": f"Type : {d_stats['type']}. Niveau de Rareté : {d_stats['rarete']}.", 
+                        "proprietes": d_stats["effet"], "equipe": False
+                    })
+                    sauver_fiche(nom_id, f)
+                    st.success(f"{d_achat} glissé dans le sac !")
+                    st.rerun()
+            else:
+                st.error("Le catalogue des objets divers est introuvable ou vide.")
         
         st.subheader("📜 Gestion des techniques")
         for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
