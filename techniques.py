@@ -33,12 +33,10 @@ iCATALOGUE_COMPLET = {
 }
 # --- DICTIONNAIRE DES DESCRIPTIONS DE TECHNIQUES (DÉPORTÉ ICI) ---
 DESCRIPTIONS_LORE = {
-    "offensive de l'eau": "Type : Kata (Général) | Rang 1\nEffet : Activation : lorsque vous effectuez un test d’Arts martiaux (Corps à corps, Distance ou Mains nues) (Eau), vous pouvez dépenser  comme suit : 
-1 aubaine ou plus de l’Eau : diminuez la Résistance physique de la cible de 1 point par  dépensé de cette façon. L’effet persiste jusqu’à la fin de votre prochain tour
-.",
-    "offensive de la terre": "Type : Kata (Général) | Rang 1\nEffet : Activation : lorsque vous effectuez un test d’Arts martiaux (Corps à corps, Distance ou Mains nues) (Terre), vous pouvez dépenser  comme suit : 
-1 aubaine ou plus de la Terre : jusqu’au début de votre prochain tour, augmentez votre Résistance physique de 1 point par  dépensé de cette façon
-.",
+    "offensive de l'eau": "Type : Kata (Général) | Rang 1\nEffet : Activation : lorsque vous effectuez un test d’Arts martiaux (Corps à corps, Distance ou Mains nues) (Eau), vous pouvez dépenser vos aubaines comme suit  
+1 aubaine ou plus de l’Eau : diminuez la Résistance physique de la cible de 1 point par  dépensé de cette façon. L’effet persiste jusqu’à la fin de votre prochain tour.",
+    "offensive de la terre": "Type : Kata (Général) | Rang 1\nEffet : Activation : lorsque vous effectuez un test d’Arts martiaux (Corps à corps, Distance ou Mains nues) (Terre), vous pouvez dépenser vos aubaines comme suit 
+1 aubaine ou plus de la Terre : jusqu’au début de votre prochain tour, augmentez votre Résistance physique de 1 point par  dépensé de cette façon.",
     "Esprit du Sabre": "Type : Kata (Général) | Rang 1\nEffet : Concentre votre attention sur le fil de la lame. Réduit de 1 le coût des opportunités martiales.",
     "Frappe du Tonnerre d'Acier": "Type : Kata (Corps-à-corps) | Rang 1\nEffet : Attaque lourde. Si le coup touche, la cible est projetée au sol et subit l'état Étourdi.",
     "L'Estoc de la Grue": "Type : Kata (Corps-à-corps) | Rang 1\nEffet : Une fente d'une précision chirurgicale qui ignore 1 point de Résistance Physique adverse.",
