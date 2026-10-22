@@ -472,7 +472,7 @@ if role == "Joueur (Ma Fiche)":
                     st.rerun()
             
                 if f.get("objet_regarde_id"):
-                obj_analyse = next((obj for obj in f["inventaire_sac"] if obj["id_obj"] == f["objet_regarde_id"]), None)
+                    obj_analyse = next((obj for obj in f["inventaire_sac"] if obj["id_obj"] == f["objet_regarde_id"]), None)
                 if obj_analyse:
                     st.markdown("---")
                     with st.chat_message("assistant", avatar="🔍"):
