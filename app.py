@@ -53,10 +53,22 @@ def afficher_details_technique(nom_technique):
         st.rerun()
 
 role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maître du Jeu (Hôte)"])
-
+# =====================================================================
+# 🗺️ AJOUT DE LA NAVIGATION INTER-ONGLETS
+# =====================================================================
+st.sidebar.markdown("---")
+st.sidebar.subheader("📌 Navigation dans la Session")
+onglet_actif = st.sidebar.radio(
+    "Choisir la zone à afficher :",
+    ["📜 Ma Feuille de Personnage", "🏛️ Grand Catalogue des Techniques", "🛒 Marché d'Émeraude"],
+    key="radio_navigation_globale"
+)
+st.sidebar.markdown("---")
 # ==================== VUE JOUEUR ====================
 if role == "Joueur (Ma Fiche)":
     st.header("👤 Votre Feuille Dynamique")
+        # On vérifie quel onglet de navigation est sélectionné par le joueur
+    if onglet_actif == "📜 Ma Feuille de Personnage":
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
     
     if nom_id:
