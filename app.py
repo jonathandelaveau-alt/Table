@@ -284,7 +284,7 @@ if role == "Joueur (Ma Fiche)":
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
             st.subheader("🌀 Les Cinq Anneaux")
-            sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
+        sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         
         # Création des 5 colonnes pour aligner verticalement l'Anneau et son Score de Blessure
         ca1, ca2, ca3, ca4, ca5 = st.columns(5)
@@ -325,6 +325,7 @@ if role == "Joueur (Ma Fiche)":
                 st.caption(f"🩸 Gravité Vide : **{score_b_vide}/16**")
 
         p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
+
 
         # --- RAPPEL DES CARACTÉRISTIQUES DE L'ARMURE PORTÉE (NOUVEAUTÉ) ---
         armure_actuelle_nom = f.get("armure_active", "Armure de Tenue de Cérémonie")
@@ -612,7 +613,9 @@ if role == "Joueur (Ma Fiche)":
             "inventaire_armes_complexe": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
-            "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
+            "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur  "score_b_air": score_b_air, "score_b_terre": score_b_terre, 
+            "score_b_feu": score_b_feu, "score_b_eau": score_b_eau, "score_b_vide": score_b_vide,
+
         }
         sauver_fiche(nom_id, maj)
     else:
