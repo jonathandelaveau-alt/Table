@@ -361,7 +361,7 @@ if role == "Joueur (Ma Fiche)":
                 st.success(f"{a_achat} ajoutée au sac !")
                 st.rerun()
 
-                with col_cat3:
+        with col_cat3:
             st.markdown("**3. Catégorie : Objets Divers**")
             # Sécurité au cas où le catalogue externe met du temps à charger
             liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
