@@ -26,3 +26,11 @@ CATALOGUE_ARMES_AVANCE = {
         "proprietes": "Encombrante, Militaire"
     }
 }
+
+# --- CATALOGUE DES OBGETS DIVERS (AJOUTÉ POUR L'INVENTAIRE) ---
+CATALOGUE_DIVERS = {
+    "Potion de Soin Élémentaire": {"type": "Consommable", "rarete": 2, "effet": "Restaure 4 points d'Endurance Actuelle."},
+    "Encens de Méditation du Vide": {"type": "Outil", "rarete": 3, "effet": "Augmente de +1 les dés gardés lors du prochain test de Théologie."},
+    "Sceau de Cire du Clan": {"type": "Social", "rarete": 1, "effet": "Preuve d'identité officielle. Accorde +5 en Gloire lors des interactions diplomatiques."},
+    "Nécessaire de Calligraphie d'Urgence": {"type": "Artisanat", "rarete": 2, "effet": "Permet de rédiger des parchemins ou des invitations officielles à la volée."}
+}
