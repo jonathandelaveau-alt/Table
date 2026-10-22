@@ -66,27 +66,25 @@ onglet_actif = st.sidebar.radio(
 st.sidebar.markdown("---")
 # ==================== VUE JOUEUR ====================
 if role == "Joueur (Ma Fiche)":
-    # 1. On demande d'abord le prénom dans la barre latérale pour stabiliser la session
+    # 1. Demande du prénom dans la barre latérale pour verrouiller la session
     nom_id = st.sidebar.text_input("⛩️ Saisissez votre prénom :", key="input_prenom_joueur").strip()
     
     if nom_id:
-        # 2. On charge la fiche du joueur correspondant à ce prénom
+        # 2. Chargement de la fiche du joueur
         f = charger_fiche(nom_id)
-        if not f: f = {}  # Sécurité si la fiche est vide
+        if not f: 
+            f = {}
         
-        # 3. On affiche le menu de navigation dans la barre latérale
-        st.sidebar.markdown("---")
-        st.sidebar.subheader("📌 Navigation")
+        # 3. Création du menu de navigation radio (Vérifiez bien cet alignement à 8 espaces)
         onglet_actif = st.sidebar.radio(
             "Choisir la zone à afficher :",
             ["📜 Ma Feuille de Personnage", "🏛️ Grand Catalogue des Techniques", "🛒 Marché d'Émeraude"],
             key="radio_navigation_globale"
         )
         
-        # 4. On vérifie quel onglet est actif pour le joueur
+        # 4. Premier onglet principal
         if onglet_actif == "📜 Ma Feuille de Personnage":
             st.header(f"👤 Votre Feuille Dynamique — {nom_id}")
-            # (C'est ICI que commence tout votre code habituel de caractéristiques de votre personnage)
         
         # --- RÉCUPÉRATION DES SÉCURITÉS INITIALES ---
         air_score = int(f.get("air", 1))
