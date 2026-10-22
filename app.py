@@ -57,9 +57,18 @@ role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maît
 # ==================== VUE JOUEUR ====================
 if role == "Joueur (Ma Fiche)":
     st.header("👤 Votre Feuille Dynamique")
-        # --- BOUTON DE RAFRAÎCHISSEMENT MANUEL INSTANTANÉ ---
-    if st.button("🔄 Actualiser mes données en direct", key="refresh_joueur_manuel"):
+        # --- TOUR DE CONTRÔLE : RAFRAÎCHISSEMENT & SAUVEGARDE MANUELLE ---
+    col_ctrl1, col_ctrl2 = st.columns(2)
+    if col_ctrl1.button("🔄 Actualiser mes données en direct", key="refresh_joueur_manuel"):
         st.rerun()
+        
+    if col_ctrl2.button("💾 Enregistrer mon Parchemin (Sécurité)", key="save_joueur_manuel"):
+        # Déclenche la création du dictionnaire 'maj' et force l'écriture immédiate
+        if 'maj' in locals():
+            sauver_fiche(nom_id, maj)
+            st.success("📝 Vos données ont été gravées avec succès dans la base !")
+        else:
+            st.warning("⚠️ Modifiez une valeur ou attendez 2 secondes pour initialiser la sauvegarde manuelle.")
 
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
     
@@ -68,7 +77,19 @@ if role == "Joueur (Ma Fiche)":
         
         # --- SYNCHRONISATION AUTOMATIQUE TOUTES LES 10 SECONDES ---
         # Permet de recevoir les réponses du MJ et de sauvegarder sans recharger le navigateur
+               # --- PROTOCOLE DE SYNCHRONISATION AUTOMATIQUE (TOUTES LES 10 SECONDES) ---
+        if "dernier_check_auto" not in st.session_state:
+            st.session_state["dernier_check_auto"] = time.time()
+            
+        # Déclencheur temporel Streamlit (S'exécute silencieusement en tâche de fond)
         st.fragment(run_every=10)(lambda: None)()
+        
+        # Si 10 secondes se sont écoulées depuis la dernière écriture, on applique la sauvegarde
+        if time.time() - st.session_state["dernier_check_auto"] >= 10:
+            if 'maj' in locals():
+                sauver_fiche(nom_id, maj)
+                st.session_state["dernier_check_auto"] = time.time()
+                st.toast("💾 Synchronisation automatique effectuée (Fiche sauvegardée).", icon="🔄")
 
         st.subheader("📝 État-Civil Tactique")
         col_civ1, col_civ2, col_civ3 = st.columns(3)
