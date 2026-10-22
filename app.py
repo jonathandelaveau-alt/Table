@@ -210,7 +210,23 @@ if role == "Joueur (Ma Fiche)":
         rang_ecole = col_civ5.number_input("Rang d'École (1 à 6) :", 1, 6, value=f.get("rang_ecole", 1))
         roles_actuels = col_civ6.multiselect("Sélectionnez votre ou vos Rôles :", ROLES_LISTE, default=f.get("profil", ["Bushi"]))
 
+                # --- SÉLECTION DE LA POSTURE ACTIVE ---
         posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
+
+        # --- PARCHEMIN DYNAMIQUE DES EFFETS DE POSTURE ---
+        # Détermination de l'effet de l'Air selon le Rang d'École du joueur (Augmente au Rang 4)
+        valeur_air = 2 if int(f.get("rang_ecole", 1)) >= 4 else 1
+
+        EFFETS_POSTURES = {
+            "Air": f"💨 **Posture de l'Air :** Le niveau de difficulté des tests d'attaque et de manipulation dirigés contre vous augmente de **{valeur_air}**.",
+            "Terre": "🏔️ **Posture de la Terre :** Vos adversaires ne peuvent pas dépenser leurs aubaines pour vous infliger des coups critiques ou des États.",
+            "Feu": "🔥 **Posture du Feu :** En cas de réussite lors d'un test, vous gagnez un succès **BONUS** par conflit sur les dégâts et sur les dés gardés.",
+            "Eau": "💧 **Posture de l'Eau :** Vous pouvez effectuer une seconde action lors de votre tour. Cette action ne peut pas nécessiter de test, ni partager un type avec votre première action.",
+            "Vide": "🌌 **Posture du Vide :** Les conflits obtenus lors de vos tests ne vous infligent aucun point de conflit (stress)."
+        }
+
+        # Affichage sous forme de bandeau d'information coloré
+        st.info(EFFETS_POSTURES[posture])
 
         st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
