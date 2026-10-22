@@ -319,14 +319,24 @@ if role == "Joueur (Ma Fiche)":
 
             bloque_mg = (st.session_state["w_md_2mains"] or md_bloquante_pour_mg) and sel_md != "Aucune"
 
-            # --- CONFIGURATION ET AFFICHAGE MAIN GAUCHE (TOUTES ARMES ACCEPTÉES) ---
+            # --- CONFIGURATION ET AFFICHAGE MAIN GAUCHE (TOUTES ARMES DÉBLOQUÉES) ---
             if bloque_mg:
                 st.selectbox("🛡️ Arme / Équipement en Main Gauche :", ["Grise (Main Droite tenue à 2 mains 👐)"], disabled=True, key="sel_w_mg_disabled")
                 sel_mg = "Aucune"
                 st.session_state["w_mg_2mains"] = False
             else:
-                liste_choix_mg = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["nom"] != sel_md]
-                sel_mg = st.selectbox("🛡️ Arme / Équipement en Main Gauche :", liste_choix_mg, index=liste_choix_mg.index(nom_w_mg) if nom_w_mg in liste_choix_mg else 0, key="sel_w_mg_live")
+                # CORRECTION : On affiche TOUTES les armes du sac à gauche, sans restreindre par rapport à la main droite
+                liste_choix_mg = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
+                
+                # Sécurité : Si l'index actuel n'est plus valide, on se remet sur "Aucune"
+                idx_mg = liste_choix_mg.index(nom_w_mg) if nom_w_mg in liste_choix_mg else 0
+                sel_mg = st.selectbox("🛡️ Arme / Équipement en Main Gauche :", liste_choix_mg, index=idx_mg, key="sel_w_mg_live")
+                
+                # Si le joueur sélectionne la MÊME arme dans les deux mains, on libère automatiquement la main droite
+                if sel_mg != "Aucune" and sel_mg == sel_md:
+                    sel_md = "Aucune"
+                    st.session_state["w_md_2mains"] = False
+                    st.toast("🔄 Arme passée en Main Gauche !")
                 
                 # Gestion de la prise Main Gauche
                 if sel_mg != "Aucune":
@@ -341,13 +351,17 @@ if role == "Joueur (Ma Fiche)":
                 else:
                     st.session_state["w_mg_2mains"] = False
 
-            # Application en base pour la Main Gauche
+            # Application stricte en base de données pour la Main Gauche et nettoyage de la Main Droite si conflit
             for w in f["inventaire_sac"]:
                 if w["type_cat"] == "Arme":
                     if w["nom"] == sel_mg:
                         w["main_equipee"] = "Main Gauche"
                         w["prise_main"] = "2 mains" if st.session_state["w_mg_2mains"] else "1 main"
-                    elif w["main_equipee"] == "Main Gauche":
+                    elif w["nom"] == sel_md:
+                        w["main_equipee"] = "Main Droite"
+                        w["prise_main"] = "2 mains" if st.session_state["w_md_2mains"] else "1 main"
+                    elif w["main_equipee"] in ["Main Droite", "Main Gauche"]:
+                        # L'arme n'est sélectionnée dans aucune des deux mains, elle retourne dans le sac
                         w["main_equipee"] = "Aucune"
 
             # --- AFFICHAGE DYNAMIQUE DES CARACTÉRISTIQUES ET COMPÉTENCES SOUS LES MENUS ---
