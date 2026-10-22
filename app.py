@@ -735,15 +735,11 @@ if role == "Joueur (Ma Fiche)":
         if 'sauver_fiche' in globals() and 'f' in locals():
             sauver_fiche(nom_id, f)
 
-# --- FIN ABSOLUE DU FICHIER : COMPLÈTEMENT COLLÉ À GAUCHE (0 ESPACE) ---
-else:
-    st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
-
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
     st.header("👁️ Panneau Tactique de l'Hôte")
-    if st.button("🔄 ACTUALISER LA TABLE"): st.rerun()
-
+    if st.button("🔄 ACTUALISER LA TABLE"): 
+        st.rerun()
     fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
     if not fichiers:
         st.info("Aucun samouraï n'a partagé de données.")
@@ -850,5 +846,6 @@ elif role == "Maître du Jeu (Hôte)":
                             st.rerun()
         else: 
             st.info("Aucune notification reçue.")
+# --- FIN ABSOLUE DU FICHIER : COMPLÈTEMENT COLLÉ À GAUCHE (0 ESPACE) ---
 else:
     st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
