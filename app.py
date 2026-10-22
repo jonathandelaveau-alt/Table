@@ -283,10 +283,10 @@ if role == "Joueur (Ma Fiche)":
 
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
-                    st.subheader("🌀 Les Cinq Anneaux")
+        # --- SECTION DES 5 ANNEAUX RE-ALIGNÉE ET CORRIGÉE ---
+        st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         
-        # Alignement vertical strict des 5 colonnes pour les Anneaux et les Gravités 1 à 16
         ca1, ca2, ca3, ca4, ca5 = st.columns(5)
         
         with ca1:
@@ -320,7 +320,6 @@ if role == "Joueur (Ma Fiche)":
                 st.caption(f"🩸 Gravité Vide : **{score_b_vide}/16**")
 
         p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
-
 
         # --- RAPPEL DES CARACTÉRISTIQUES DE L'ARMURE PORTÉE (NOUVEAUTÉ) ---
         armure_actuelle_nom = f.get("armure_active", "Armure de Tenue de Cérémonie")
