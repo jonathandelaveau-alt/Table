@@ -57,23 +57,10 @@ role = st.sidebar.radio("🔑 Rôle :", ["Visiteur", "Joueur (Ma Fiche)", "Maît
 # ==================== VUE JOUEUR ====================
 if role == "Joueur (Ma Fiche)":
     st.header("👤 Votre Feuille Dynamique")
-        # --- TOUR DE CONTRÔLE : RAFRAÎCHISSEMENT & SAUVEGARDE MANUELLE ---
-    col_ctrl1, col_ctrl2 = st.columns(2)
-    if col_ctrl1.button("🔄 Actualiser mes données en direct", key="refresh_joueur_manuel"):
-        st.rerun()
-        
-    if col_ctrl2.button("💾 Enregistrer mon Parchemin (Sécurité)", key="save_joueur_manuel"):
-        # Déclenche la création du dictionnaire 'maj' et force l'écriture immédiate
-        if 'maj' in locals():
-            sauver_fiche(nom_id, maj)
-            st.success("📝 Vos données ont été gravées avec succès dans la base !")
-        else:
-            st.warning("⚠️ Modifiez une valeur ou attendez 2 secondes pour initialiser la sauvegarde manuelle.")
-
     nom_id = st.text_input("Prénom (Identifiant de session) :").strip()
     
-        if nom_id:
-            f = charger_fiche(nom_id) or {}
+    if nom_id:
+        f = charger_fiche(nom_id) or {}
         
         # --- RÉCUPÉRATION DES SÉCURITÉS INITIALES ---
         air_score = int(f.get("air", 1))
@@ -83,7 +70,6 @@ if role == "Joueur (Ma Fiche)":
         vide_score = int(f.get("vide", 1))
         
         # --- CENTRALISATION IMMÉDIATE DU DICTIONNAIRE DE SAUVEGARDE (MAJ) ---
-        # Placé ici, il est disponible instantanément pour tous les boutons de la page
         maj = {
             "perso": f.get("perso", ""), "clan": f.get("clan", "Grue"), "famille": f.get("famille", ""), 
             "profil": f.get("profil", ["Bushi"]), "ecole": f.get("ecole", ""), "rang_ecole": f.get("rang_ecole", 1), 
