@@ -1,4 +1,4 @@
-iCATALOGUE_COMPLET = {
+CATALOGUE_COMPLET = {
     "Katas": {
         "Général": {"Rang 1": ["offensive de l'eau", "offensive de la terre", "Esprit du Sabre"], "Rang 2": ["Danse des Ombres", "Esquive du Vent"]},
         "Corps-à-corps": {"Rang 1": ["Frappe du Tonnerre d'Acier", "L'Estoc de la Grue"], "Rang 2": ["Coup de l'Avalanche Crépusculaire", "Fend-l'Armure"]},
