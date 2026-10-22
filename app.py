@@ -7,6 +7,7 @@ import time
 from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE, CATALOGUE_DIVERS
 from techniques import CATALOGUE_COMPLET, DESCRIPTIONS_LORE
 from etats_blessures import CATALOGUE_ETATS_BLESSURES
+from ecoles import CATALOGUE_ECOLES
 
 # 2. Configuration et Design Sombre L5A
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
