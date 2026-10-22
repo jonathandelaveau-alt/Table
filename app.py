@@ -244,7 +244,46 @@ if role == "Joueur (Ma Fiche)":
         cv1, cv2 = st.columns(2)
         end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
         sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
+                # --- MODULE DES ÉTATS ET BLESSURES CRITIQUES (SOUS LA VITALITÉ) ---
+        st.markdown("##### 🩺 États & Blessures Subis")
         
+        col_sante1, col_sante2 = st.columns(2)
+        
+        with col_sante1:
+            st.markdown("**🚨 États Préjudiciables :**")
+            # Cases à cocher pour les états officiels
+            e_blinde = st.checkbox("Saignant 🩸", value=f.get("e_saignant", False), key="chk_saignant")
+            e_etourdi = st.checkbox("Étourdi 😵‍💫", value=f.get("e_etourdi", False), key="chk_etourdi")
+            e_compromis = st.checkbox("Compromis ⚖️", value=f.get("e_compromis", False), key="chk_compromis")
+            e_inconscient = st.checkbox("Inconscient 💤", value=f.get("e_inconscient", False), key="chk_inconscient")
+            e_aveugle = st.checkbox("Aveuglé 🙈", value=f.get("e_aveugle", False), key="chk_aveugle")
+
+        with col_sante2:
+            st.markdown("**🩹 Types de Blessures Physiques :**")
+            b_legere = st.checkbox("Blessure Mineure / Légère", value=f.get("b_legere", False), key="chk_b_legere")
+            b_grave = st.checkbox("Blessure Majeure / Grave", value=f.get("b_grave", False), key="chk_b_grave")
+            b_mutilante = st.checkbox("Blessure Mutilante / Permanente", value=f.get("b_mutilante", False), key="chk_b_mutilante")
+
+        # --- BANDEAU ROUGE DYNAMIQUE DES EFFETS DES ÉTATS ---
+        messages_etats = []
+        if e_blinde: messages_etats.append("• **Saignant :** Vous subissez 1 dégât physique à la fin de chacune de vos actions.")
+        if e_etourdi: messages_etats.append("• **Étourdi :** Vous ne pouvez pas effectuer d'actions nécessitant une concentration majeure.")
+        if e_compromis: messages_etats.append("• **Compromis :** Vous ne pouvez plus garder de dés contenant des symboles de conflit.")
+        if e_inconscient: messages_etats.append("• **Inconscient :** Vous êtes sans défense. La difficulté de toutes les attaques contre vous est de 1.")
+        if e_aveugle: messages_etats.append("• **Aveuglé :** La difficulté de vos tests basés sur la vue augmente de +2.")
+
+        if messages_etats:
+            st.error("⚠️ **EFFETS DES ÉTATS ACTIFS :**\n" + "\n".join(messages_etats))
+
+        # --- BANDEAU ORANGE DYNAMIQUE DES EFFETS DE BLESSURES ---
+        messages_blessures = []
+        if b_legere: messages_blessures.append("• **Blessure Légère :** Augmente de +1 le coût en opportunités de vos actions martiales.")
+        if b_grave: messages_blessures.append("• **Blessure Grave :** La difficulté de tous vos tests physiques augmente de +1.")
+        if b_mutilante: messages_blessures.append("• **Blessure Mutilante :** Malus permanent sur l'anneau associé (Défini par le MJ).")
+
+        if messages_blessures:
+            st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
+
         # --- RAPPEL DES CARACTÉRISTIQUES DE L'ARMURE PORTÉE (NOUVEAUTÉ) ---
         armure_actuelle_nom = f.get("armure_active", "Armure de Tenue de Cérémonie")
         stats_armure_actuelle = CATALOGUE_ARMURES.get(armure_actuelle_nom, {"res_p": 1, "res_s": 0, "proprietes": "Cérémonielle"})
