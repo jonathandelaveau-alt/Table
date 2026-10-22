@@ -599,79 +599,63 @@ if role == "Joueur (Ma Fiche)":
         st.markdown("---")
         st.subheader("🏛️ Le Grand Catalogue des Techniques d'Émeraude")
         
-        dict_catalogues_complets = {
-            "Katas": CATALOGUE_KATAS if 'CATALOGUE_KATAS' in globals() else {},
-            "Kihos": CATALOGUE_KIHOS if 'CATALOGUE_KIHOS' in globals() else {},
-            "Invocations": CATALOGUE_INVOCATIONS if 'CATALOGUE_INVOCATIONS' in globals() else {},
-            "Rituels": CATALOGUE_RITUELS if 'CATALOGUE_RITUELS' in globals() else {},
-            "Shujis": CATALOGUE_SHUJIS if 'CATALOGUE_SHUJIS' in globals() else {},
-            "Mahos": CATALOGUE_MAHOS if 'CATALOGUE_MAHOS' in globals() else {},
-            "Ninjutsus": CATALOGUE_NINJUTSUS if 'CATALOGUE_NINJUTSUS' in globals() else {},
-            "Inversions": CATALOGUE_INVERSIONS if 'CATALOGUE_INVERSIONS' in globals() else {}
-        }
+        # Récupération sécurisée du catalogue centralisé de votre fichier externe
+        db_globale_tech = CATALOGUE_COMPLET if 'CATALOGUE_COMPLET' in globals() else {}
+        db_descriptions = DESCRIPTIONS_LORE if 'DESCRIPTIONS_LORE' in globals() else {}
 
-        # 1. PREMIER FILTRE : Choix du grand catalogue (Lien direct technique.py)
-        cat_selectionne = st.selectbox("🔍 1. Choisir la catégorie de Technique :", ["-- Sélectionner --"] + list(dict_catalogues_complets.keys()), key="sb_grand_cat_dr")
+        # 1. PREMIER FILTRE : Choix du grand type (Katas, Kíhos, Invocations...)
+        # Note : On gère l'accent sur 'Kíhos' tel qu'écrit dans votre fichier
+        liste_grands_types = ["-- Sélectionner --"] + list(db_globale_tech.keys())
+        cat_selectionne = st.selectbox("🔍 1. Choisir la catégorie de Technique :", liste_grands_types, key="sb_grand_cat_dr")
         
         if cat_selectionne != "-- Sélectionner --":
-            db_tech = dict_catalogues_complets[cat_selectionne]
-            cle_fiche_cible = cles_techniques.get(f"{cat_selectionne} ") or cles_techniques.get(next((k for k in cles_techniques.keys() if cat_selectionne in k), ""))
+            # Correspondance pour savoir dans quelle liste de la fiche sauvegarder
+            cle_fiche_cible = cles_techniques.get(f"{cat_selectionne} ") or cles_techniques.get(next((k for k in cles_techniques.keys() if cat_selectionne.split()[0] in k), ""))
             
-            # Extraction dynamique des sous-catégories présentes dans le fichier technique.py
-            liste_sous_types = ["Tous"]
-            for t_data in db_tech.values():
-                # On cherche l'élément (Mêlée, Distance, Air, Feu...) dans les clés courantes
-                s_type = t_data.get("type", t_data.get("sub_type", t_data.get("element", "Général")))
-                if s_type and s_type not in liste_sous_types: 
-                    liste_sous_types.append(s_type)
+            # Contenu du catalogue pour la catégorie choisie (Ex: Général, Corps-à-corps...)
+            sous_categories_dict = db_globale_tech[cat_selectionne]
             
-            # Configuration des rangs selon vos spécifications (Jusqu'à 6 pour le Shuji du Vide, sinon 1-5)
-            max_rang_possible = 6 if cat_selectionne == "Shujis" else 5
-            liste_rangs = ["Tous"] + [str(r) for r in range(1, max_rang_possible + 1)]
-
-            # Affichage des filtres côte à côte
-            col_f_sub, col_f_rang = st.columns(2)
-            with col_f_sub:
-                filtre_sous_type = st.selectbox(f"🎯 2. Sous-catégorie ({cat_selectionne}) :", liste_sous_types, key="sb_dr_sub")
-            with col_f_rang:
-                filtre_rang = st.selectbox("📊 3. Filtrer par Rang :", liste_rangs, key="sb_dr_rang")
+            # 2. DEUXIÈMED FILTRE : Extraction directe de vos sous-catégories
+            liste_sous_types = ["-- Sélectionner --"] + list(sous_categories_dict.keys())
+            filtre_sous_type = st.selectbox(f"🎯 2. Sous-catégorie ({cat_selectionne}) :", liste_sous_types, key="sb_dr_sub")
             
-            # Construction de la liste finale filtrée
-            st.markdown(f"📋 **Techniques trouvées dans `technique.py` :**")
-            techniques_visibles = {}
-            
-            for t_nom, t_data in db_tech.items():
-                current_sub = t_data.get("type", t_data.get("sub_type", t_data.get("element", "Général")))
-                current_rang = str(t_data.get("rang", t_data.get("level", "1")))
+            if filtre_sous_type != "-- Sélectionner --":
+                rangs_disponibles_dict = sous_categories_dict[filtre_sous_type]
                 
-                # Application stricte des filtres cumulatifs
-                if filtre_sous_type != "Tous" and current_sub != filtre_sous_type:
-                    continue
-                if filtre_rang != "Tous" and current_rang != filtre_rang:
-                    continue
+                # 3. TROISIÈME FILTRE : Extraction des Rangs réellement configurés (Ex: "Rang 1", "Rang 2")
+                liste_rangs = ["-- Sélectionner --"] + list(rangs_disponibles_dict.keys())
+                filtre_rang = st.selectbox("📊 3. Filtrer par Rang :", liste_rangs, key="sb_dr_rang")
+                
+                if filtre_rang != "-- Sélectionner --":
+                    # Récupération de la liste des noms de techniques (Ex: ["Posture de la Sentinelle", "Éclat de la Lame"])
+                    liste_noms_techniques = rangs_disponibles_dict[filtre_rang]
                     
-                techniques_visibles[t_nom] = t_data
-
-            if not techniques_visibles:
-                st.info("ℹ️ Aucune technique ne correspond à cette combinaison de filtres.")
-            else:
-                for t_nom, t_data in techniques_visibles.items():
-                    current_sub = t_data.get("type", t_data.get("sub_type", t_data.get("element", "Général")))
-                    current_rang = str(t_data.get("rang", t_data.get("level", "1")))
-                    deja_apprise = t_nom in f.get(cle_fiche_cible, [])
+                    st.markdown(f"📋 **Techniques disponibles d'après votre fichier :**")
                     
-                    # Rendu visuel propre sous forme de volet pour ne pas encombrer l'écran
-                    with st.expander(f"{'✅ (Maîtrisé)' if deja_apprise else '✨'} {t_nom} — Rang {current_rang} ({current_sub})"):
-                        st.write(f"📖 **Description / Effet :** {t_data.get('effet', t_data.get('description', 'Aucune description disponible.'))}")
-                        
-                        if deja_apprise:
-                            st.caption("✔️ Cette technique est déjà inscrite dans votre grimoire personnel.")
-                        else:
-                            if st.button(f"🧠 Apprendre {t_nom}", key=f"learn_dr_{cat_selectionne}_{t_nom}"):
-                                f[cle_fiche_cible].append(t_nom)
-                                sauver_fiche(nom_id, f)
-                                st.success(f"🔮 {t_nom} ajouté avec succès !")
-                                st.rerun()
+                    if not liste_noms_techniques:
+                        st.info("ℹ️ Aucune technique n'est enregistrée dans cette sous-catégorie pour le moment.")
+                    else:
+                        for t_nom in liste_noms_techniques:
+                            deja_apprise = t_nom in f.get(cle_fiche_cible, [])
+                            
+                            # Récupération de la description associée dans DESCRIPTIONS_LORE
+                            texte_lore = db_descriptions.get(t_nom, "📜 *Description technique en attente de rédaction dans le fichier.*")
+                            
+                            # Rendu graphique sous forme de volet déroulant interactif
+                            with st.expander(f"{'✅ (Maîtrisé)' if deja_apprise else '✨'} {t_nom} ({filtre_sous_type})"):
+                                st.text(texte_lore)
+                                
+                                if deja_apprise:
+                                    st.caption("✔️ Cette technique est déjà inscrite et consultable dans votre grimoire personnel.")
+                                else:
+                                    if st.button(f"🧠 Apprendre {t_nom}", key=f"learn_dr_{cat_selectionne}_{t_nom.replace(' ', '_')}"):
+                                        if cle_fiche_cible:
+                                            f[cle_fiche_cible].append(t_nom)
+                                            sauver_fiche(nom_id, f)
+                                            st.success(f"🔮 {t_nom} a été mémorisé dans votre Grimoire !")
+                                            st.rerun()
+                                        else:
+                                            st.error("Erreur d'aiguillage de la fiche joueur.")
 
         # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
         st.markdown("---")
