@@ -283,9 +283,10 @@ if role == "Joueur (Ma Fiche)":
 
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
-            st.subheader("🌀 Les Cinq Anneaux")
+            # --- BLOC RE-ALIGNÉ DES ANNEAUX ---
+        st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
-        
+
         # Affichage direct et robuste aligné sur le bord de la page
         air = st.slider("Air 💨", 1, 5, value=f.get("air", 1))
         score_b_air = st.selectbox("Score de Blessure Critique - Air (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_air", 0)), key="sb_air")
