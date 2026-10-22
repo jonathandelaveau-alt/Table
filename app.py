@@ -412,6 +412,45 @@ if role == "Joueur (Ma Fiche)":
                 st.info(f"🔰 Résistance Physique : {res_p} | Surnaturelle : {res_s}")
             else:
                 st.caption("❌ Aucune armure portée.")
+        # =====================================================================
+        # 🎒 INVENTAIRE INTERACTIF DU SAC À DOS
+        # =====================================================================
+        st.markdown("### 🎒 Inventaire Interactif du Sac à Dos")
+        if "inventaire_sac" not in f or not f["inventaire_sac"]:
+            st.info("Votre sac à dos est totalement vide.")
+        else:
+            for item in f["inventaire_sac"]:
+                col_item_nom, col_item_eq, col_item_oeil, col_item_croix = st.columns([2, 1, 0.5, 0.5])
+                
+                # Indicateur d'emplacement visuel à l'écran
+                statut_port = "📦 [Sac]"
+                if item.get("type_cat") == "Arme":
+                    if item.get("main_equipee") in ["Main Droite", "Main Gauche"]:
+                        statut_port = f"🎯 [{item['main_equipee']}]"
+                elif item.get("type_cat") == "Armure" and item.get("equipe"):
+                    statut_port = "🎯 [Portée]"
+                    
+                col_item_nom.write(f"**{statut_port} {item['nom']}**")
+                col_item_eq.write(f"*{item.get('type_cat', 'Divers')}*")
+
+                # Bouton Œil 👁️ pour afficher l'analyse détaillée
+                if col_item_oeil.button("👁️", key=f"oeil_obj_{item['id_obj']}"):
+                    f["objet_regarde_id"] = item["id_obj"]
+                
+                # Bouton Croix ❌ pour supprimer définitivement du sac
+                if col_item_croix.button("❌", key=f"del_obj_{item['id_obj']}"):
+                    f["inventaire_sac"].remove(item)
+                    sauver_fiche(nom_id, f)
+                    st.success(f"🗑️ {item['nom']} a été retiré de votre inventaire.")
+                    st.rerun()
+            
+            # Fenêtre d'affichage des détails (si l'œil est cliqué)
+            if f.get("objet_regarde_id"):
+                obj_analyse = next((obj for obj in f["inventaire_sac"] if obj["id_obj"] == f["objet_regarde_id"]), None)
+                if obj_analyse:
+                    st.info(f"🔍 **Analyse de l'objet :** *{obj_analyse['nom']}*\n\n"
+                            f"• **Catégorie :** {obj_analyse.get('type_cat')} | Racine : `{obj_analyse.get('modele_racine','Inconnue')}`\n"
+                            f"• **Propriétés :** *{obj_analyse.get('proprietes','Aucune')}*")
                # === 🛒 BOUTIQUE D'ACHAT DU JOUEUR ===
         st.markdown("---")
         st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
