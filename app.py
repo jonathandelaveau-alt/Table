@@ -223,6 +223,15 @@ if role == "Joueur (Ma Fiche)":
             st.rerun()
 
         # --- SOLUTION RADICALE IMMUNISÉE CONTRE LES INDENTATIONS ---
+        # --- CALCUL AUTOMATIQUE DU BONUS DE POSTURE DE L'AIR ---
+        try:
+            rang_ecole_calc = int(f.get("rang_ecole", f.get("rang", 1)))
+        except (ValueError, TypeError):
+            rang_ecole_calc = 1
+            
+        valeur_air_posture = 2 if rang_ecole_calc >= 4 else 1
+
+        # --- SOLUTION RADICALE IMMUNISÉE ---
         texte_air = f"💨 **Posture de l'Air :** Le niveau de difficulté des tests augmente de {valeur_air_posture}."
         dict_postures = {"Air": texte_air, "Terre": "🏔️ **Posture de la Terre :** Pas de coups critiques face à vous.", "Feu": "🔥 **Posture du Feu :** +1 succès BONUS par conflit sur les dégâts.", "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action.", "Vide": "🌌 **Posture du Vide :** Pas de stress via les conflits."}
         st.info(dict_postures.get(posture, "Aucune posture active"))
