@@ -284,7 +284,7 @@ if role == "Joueur (Ma Fiche)":
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
         # --- SECTION DES 5 ANNEAUX RE-ALIGNÉE ET CORRIGÉE ---
-        st.subheader("🌀 Les Cinq Anneaux")
+                st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         
         ca1, ca2, ca3, ca4, ca5 = st.columns(5)
@@ -595,19 +595,20 @@ if role == "Joueur (Ma Fiche)":
                 with open(ACTIONS_FILE, "w", encoding="utf-8") as file: json.dump(actions, file, indent=4, ensure_ascii=False)
                 st.success("Action envoyée au MJ !")
 
-        # Sauvegarde automatique globale
+               # --- SAUVEGARDE GLOBALE COMPLÈTE AVEC LES SÉLECTEURS 1 À 16 CORRIGÉS ---
         maj = {
             "perso": nom_perso, "clan": clan_actuel, "famille": famille_actuelle, "profil": roles_actuels, "ecole": ecole, "rang_ecole": rang_ecole, "posture": posture,
             "air": air, "terre": terre, "feu": feu, "eau": eau, "vide": vide, "p_vide": p_vide, "end_act": end_act, "sf_act": sf_act, "hon": hon, "glo": glo, "sta": sta, 
             "armure_active": armure_active, "res_p": res_p, "res_s": res_s, "arme_active": arme_active_nom, "w_deg": arme_active_degats, "deux_mains": "2 mains" in w_joueur["prise_choisie"], "w_dang": arme_active_danger, "w_por": arme_active_portee, 
             "ch_kat": c_kat, "ch_kih": c_kih, "ch_inv": c_inv, "ch_rit": c_rit, "ch_shu": c_shu, "ch_mah": c_mah, "ch_nin": c_nin, "ch_invs": c_invs,
+            "score_b_air": score_b_air, "score_b_terre": score_b_terre, "score_b_feu": score_b_feu, "score_b_eau": score_b_eau, "score_b_vide": score_b_vide,
             "mes_katas": f.get("mes_katas", []), "mes_kihos": f.get("mes_kihos", []), "mes_invocs": f.get("mes_invocs", []), "mes_rituels": f.get("mes_rituels", []),
             "mes_shujis": f.get("mes_shujis", []), "mes_mahos": f.get("mes_mahos", []), "mes_ninjutsus": f.get("mes_ninjutsus", []), "mes_inversions": f.get("mes_inversions", []),
             "tech_active_cliquee": tech_choisie_automatique, "sh_anneaux": sh_anneaux, "sh_vitalite": sh_vitalite, "sh_social": sh_social, "sh_equipement": sh_equipement, "sh_grimoire": sh_grimoire,
             "inventaire_armes_complexe": liste_armes_possedees, "inventaire_armures": liste_armures_possedees,
             "c_est": c_est, "c_com": c_com, "c_sty": c_sty, "c_forg": c_forg, "c_for": c_for, "c_cac": c_cac, "c_dis": c_dis, "c_chu": c_chu, "c_med": c_med, "c_tac": c_tac,
             "c_cul": c_cul, "c_gou": c_gou, "c_mdc": c_mdc, "c_sen": c_sen, "c_the": c_the, "c_cmd": c_cmd, "c_crt": c_crt, "c_jeu": c_jeu, "c_org": c_org,
-            "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur 
+            "c_cmr": c_cmr, "c_tra": c_tra, "c_nav": c_nav, "c_mag": c_mag, "c_sur": c_sur
         }
         sauver_fiche(nom_id, maj)
     else:
