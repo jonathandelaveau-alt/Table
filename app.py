@@ -821,6 +821,14 @@ if role == "Joueur (Ma Fiche)":
                 st.markdown("**2. Catégorie : Armures**")
                 a_achat = st.selectbox("Sélectionner une armure :", list(CATALOGUE_ARMURES.keys()) if 'CATALOGUE_ARMURES' in globals() else [], key="buy_a_sel")
                 if a_achat and st.button("➕ Ajouter l'Armure", key="btn_buy_a"):
+                    f["inventaire_sac"].append({
+                        "id_obj": int(time.time()), "nom": f"{a_achat} standard", "modele_racine": a_achat, "type_cat": "Armure", 
+                        "details": "Standard", "equipe": False, "bonus_res_p": 0, "bonus_res_s": 0, "proprietes": "Aucune"
+                    })
+                    sauver_fiche(nom_id, f)
+                    st.success(f"✨ {a_achat} a été suspendue dans votre sac !")
+                    st.rerun()
+
             with col_cat3:
                 st.markdown("**3. Catégorie : Objets Divers**")
                 liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
@@ -835,6 +843,9 @@ if role == "Joueur (Ma Fiche)":
                         sauver_fiche(nom_id, f)
                         st.success(f"✨ {d_achat} glissé dans le sac !")
                         st.rerun()
+                else:
+                    st.caption("ℹ️ Aucun objet divers disponible dans le catalogue.")
+
         # =====================================================================
         # 🔨 INTERCEPTION DE L'ONGLET : FORGE ET MODIFICATION
         # =====================================================================
