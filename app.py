@@ -56,12 +56,6 @@ def charger_fiche(nom_joueur):
         with open(path, "r", encoding="utf-8") as f: return json.load(f)
     return None
 
-@st.dialog("📜 Parchemin de Technique")
-def afficher_parchemin_dialogue(texte_lore):
-    st.markdown(texte_lore)
-    if st.button("Fermer"):
-        st.rerun()
-
 # 2. Configuration et Design Sombre L5A
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
 st.markdown("""
