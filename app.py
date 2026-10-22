@@ -221,7 +221,6 @@ st.sidebar.markdown("---")
 if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
     st.toast("⚡ Synchronisation avec le serveur réussie !", icon="🛸")
     st.rerun()
-
         posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
         valeur_air_posture = 2 if int(rang_ecole) >= 4 else 1
         EFFETS_POSTURES = {
