@@ -331,7 +331,31 @@ if role == "Joueur (Ma Fiche)":
                             f"• **Notes & Origine :** {obj_analyse.get('details','Modèle standard')} \n"
                             f"• **Modificateurs appliqués :** Dégâts/Résistance Bonus : {obj_analyse.get('bonus_degats', obj_analyse.get('bonus_res_p', 0))} \n"
                             f"• **Enchantements & Propriétés :** {obj_analyse.get('proprietes','Aucune')}")
-
+        # --- PANNEAU DE CONSULTATION INTERACTIF DES CATALOGUES ---
+        st.markdown("---")
+        with st.expander("📖 Consulter les Grands Catalogues impériaux (Armes, Armures, Divers)"):
+            onglet_cat = st.tabs(["🗡️ Catalogue des Armes", "👘 Catalogue des Armures", "📦 Catalogue des Objets Divers"])
+            
+            with onglet_cat[0]:
+                st.markdown("##### Base de données officielle des Armes")
+                for nom_w, stats_w in CATALOGUE_ARMES_AVANCE.items():
+                    st.write(f"• **{nom_w}** | Dégâts : `{stats_w['degats']}` | Danger : `{stats_w['danger']}` | Portée : `{stats_w['portee']}` | Rareté : `{stats_w['rareté']}`")
+                    st.caption(f"  *Propriétés : {stats_w['proprietes']} | Prise : {stats_w['prise_autorisee']}*")
+            
+            with onglet_cat[1]:
+                st.markdown("##### Base de données officielle des Armures")
+                for nom_a, stats_a in CATALOGUE_ARMURES.items():
+                    st.write(f"• **{nom_a}** | Résistance Physique : `{stats_a['res_p']}` | Résistance Surnaturelle : `{stats_a['res_s']}`")
+                    st.caption(f"  *Propriétés : {stats_a['proprietes']}*")
+            
+            with onglet_cat[2]:
+                st.markdown("##### Base de données officielle des Objets Divers")
+                if 'CATALOGUE_DIVERS' in globals() and CATALOGUE_DIVERS:
+                    for nom_d, stats_d in CATALOGUE_DIVERS.items():
+                        st.write(f"• **{nom_d}** | Catégorie : `{stats_d['type']}` | Rareté : `{stats_d['rarete']}`")
+                        st.info(f"  🎯 **Effet en jeu :** {stats_d['proprietes'] if 'proprietes' in stats_d else stats_d.get('effet', 'Aucun effet renseigné')}")
+                else:
+                    st.warning("Le catalogue divers n'a pas pu être lu depuis le fichier d'équipements.")
         # --- ZONE D'ACHAT UNIFIÉE (AJOUTER OBJET EN BAS DE LA PAGE) ---
         st.markdown("---")
         st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
