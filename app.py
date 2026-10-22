@@ -221,17 +221,22 @@ if role == "Joueur (Ma Fiche)":
         with st.expander("🛠️ 5. Compétences Professionnelles"):
             cprof1, cprof2, cprof3, cprof4, fprof5 = st.columns(5)
             c_cmr, c_tra, c_nav, c_mag, c_sur = cprof1.slider("Commerce", 0, 6, value=f.get("c_cmr", 0)), cprof2.slider("Travail Manuel", 0, 6, value=f.get("c_tra", 0)), cprof3.slider("Navigation", 0, 6, value=f.get("c_nav", 0)), cprof4.slider("Magouille", 0, 6, value=f.get("c_mag", 0)), fprof5.slider("Survie", 0, 6, value=f.get("c_sur", 0))
-        st.subheader("🛡️ Arsenal & Inventaire Global")
+               st.subheader("🛡️ Arsenal & Inventaire Global")
         sh_equipement = st.checkbox("👁️ Partager mes équipements équipés avec le MJ", value=f.get("sh_equipement", True))
         
         # --- INITIALISATION ROBUSTE DE L'INVENTAIRE SAC À DOS ---
         if "inventaire_sac" not in f:
             f["inventaire_sac"] = [
-                {"id_obj": 1, "nom": "Katana", "type_cat": "Arme", "details": "Modèle standard de base.", "equipe": True, "bonus_degats": 0, "bonus_danger": 0, "prise": "2 mains", "proprietes": "Acérée, Cérémoniale"},
-                {"id_obj": 2, "nom": "Armure de Tenue de Cérémonie", "type_cat": "Armure", "details": "Modèle standard de base.", "equipe": True, "res_p": 1, "res_s": 0, "proprietes": "Cérémonielle, Magnifique"}
+                {"id_obj": 1, "nom": "Katana de base", "modele_racine": "Katana", "type_cat": "Arme", "details": "Modèle standard d'école.", "main_equipee": "Main Droite", "prise_main": "1 main", "bonus_degats": 0, "bonus_danger": 0, "proprietes": "Acérée, Cérémoniale"},
+                {"id_obj": 2, "nom": "Wakizashi de base", "modele_racine": "Wakizashi", "type_cat": "Arme", "details": "Lame courte de protection.", "main_equipee": "Aucune", "prise_main": "1 main", "bonus_degats": 0, "bonus_danger": 0, "proprietes": "Acérée, Cérémoniale"},
+                {"id_obj": 3, "nom": "Armure de Tenue de Cérémonie", "modele_racine": "Armure de Tenue de Cérémonie", "type_cat": "Armure", "details": "Modèle standard.", "equipe": True, "bonus_res_p": 0, "bonus_res_s": 0, "proprietes": "Cérémonielle, Magnifique"}
             ]
 
-        # --- AFFICHEUR ARSENAL ACTIF (SCINDÉ GAUCHE ET DROITE) ---
+        # Nettoyage et synchronisation des clés de prise en main
+        for obj in f["inventaire_sac"]:
+            if "main_equipee" not in obj: obj["main_equipee"] = "Aucune"
+            if "prise_main" not in obj: obj["prise_main"] = "1 main"
+
         st.markdown("### ⚔️ Votre Équipement Tactique")
         col_arsenal_gauche, col_arsenal_droite = st.columns(2)
         
@@ -242,91 +247,156 @@ if role == "Joueur (Ma Fiche)":
             st.write(f"• **Armes possédées :** {', '.join(liste_armes_sac) if liste_armes_sac else 'Aucune'}")
             st.write(f"• **Armures possédées :** {', '.join(liste_armures_sac) if liste_armures_sac else 'Aucune'}")
 
+        # Initialisation des variables globales de combat pour le MJ
+        arme_active_nom = "Aucune"
+        arme_active_degats = 0
+        arme_active_danger = 0
+        arme_active_portee = "0"
+        res_p, res_s = 0, 0
+        armure_active = "Aucune"
+
         with col_arsenal_droite:
             st.markdown("##### 🎯 Équipements Activement Portés")
-            # Extraction des objets équipés
-            armes_equipees = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("equipe", False)]
-            armures_equipees = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Armure" and obj.get("equipe", False)]
             
-            # Choix de l'arme principale active
-            if armes_equipees:
-                choix_w_active = st.selectbox("Sélectionner l'Arme en Main :", [w["nom"] for w in armes_equipees], key="sel_w_active_main")
-                arme_portee_obj = next((w for w in armes_equipees if w["nom"] == choix_w_active), armes_equipees[0])
-                w_base_stats = CATALOGUE_ARMES_AVANCE.get(arme_portee_obj["nom"].split(" (")[0], {"degats": 3, "danger": 5, "portee": "1"})
-                
-                # Prise en compte des altérations du laboratoire
-                arme_active_nom = arme_portee_obj["nom"]
-                arme_active_degats = w_base_stats["degats"] + arme_portee_obj.get("bonus_degats", 0)
-                arme_active_danger = w_base_stats["danger"] + arme_portee_obj.get("bonus_danger", 0)
-                arme_active_portee = w_base_stats["portee"]
-                
-                st.info(f"🗡️ **Arme Équipée :** {arme_active_nom} ({arme_portee_obj.get('prise', '1 main')}) \n💥 Dégâts : {arme_active_degats} | Danger : {arme_active_danger} | 📏 Portée : {arme_active_portee}")
-            else:
-                arme_active_nom, arme_active_degats, arme_active_danger, arme_active_portee = "Aucune", 0, 0, "0"
-                st.caption("❌ Aucune arme équipée.")
+            # Repérage des armes équipées dans la structure de sauvegarde
+            armes_md = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Droite"]
+            nom_w_md = armes_md[0]["nom"] if armes_md else "Aucune"
+            
+            armes_mg = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Gauche"]
+            nom_w_mg = armes_mg[0]["nom"] if armes_mg else "Aucune"
 
-            # Choix de l'armure active
-            if armures_equipees:
-                choix_a_active = st.selectbox("Sélectionner l'Armure Portée :", [a["nom"] for a in armures_equipees], key="sel_a_active_corps")
-                armure_portee_obj = next((a for a in armures_equipees if a["nom"] == choix_a_active), armures_equipees[0])
-                a_base_stats = CATALOGUE_ARMURES.get(armure_portee_obj["nom"].split(" (")[0], {"res_p": 1, "res_s": 0})
+            # Équipement de la Main Droite
+            liste_choix_md = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["nom"] != nom_w_mg]
+            sel_md = st.selectbox("✋ Arme en Main Droite :", liste_choix_md, index=liste_choix_md.index(nom_w_md) if nom_w_md in liste_choix_md else 0, key="sel_w_md_live")
+            
+            for w in f["inventaire_sac"]:
+                if w["type_cat"] == "Arme":
+                    if w["nom"] == sel_md: w["main_equipee"] = "Main Droite"
+                    elif w["main_equipee"] == "Main Droite": w["main_equipee"] = "Aucune"
+            
+            arme_md_obj = next((w for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Droite"), None)
+            prise_bloquante_deux_mains = False
+            
+            if arme_md_obj:
+                w_base_stats_md = CATALOGUE_ARMES_AVANCE.get(arme_md_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1", "prise_autorisee": "1 main"})
+                if "1 main ou 2 mains" in w_base_stats_md["prise_autorisee"]:
+                    arme_md_obj["prise_main"] = st.radio(f"Prise en main ({arme_md_obj['nom']}) :", ["1 main", "2 mains"], index=0 if arme_md_obj.get("prise_main", "1 main") == "1 main" else 1, key="prise_live_md")
+                elif "2 mains" in w_base_stats_md["prise_autorisee"]:
+                    arme_md_obj["prise_main"] = "2 mains"
+                    st.caption("ℹ️ Cette arme requiert obligatoirement vos deux mains.")
+                else:
+                    arme_md_obj["prise_main"] = "1 main"
                 
+                if arme_md_obj["prise_main"] == "2 mains":
+                    prise_bloquante_deux_mains = True
+                    for w in f["inventaire_sac"]:
+                        if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Gauche": w["main_equipee"] = "Aucune"
+                    nom_w_mg = "Aucune"
+            # Équipement de la Main Gauche (Grisée si arme à 2 mains en Main Droite)
+            if prise_bloquante_deux_mains:
+                st.selectbox("🛡️ Arme / Bouclier en Main Gauche :", ["Bloqué (Arme à 2 mains active)"], disabled=True, key="sel_w_mg_disabled")
+                arme_active_nom = arme_md_obj["nom"] + " (Prise à 2 mains ⚔️)"
+                w_base_stats = CATALOGUE_ARMES_AVANCE.get(arme_md_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1", "effet_2_mains": {"degats":1,"danger":0}})
+                arme_active_degats = w_base_stats["degats"] + arme_md_obj.get("bonus_degats", 0) + w_base_stats.get("effet_2_mains", {}).get("degats", 0)
+                arme_active_danger = w_base_stats["danger"] + arme_md_obj.get("bonus_danger", 0) + w_base_stats.get("effet_2_mains", {}).get("danger", 0)
+                arme_active_portee = w_base_stats["portee"]
+            else:
+                liste_choix_mg = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["nom"] != sel_md]
+                sel_mg = st.selectbox("🛡️ Arme / Bouclier en Main Gauche :", liste_choix_mg, index=liste_choix_mg.index(nom_w_mg) if nom_w_mg in liste_choix_mg else 0, key="sel_w_mg_live")
+                
+                for w in f["inventaire_sac"]:
+                    if w["type_cat"] == "Arme":
+                        if w["nom"] == sel_mg: w["main_equipee"] = "Main Gauche"
+                        elif w["main_equipee"] == "Main Gauche": w["main_equipee"] = "Aucune"
+                
+                arme_mg_obj = next((w for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Gauche"), None)
+                
+                # Compilation des informations de double maniement pour le MJ
+                txt_armes_portees = []
+                if arme_md_obj: txt_armes_portees.append(f"MD: {arme_md_obj['nom']}")
+                if arme_mg_obj: txt_armes_portees.append(f"MG: {arme_mg_obj['nom']}")
+                arme_active_nom = " | ".join(txt_armes_portees) if txt_armes_portees else "Aucune"
+                
+                if arme_md_obj:
+                    w_base_stats = CATALOGUE_ARMES_AVANCE.get(arme_md_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1"})
+                    arme_active_degats = w_base_stats["degats"] + arme_md_obj.get("bonus_degats", 0)
+                    arme_active_danger = w_base_stats["danger"] + arme_md_obj.get("bonus_danger", 0)
+                    arme_active_portee = w_base_stats["portee"]
+
+            # Équipement de l'Armure active
+            armures_equipees = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Armure" and obj.get("equipe", False)]
+            liste_armures_sac = ["Aucune"] + [a["nom"] for a in f["inventaire_sac"] if a["type_cat"] == "Armure"]
+            nom_a_actuelle = armures_equipees[0]["nom"] if armures_equipees else "Aucune"
+            
+            sel_armure = st.selectbox("👘 Sélectionner l'Armure Portée :", liste_armures_sac, index=liste_armures_sac.index(nom_a_actuelle) if nom_a_actuelle in liste_armures_sac else 0, key="sel_a_active_live")
+            for a in f["inventaire_sac"]:
+                if a["type_cat"] == "Armure":
+                    a["equipe"] = (a["nom"] == sel_armure)
+            
+            armure_portee_obj = next((a for a in f["inventaire_sac"] if a["type_cat"] == "Armure" and a["equipe"]), None)
+            if armure_portee_obj:
+                a_base_stats = CATALOGUE_ARMURES.get(armure_portee_obj.get("modele_racine", "Armure de Cuir Bouilli"), {"res_p": 1, "res_s": 0})
                 armure_active = armure_portee_obj["nom"]
                 res_p = a_base_stats["res_p"] + armure_portee_obj.get("bonus_res_p", 0)
                 res_s = a_base_stats["res_s"] + armure_portee_obj.get("bonus_res_s", 0)
-                
-                st.info(f"👘 **Armure Portée :** {armure_active} \n🔰 Résistance Physique : {res_p} | Surnaturelle : {res_s}")
+                st.info(f"🔰 Résistance Physique : {res_p} | Surnaturelle : {res_s}")
             else:
-                armure_active, res_p, res_s = "Aucune", 0, 0
                 st.caption("❌ Aucune armure portée.")
 
-        # --- LE GRAND LABORATOIRE DE CRÉATION & FORGERON ---
-        st.markdown("#### 🧪 Laboratoire d'Altération & Forgeron")
-        type_alteration = st.radio("Quel type d'objet voulez-vous forger / altérer ?", ["Arme", "Armure"], horizontal=True)
+        # --- LE GRAND LABORATOIRE DE RECYCLAGE & ENCHANTEMENT ---
+        st.markdown("#### 🧪 Laboratoire d'Altération & Forgeron Évolué")
+        st.caption("ℹ️ Note : Sélectionnez un objet déjà possédé pour le transmuter ou modifier ses bonus/propriétés.")
+        
+        type_alteration = st.radio("Quel type d'équipement du sac voulez-vous transmuter ?", ["Arme", "Armure"], horizontal=True)
         
         if type_alteration == "Arme":
-            w_lab_base = st.selectbox("Choisir un modèle d'arme de base :", list(CATALOGUE_ARMES_AVANCE.keys()), key="w_lab_sel")
-            w_stats = CATALOGUE_ARMES_AVANCE[w_lab_base]
-            
-            c_l1, c_l2 = st.columns(2)
-            b_deg = c_l1.number_input("Dégâts bonus ou d'altération :", value=0, key="lab_w_deg")
-            b_dang = c_l2.number_input("Dangerosité bonus ou d'altération :", value=0, key="lab_w_dang")
-            nom_enchante_w = st.text_input("Nom personnalisé (Ex: Sabre Maudit de Hida) :", value="", key="lab_w_custom_name")
-            prise_w_lab = st.radio("Prise configurée :", ["1 main", "2 mains"], key="lab_w_prise")
-            props_w_lab = st.text_input("Propriétés ajoutées / Enchantement :", value="", key="lab_w_props")
-            
-            if st.button("🔨 Forger / Améliorer l'Arme", key="btn_forge_w"):
-                final_name = nom_enchante_w.strip() if nom_enchante_w.strip() else f"{w_lab_base} Artisanal"
-                nouvel_obj = {
-                    "id_obj": int(time.time()), "nom": final_name, "type_cat": "Arme", 
-                    "details": f"Arme forgée. Modèle de base : {w_lab_base}.", "equipe": False,
-                    "bonus_degats": b_deg, "bonus_danger": b_dang, "prise": prise_w_lab, "proprietes": props_w_lab if props_w_lab else w_stats["proprietes"]
-                }
-                f["inventaire_sac"].append(nouvel_obj)
-                st.success(f"✨ {final_name} a été ajouté à votre Inventaire Sac à dos !")
-                st.rerun()
+            armes_dispo_sac = [w for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
+            if not armes_dispo_sac:
+                st.warning("❌ Vous ne possédez aucune arme dans votre sac à dos à modifier.")
+            else:
+                arme_cible_nom = st.selectbox("Choisir l'arme de votre sac à altérer :", [w["nom"] for w in armes_dispo_sac], key="lab_w_target")
+                arme_cible_obj = next((w for w in armes_dispo_sac if w["nom"] == arme_cible_nom))
+                
+                c_l1, c_l2 = st.columns(2)
+                b_deg = c_l1.number_input("Nouveaux Dégâts Bonus :", value=int(arme_cible_obj.get("bonus_degats", 0)), key="lab_w_deg")
+                b_dang = c_l2.number_input("Nouvelle Dangerosité Bonus :", value=int(arme_cible_obj.get("bonus_danger", 0)), key="lab_w_dang")
+                nom_enchante_w = st.text_input("Donner un nom personnalisé (Ex: Katana de Feu) :", value=arme_cible_obj["nom"], key="lab_w_custom_name")
+                props_w_lab = st.text_input("Propriétés ajoutées / Brûlures / Désenchantement :", value=arme_cible_obj.get("proprietes", ""), key="lab_w_props")
+                
+                if st.button("🔨 Forger / Améliorer et Remplacer l'arme", key="btn_forge_w"):
+                    arme_cible_obj["nom"] = nom_enchante_w.strip() if nom_enchante_w.strip() else arme_cible_obj["nom"]
+                    arme_cible_obj["bonus_degats"] = b_deg
+                    arme_cible_obj["bonus_danger"] = b_dang
+                    arme_cible_obj["proprietes"] = props_w_lab
+                    arme_cible_obj["details"] = f"Équipement transmuté au laboratoire. Racine : {arme_cible_obj.get('modele_racine','Katana')}"
+                    
+                    sauver_fiche(nom_id, f)
+                    st.success(f"✨ L'ancien équipement a été recyclé ! `{nom_enchante_w}` a pris sa place.")
+                    st.rerun()
 
         elif type_alteration == "Armure":
-            a_lab_base = st.selectbox("Choisir un modèle d'armure de base :", list(CATALOGUE_ARMURES.keys()), key="a_lab_sel")
-            a_stats = CATALOGUE_ARMURES[a_lab_base]
-            
-            c_la1, c_la2 = st.columns(2)
-            b_resp = c_la1.number_input("Résistance Physique supplémentaire :", value=0, key="lab_a_resp")
-            b_ress = c_la2.number_input("Résistance Surnaturelle supplémentaire :", value=0, key="lab_a_ress")
-            nom_enchante_a = st.text_input("Nom personnalisé (Ex: Mailles Sacrées d'Asahina) :", value="", key="lab_a_custom_name")
-            props_a_lab = st.text_input("Propriétés ajoutées / Enchantement :", value="", key="lab_a_props")
-            
-            if st.button("🛡️ Forger / Améliorer l'Armure", key="btn_forge_a"):
-                final_name = nom_enchante_a.strip() if nom_enchante_a.strip() else f"{a_lab_base} Artisanale"
-                nouvel_obj = {
-                    "id_obj": int(time.time()), "nom": final_name, "type_cat": "Armure", 
-                    "details": f"Armure façonnée. Modèle de base : {a_lab_base}.", "equipe": False,
-                    "bonus_res_p": b_resp, "bonus_res_s": b_ress, "proprietes": props_a_lab if props_a_lab else a_stats["proprietes"]
-                }
-                f["inventaire_sac"].append(nouvel_obj)
-                st.success(f"✨ {final_name} a été ajoutée à votre Inventaire Sac à dos !")
-                st.rerun()
-
+            armures_dispo_sac = [a for a in f["inventaire_sac"] if a["type_cat"] == "Armure"]
+            if not armures_dispo_sac:
+                st.warning("❌ Vous ne possédez aucune armure dans votre sac à dos à modifier.")
+            else:
+                armure_cible_nom = st.selectbox("Choisir l'armure de votre sac à altérer :", [a["nom"] for a in armures_dispo_sac], key="lab_a_target")
+                armure_cible_obj = next((a for a in armures_dispo_sac if a["nom"] == armure_cible_nom))
+                
+                c_la1, c_la2 = st.columns(2)
+                b_resp = c_la1.number_input("Nouvelle Résistance Physique supplémentaire :", value=int(armure_cible_obj.get("bonus_res_p", 0)), key="lab_a_resp")
+                b_ress = c_la2.number_input("Nouvelle Résistance Surnaturelle supplémentaire :", value=int(armure_cible_obj.get("bonus_res_s", 0)), key="lab_a_ress")
+                nom_enchante_a = st.text_input("Nom de l'armure personnalisé :", value=armure_cible_obj["nom"], key="lab_a_custom_name")
+                props_a_lab = st.text_input("Propriétés ajoutées / Résistances :", value=armure_cible_obj.get("proprietes", ""), key="lab_a_props")
+                
+                if st.button("🛡️ Forger / Améliorer et Remplacer l'armure", key="btn_forge_a"):
+                    armure_cible_obj["nom"] = nom_enchante_a.strip() if nom_enchante_a.strip() else armure_cible_obj["nom"]
+                    armure_cible_obj["bonus_res_p"] = b_resp
+                    armure_cible_obj["bonus_res_s"] = b_ress
+                    armure_cible_obj["proprietes"] = props_a_lab
+                    
+                    sauver_fiche(nom_id, f)
+                    st.success(f"✨ Armure transmutée avec succès en `{nom_enchante_a}` !")
+                    st.rerun()
         # --- LE GRAND INVENTAIRE DU SAC À DOS INTERACTIF ---
         st.markdown("### 🎒 Inventaire Interactif du Sac à Dos")
         if not f["inventaire_sac"]:
@@ -335,67 +405,62 @@ if role == "Joueur (Ma Fiche)":
             for item in f["inventaire_sac"]:
                 col_item_nom, col_item_eq, col_item_oeil, col_item_croix = st.columns([4, 2, 1, 1])
                 
-                # Affichage du statut Équipé ou Non
-                prefixe = "🎯 [Équipé] " if item.get("equipe", False) else "📦 [Dans le sac] "
-                col_item_nom.write(f"{prefixe} **{item['nom']}** *({item['type_cat']})*")
-                
-                # Bouton Équiper / Déséquiper
-                if item["type_cat"] in ["Arme", "Armure"]:
-                    label_bouton_eq = "Déséquiper" if item.get("equipe", False) else "Équiper"
-                    if col_item_eq.button(label_bouton_eq, key=f"eq_toggle_{item['id_obj']}"):
-                        # Si on équipe, on peut déséquiper les autres du même type si nécessaire ou cumuler
-                        item["equipe"] = not item.get("equipe", False)
-                        sauver_fiche(nom_id, f)
-                        st.rerun()
-                else:
-                    col_item_eq.write("—")
+                # Indicateur d'emplacement visuel
+                statut_port_arme = "📦 [Sac]"
+                if item["type_cat"] == "Arme":
+                    if item.get("main_equipee") in ["Main Droite", "Main Gauche"]:
+                        statut_port_arme = f"🎯 [{item['main_equipee']}]"
+                elif item["type_cat"] == "Armure" and item.get("equipe"):
+                    statut_port_arme = "🎯 [Portée]"
+                    
+                col_item_nom.write(f"**{statut_port_arme} {item['nom']}** *({item['type_cat']})*")
+                col_item_eq.write(f"⚙️ {item.get('prise_main', '1 main') if item['type_cat']=='Arme' else 'Standard'}")
 
-                # Bouton Oeil 👁️ pour afficher les détails de l'objet
+                # Bouton Œil 👁️ pour afficher les détails
                 if col_item_oeil.button("👁️", key=f"oeil_obj_{item['id_obj']}"):
-                    st.toast(f"ℹ️ **Détails de {item['nom']}** : {item.get('details', '')} | Propriétés/Effets : {item.get('proprietes', 'Aucune')}")
                     f["objet_regarde_id"] = item["id_obj"]
                 
-                # Bouton Croix ❌ pour jeter l'objet du sac
+                # Bouton Croix ❌ pour supprimer définitivement du sac
                 if col_item_croix.button("❌", key=f"del_obj_{item['id_obj']}"):
                     f["inventaire_sac"].remove(item)
                     sauver_fiche(nom_id, f)
-                    st.success("Objet retiré de l'inventaire.")
+                    st.success(f"{item['nom']} retiré de l'inventaire.")
                     st.rerun()
             
-                        # Affichage de la boîte d'analyse détaillée de l'œil si cliqué
+            # Affichage de la boîte d'analyse détaillée de l'œil si cliqué
             if f.get("objet_regarde_id"):
                 obj_analyse = next((obj for obj in f["inventaire_sac"] if obj["id_obj"] == f["objet_regarde_id"]), None)
                 if obj_analyse:
                     st.info(f"🔍 **Analyse approfondie de l'objet :** *{obj_analyse['nom']}*\n\n"
-                            f"• **Catégorie :** {obj_analyse['type_cat']} \n"
-                            f"• **Notes & Origine :** {obj_analyse.get('details','Modèle standard')} \n"
-                            f"• **Modificateurs appliqués :** Dégâts/Résistance Bonus : {obj_analyse.get('bonus_degats', obj_analyse.get('bonus_res_p', 0))} \n"
-                            f"• **Enchantements & Propriétés :** {obj_analyse.get('proprietes','Aucune')}")
+                            f"• **Catégorie :** {obj_analyse['type_cat']} | Racine : `{obj_analyse.get('modele_racine','Inconnue')}`\n"
+                            f"• **Origine :** {obj_analyse.get('details','Achat standard')} \n"
+                            f"• **Modificateurs Forgeron :** Bonus Dégâts/Armure : `+{obj_analyse.get('bonus_degats', obj_analyse.get('bonus_res_p', 0))}` | Bonus Dangerosité : `+{obj_analyse.get('bonus_danger', 0)}` \n"
+                            f"• **Enchantements & Propriétés :** *{obj_analyse.get('proprietes','Aucune')}*")
+
         # --- PANNEAU DE CONSULTATION INTERACTIF DES CATALOGUES ---
         st.markdown("---")
         with st.expander("📖 Consulter les Grands Catalogues impériaux (Armes, Armures, Divers)"):
             onglet_cat = st.tabs(["🗡️ Catalogue des Armes", "👘 Catalogue des Armures", "📦 Catalogue des Objets Divers"])
             
-            with onglet_cat[0]:
+            with onglet_cat:
                 st.markdown("##### Base de données officielle des Armes")
                 for nom_w, stats_w in CATALOGUE_ARMES_AVANCE.items():
                     st.write(f"• **{nom_w}** | Dégâts : `{stats_w['degats']}` | Danger : `{stats_w['danger']}` | Portée : `{stats_w['portee']}` | Rareté : `{stats_w['rareté']}`")
                     st.caption(f"  *Propriétés : {stats_w['proprietes']} | Prise : {stats_w['prise_autorisee']}*")
             
-            with onglet_cat[1]:
+            with onglet_cat:
                 st.markdown("##### Base de données officielle des Armures")
                 for nom_a, stats_a in CATALOGUE_ARMURES.items():
                     st.write(f"• **{nom_a}** | Résistance Physique : `{stats_a['res_p']}` | Résistance Surnaturelle : `{stats_a['res_s']}`")
                     st.caption(f"  *Propriétés : {stats_a['proprietes']}*")
             
-            with onglet_cat[2]:
+            with onglet_cat:
                 st.markdown("##### Base de données officielle des Objets Divers")
                 if 'CATALOGUE_DIVERS' in globals() and CATALOGUE_DIVERS:
                     for nom_d, stats_d in CATALOGUE_DIVERS.items():
                         st.write(f"• **{nom_d}** | Catégorie : `{stats_d['type']}` | Rareté : `{stats_d['rarete']}`")
-                        st.info(f"  🎯 **Effet en jeu :** {stats_d['proprietes'] if 'proprietes' in stats_d else stats_d.get('effet', 'Aucun effet renseigné')}")
-                else:
-                    st.warning("Le catalogue divers n'a pas pu être lu depuis le fichier d'équipements.")
+                        st.info(f"  🎯 **Effet en jeu :** {stats_d.get('effet', 'Aucun effet')}")
+
         # --- ZONE D'ACHAT UNIFIÉE (AJOUTER OBJET EN BAS DE LA PAGE) ---
         st.markdown("---")
         st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
@@ -406,28 +471,24 @@ if role == "Joueur (Ma Fiche)":
             w_achat = st.selectbox("Sélectionner une arme du catalogue :", list(CATALOGUE_ARMES_AVANCE.keys()), key="buy_w_sel")
             if st.button("➕ Ajouter l'Arme", key="btn_buy_w"):
                 f["inventaire_sac"].append({
-                    "id_obj": int(time.time()), "nom": w_achat, "type_cat": "Arme", 
-                    "details": "Achetée au catalogue d'école standard.", "equipe": False
+                    "id_obj": int(time.time()), "nom": f"{w_achat} acheté", "modele_racine": w_achat, "type_cat": "Arme", 
+                    "details": "Achetée au catalogue d'école standard.", "main_equipee": "Aucune", "bonus_degats": 0, "bonus_danger": 0, "proprietes": CATALOGUE_ARMES_AVANCE[w_achat]["proprietes"]
                 })
-                st.success(f"{w_achat} ajouté au sac !")
-                st.rerun()
+                st.success(f"{w_achat} ajouté au sac !"); st.rerun()
                 
         with col_cat2:
             st.markdown("**2. Catégorie : Armures**")
             a_achat = st.selectbox("Sélectionner une armure du catalogue :", list(CATALOGUE_ARMURES.keys()), key="buy_a_sel")
             if st.button("➕ Ajouter l'Armure", key="btn_buy_a"):
                 f["inventaire_sac"].append({
-                    "id_obj": int(time.time()), "nom": a_achat, "type_cat": "Armure", 
-                    "details": "Achetée au catalogue de protection standard.", "equipe": False
+                    "id_obj": int(time.time()), "nom": f"{a_achat} achetée", "modele_racine": a_achat, "type_cat": "Armure", 
+                    "details": "Achetée au catalogue de protection standard.", "equipe": False, "bonus_res_p": 0, "bonus_res_s": 0, "proprietes": CATALOGUE_ARMURES[a_achat]["proprietes"]
                 })
-                st.success(f"{a_achat} ajoutée au sac !")
-                st.rerun()
+                st.success(f"{a_achat} ajoutée au sac !"); st.rerun()
 
         with col_cat3:
             st.markdown("**3. Catégorie : Objets Divers**")
-            # Sécurité au cas où le catalogue externe met du temps à charger
             liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
-            
             if liste_divers:
                 d_achat = st.selectbox("Sélectionner un objet utilitaire :", liste_divers, key="boutique_divers_unique_sel")
                 d_stats = CATALOGUE_DIVERS[d_achat]
@@ -437,10 +498,7 @@ if role == "Joueur (Ma Fiche)":
                         "details": f"Type : {d_stats['type']}. Niveau de Rareté : {d_stats['rarete']}.", 
                         "proprietes": d_stats["effet"], "equipe": False
                     })
-                    st.success(f"{d_achat} glissé dans le sac !")
-                    st.rerun()
-            else:
-                st.error("Le catalogue des objets divers est introuvable ou vide.")
+                    st.success(f"{d_achat} glissé dans le sac !"); st.rerun()
         
         st.subheader("📜 Gestion des techniques")
         for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
