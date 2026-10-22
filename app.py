@@ -8,7 +8,7 @@ import streamlit as st
 DB_DIR = "sauvegardes_l5a"
 if not os.path.exists(DB_DIR): 
     os.makedirs(DB_DIR)
-ACTIONS_FILE = "notifications_mj.json"f
+ACTIONS_FILE = "notifications_mj.json"
 
 # =====================================================================
 # 📜 2. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
