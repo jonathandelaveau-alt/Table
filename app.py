@@ -722,7 +722,7 @@ elif role == "Maître du Jeu (Hôte)":
             st.info("Aucune notification reçue.")
 else: 
     st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")        
-        st.subheader("📜 Gestion des techniques")
+    st.subheader("📜 Gestion des techniques")
         for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
             if cle_g not in f: f[cle_g] = []
 
