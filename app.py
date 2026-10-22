@@ -245,7 +245,7 @@ if role == "Joueur (Ma Fiche)":
 
         # --- AFFICHAGE DES EFFETS DES POSTURES ---
         texte_air = f"💨 **Posture de l'Air :** Le niveau de difficulté des tests augmente de {valeur_air_posture}."
-        dict_postures = {"Air": texte_air, "Terre": "🏔️ **Posture de la Terre :** Pas de coups critiques face à vous.", "Feu": "🔥 **Posture du Feu :** +1 succès BONUS par conflit sur les dégâts.", "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action.", "Vide": "🌌 **Posture du Vide :** Pas de stress via les conflits."}
+        dict_postures = {"Air": texte_air, "Terre": "🏔️ **Posture de la Terre :** Pas aubaines pour coups critiques ou etat face à vous.", "Feu": "🔥 **Posture du Feu :** +1 succès BONUS par conflit sur les dé garder.", "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action mais pas du même type.", "Vide": "🌌 **Posture du Vide :** Pas de stress via les conflits."}
         st.info(dict_postures.get(posture, "Aucune posture active"))
 
         st.subheader("📊 Vitalité & Défenses")
