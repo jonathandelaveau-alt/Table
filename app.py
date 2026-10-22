@@ -239,7 +239,7 @@ if role == "Joueur (Ma Fiche)":
         p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
 
         end_m, sf_m, attn, vigi = (terre + feu) * 2, (terre + eau) * 2, air + feu, (air + eau) / 2
-                st.subheader("📊 Vitalité & Défenses")
+            st.subheader("📊 Vitalité & Défenses")
         sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
         cv1, cv2 = st.columns(2)
         end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
