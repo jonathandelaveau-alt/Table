@@ -356,12 +356,12 @@ if role == "Joueur (Ma Fiche)":
 
             if arme_md_finale:
                 w_base_md = CATALOGUE_ARMES_AVANCE.get(arme_md_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Arts Martiaux (Mêlée)"})
-                bonus_2m_md = 1 if w_md_finale.get("prise_main") == "2 mains" else 0
+                bonus_2m_md = 1 if arme_md_finale.get("prise_main") == "2 mains" else 0
                 st.caption(f"📊 **Stats Main Droite :** Dégâts : `{w_base_md['degats'] + arme_md_finale.get('bonus_degats', 0) + bonus_2m_md}` | Danger : `{w_base_md['danger'] + arme_md_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_md.get('comp_requise', 'Mêlée')}`")
 
             if arme_mg_finale:
                 w_base_mg = CATALOGUE_ARMES_AVANCE.get(arme_mg_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Arts Martiaux (Mêlée)"})
-                bonus_2m_mg = 1 if w_mg_finale.get("prise_main") == "2 mains" else 0
+                bonus_2m_mg = 1 if arme_mg_finale.get("prise_main") == "2 mains" else 0
                 st.caption(f"📊 **Stats Main Gauche :** Dégâts : `{w_base_mg['degats'] + arme_mg_finale.get('bonus_degats', 0) + bonus_2m_mg}` | Danger : `{w_base_mg['danger'] + arme_mg_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_mg.get('comp_requise', 'Mêlée')}`")
 
             # --- SYNCHRONISATION DU TEXTE DE COMPILATION POUR LE MJ ---
