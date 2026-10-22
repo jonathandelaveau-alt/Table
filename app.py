@@ -246,7 +246,7 @@ if role == "Joueur (Ma Fiche)":
             st.write(f"• **Armes possédées :** {', '.join(liste_armes_sac) if liste_armes_sac else 'Aucune'}")
             st.write(f"• **Armures possédées :** {', '.join(liste_armures_sac) if liste_armures_sac else 'Aucune'}")
 
-        # Initialisation sécurisée des métriques de combat globales
+        # Initialisation sécurisée des métriques globales de combat pour le MJ
         arme_active_nom = "Aucune"
         arme_active_degats = 0
         arme_active_danger = 0
@@ -257,107 +257,145 @@ if role == "Joueur (Ma Fiche)":
         with col_arsenal_droite:
             st.markdown("##### 🎯 Équipements Activement Portés")
             
-            # Repérage direct et sécurisé des dictionnaires d'armes équipées
-            arme_md_equipee_obj = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Droite"), None)
-            nom_w_md = arme_md_equipee_obj["nom"] if arme_md_equipee_obj else "Aucune"
+            # 1. Extraction préliminaire sécurisée des objets actuellement équipés
+            arme_md_actuelle = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Droite"), None)
+            nom_w_md = arme_md_actuelle["nom"] if arme_md_actuelle else "Aucune"
             
-            arme_mg_equipee_obj = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Gauche"), None)
-            nom_w_mg = arme_mg_equipee_obj["nom"] if arme_mg_equipee_obj else "Aucune"
+            arme_mg_actuelle = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Arme" and obj.get("main_equipee") == "Main Gauche"), None)
+            nom_w_mg = arme_mg_actuelle["nom"] if arme_mg_actuelle else "Aucune"
 
+            # Initialisation des états de prise volontaire à 2 mains
             if "w_md_2mains" not in st.session_state: st.session_state["w_md_2mains"] = False
             if "w_mg_2mains" not in st.session_state: st.session_state["w_mg_2mains"] = False
 
-            # --- MAIN DROITE ---
-            bloque_md = st.session_state["w_mg_2mains"] and nom_w_mg != "Aucune"
+            # --- VÉRIFICATION DES CONTRAINTES DE LA MAIN GAUCHE POUR BLOQUER LA MAIN DROITE ---
+            md_bloquee_par_nature = False
+            if arme_mg_actuelle:
+                stats_nat_mg = CATALOGUE_ARMES_AVANCE.get(arme_mg_actuelle.get("modele_racine", "Katana"), {"prise_autorisee": "1 main"})
+                if stats_nat_mg.get("prise_autorisee") == "2 mains":
+                    md_bloquee_par_nature = True
+
+            bloque_md = (st.session_state["w_mg_2mains"] or md_bloquee_par_nature) and nom_w_mg != "Aucune"
+
+            # --- CONFIGURATION ET AFFICHAGE MAIN DROITE ---
             if bloque_md:
                 st.selectbox("✋ Arme en Main Droite :", ["Grise (Main Gauche tenue à 2 mains 👐)"], disabled=True, key="sel_w_md_disabled")
                 sel_md = "Aucune"
+                st.session_state["w_md_2mains"] = False
             else:
                 liste_choix_md = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["nom"] != nom_w_mg]
                 sel_md = st.selectbox("✋ Arme en Main Droite :", liste_choix_md, index=liste_choix_md.index(nom_w_md) if nom_w_md in liste_choix_md else 0, key="sel_w_md_live")
                 
+                # Gestion de la prise Main Droite
                 if sel_md != "Aucune":
-                    st.session_state["w_md_2mains"] = st.checkbox("👐 Tenir l'arme à 2 mains (Main Droite)", value=st.session_state["w_md_2mains"], key="chk_2m_md")
-                    if st.session_state["w_md_2mains"]: st.session_state["w_mg_2mains"] = False
+                    arme_md_temp = next((w for w in f["inventaire_sac"] if w["nom"] == sel_md), None)
+                    stats_md_temp = CATALOGUE_ARMES_AVANCE.get(arme_md_temp.get("modele_racine", "Katana"), {"prise_autorisee": "1 main"}) if arme_md_temp else {}
+                    
+                    if stats_md_temp.get("prise_autorisee") == "2 mains":
+                        st.session_state["w_md_2mains"] = True
+                        st.caption("ℹ️ Cette arme requiert obligatoirement vos deux mains.")
+                    else:
+                        st.session_state["w_md_2mains"] = st.checkbox("👐 Tenir cette arme à 2 mains (Main Droite)", value=st.session_state["w_md_2mains"], key="chk_2m_md")
                 else:
                     st.session_state["w_md_2mains"] = False
 
-            # Application Main Droite et lecture des statistiques en direct
+            # Application en base pour la Main Droite
             for w in f["inventaire_sac"]:
                 if w["type_cat"] == "Arme":
-                    if w["nom"] == sel_md: 
+                    if w["nom"] == sel_md:
                         w["main_equipee"] = "Main Droite"
                         w["prise_main"] = "2 mains" if st.session_state["w_md_2mains"] else "1 main"
-                    elif w["main_equipee"] == "Main Droite": 
+                    elif w["main_equipee"] == "Main Droite":
                         w["main_equipee"] = "Aucune"
 
-            arme_md_obj = next((w for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Droite"), None)
-            if arme_md_obj:
-                w_base_md = CATALOGUE_ARMES_AVANCE.get(arme_md_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Mêlée", "type_w": "Sabre"})
-                bonus_2m_md = 1 if st.session_state["w_md_2mains"] else 0
-                degats_actuels_md = w_base_md["degats"] + arme_md_obj.get("bonus_degats", 0) + bonus_2m_md
-                st.caption(f"📊 **Stats MD :** Dégâts : `{degats_actuels_md}` (Base: {w_base_md['degats']}) | Danger : `{w_base_md['danger'] + arme_md_obj.get('bonus_danger',0)}` | Skill : `{w_base_md.get('comp_requise', 'Arts Martiaux (Mêlée)')}`")
+            # Re-calcul immédiat après attribution de la main droite
+            arme_md_active = next((w for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Droite"), None)
+            
+            md_bloquante_pour_mg = False
+            if arme_md_active:
+                stats_nat_md = CATALOGUE_ARMES_AVANCE.get(arme_md_active.get("modele_racine", "Katana"), {"prise_autorisee": "1 main"})
+                if stats_nat_md.get("prise_autorisee") == "2 mains":
+                    md_bloquante_pour_mg = True
 
-            # --- MAIN GAUCHE ---
-            bloque_mg = st.session_state["w_md_2mains"] and sel_md != "Aucune"
+            bloque_mg = (st.session_state["w_md_2mains"] or md_bloquante_pour_mg) and sel_md != "Aucune"
+
+            # --- CONFIGURATION ET AFFICHAGE MAIN GAUCHE (TOUTES ARMES ACCEPTÉES) ---
             if bloque_mg:
-                st.selectbox("🛡️ Arme / Bouclier en Main Gauche :", ["Grise (Main Droite tenue à 2 mains 👐)"], disabled=True, key="sel_w_mg_disabled")
+                st.selectbox("🛡️ Arme / Équipement en Main Gauche :", ["Grise (Main Droite tenue à 2 mains 👐)"], disabled=True, key="sel_w_mg_disabled")
                 sel_mg = "Aucune"
+                st.session_state["w_mg_2mains"] = False
             else:
                 liste_choix_mg = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["nom"] != sel_md]
-                sel_mg = st.selectbox("🛡️ Arme / Bouclier en Main Gauche :", liste_choix_mg, index=liste_choix_mg.index(nom_w_mg) if nom_w_mg in liste_choix_mg else 0, key="sel_w_mg_live")
+                sel_mg = st.selectbox("🛡️ Arme / Équipement en Main Gauche :", liste_choix_mg, index=liste_choix_mg.index(nom_w_mg) if nom_w_mg in liste_choix_mg else 0, key="sel_w_mg_live")
                 
+                # Gestion de la prise Main Gauche
                 if sel_mg != "Aucune":
-                    st.session_state["w_mg_2mains"] = st.checkbox("👐 Tenir l'arme à 2 mains (Main Gauche)", value=st.session_state["w_mg_2mains"], key="chk_2m_mg")
-                    if st.session_state["w_mg_2mains"]: st.session_state["w_md_2mains"] = False
+                    arme_mg_temp = next((w for w in f["inventaire_sac"] if w["nom"] == sel_mg), None)
+                    stats_mg_temp = CATALOGUE_ARMES_AVANCE.get(arme_mg_temp.get("modele_racine", "Katana"), {"prise_autorisee": "1 main"}) if arme_mg_temp else {}
+                    
+                    if stats_mg_temp.get("prise_autorisee") == "2 mains":
+                        st.session_state["w_mg_2mains"] = True
+                        st.caption("ℹ️ Cette arme requiert obligatoirement vos deux mains.")
+                    else:
+                        st.session_state["w_mg_2mains"] = st.checkbox("👐 Tenir cette arme à 2 mains (Main Gauche)", value=st.session_state["w_mg_2mains"], key="chk_2m_mg")
                 else:
                     st.session_state["w_mg_2mains"] = False
 
+            # Application en base pour la Main Gauche
             for w in f["inventaire_sac"]:
                 if w["type_cat"] == "Arme":
-                    if w["nom"] == sel_mg: 
+                    if w["nom"] == sel_mg:
                         w["main_equipee"] = "Main Gauche"
                         w["prise_main"] = "2 mains" if st.session_state["w_mg_2mains"] else "1 main"
-                    elif w["main_equipee"] == "Main Gauche": 
+                    elif w["main_equipee"] == "Main Gauche":
                         w["main_equipee"] = "Aucune"
 
-            arme_mg_obj = next((w for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Gauche"), None)
-            if arme_mg_obj:
-                w_base_mg = CATALOGUE_ARMES_AVANCE.get(arme_mg_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Mêlée", "type_w": "Sabre"})
-                bonus_2m_mg = 1 if st.session_state["w_mg_2mains"] else 0
-                degats_actuels_mg = w_base_mg["degats"] + arme_mg_obj.get("bonus_degats", 0) + bonus_2m_mg
-                st.caption(f"📊 **Stats MG :** Dégâts : `{degats_actuels_mg}` (Base: {w_base_mg['degats']}) | Danger : `{w_base_mg['danger'] + arme_mg_obj.get('bonus_danger',0)}` | Skill : `{w_base_mg.get('comp_requise', 'Arts Martiaux (Mêlée)')}`")
+            # --- AFFICHAGE DYNAMIQUE DES CARACTÉRISTIQUES ET COMPÉTENCES SOUS LES MENUS ---
+            arme_md_finale = next((w for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Droite"), None)
+            arme_mg_finale = next((w for w in f["inventaire_sac"] if w["type_cat"] == "Arme" and w["main_equipee"] == "Main Gauche"), None)
 
-            # Compilation finale pour l'envoi des données globales au MJ
-            if st.session_state["w_md_2mains"] and arme_md_obj:
-                arme_active_nom = arme_md_obj["nom"] + " (A 2 mains 👐)"
-                w_base = CATALOGUE_ARMES_AVANCE.get(arme_md_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1"})
-                arme_active_degats = w_base["degats"] + arme_md_obj.get("bonus_degats", 0) + 1
-                arme_active_danger = w_base["danger"] + arme_md_obj.get("bonus_danger", 0)
+            if arme_md_finale:
+                w_base_md = CATALOGUE_ARMES_AVANCE.get(arme_md_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Arts Martiaux (Mêlée)"})
+                bonus_2m_md = 1 if w_md_finale.get("prise_main") == "2 mains" else 0
+                st.caption(f"📊 **Stats Main Droite :** Dégâts : `{w_base_md['degats'] + arme_md_finale.get('bonus_degats', 0) + bonus_2m_md}` | Danger : `{w_base_md['danger'] + arme_md_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_md.get('comp_requise', 'Mêlée')}`")
+
+            if arme_mg_finale:
+                w_base_mg = CATALOGUE_ARMES_AVANCE.get(arme_mg_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "comp_requise": "Arts Martiaux (Mêlée)"})
+                bonus_2m_mg = 1 if w_mg_finale.get("prise_main") == "2 mains" else 0
+                st.caption(f"📊 **Stats Main Gauche :** Dégâts : `{w_base_mg['degats'] + arme_mg_finale.get('bonus_degats', 0) + bonus_2m_mg}` | Danger : `{w_base_mg['danger'] + arme_mg_finale.get('bonus_danger', 0)}` | Compétence : `{w_base_mg.get('comp_requise', 'Mêlée')}`")
+
+            # --- SYNCHRONISATION DU TEXTE DE COMPILATION POUR LE MJ ---
+            if arme_md_finale and arme_md_finale.get("prise_main") == "2 mains":
+                arme_active_nom = arme_md_finale["nom"] + " (À 2 mains 👐)"
+                w_base = CATALOGUE_ARMES_AVANCE.get(arme_md_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1"})
+                arme_active_degats = w_base["degats"] + arme_md_finale.get("bonus_degats", 0) + 1
+                arme_active_danger = w_base["danger"] + arme_md_finale.get("bonus_danger", 0)
                 arme_active_portee = w_base["portee"]
-            elif st.session_state["w_mg_2mains"] and arme_mg_obj:
-                arme_active_nom = arme_mg_obj["nom"] + " (A 2 mains 👐)"
-                w_base = CATALOGUE_ARMES_AVANCE.get(arme_mg_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1"})
-                arme_active_degats = w_base["degats"] + arme_mg_obj.get("bonus_degats", 0) + 1
-                arme_active_danger = w_base["danger"] + arme_mg_obj.get("bonus_danger", 0)
+            elif arme_mg_finale and arme_mg_finale.get("prise_main") == "2 mains":
+                arme_active_nom = arme_mg_finale["nom"] + " (À 2 mains 👐)"
+                w_base = CATALOGUE_ARMES_AVANCE.get(arme_mg_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1"})
+                arme_active_degats = w_base["degats"] + arme_mg_finale.get("bonus_degats", 0) + 1
+                arme_active_danger = w_base["danger"] + arme_mg_finale.get("bonus_danger", 0)
                 arme_active_portee = w_base["portee"]
             else:
                 txt_portes = []
-                if arme_md_obj: txt_portes.append(f"MD: {arme_md_obj['nom']}")
-                if arme_mg_obj: txt_portes.append(f"MG: {arme_mg_obj['nom']}")
+                if arme_md_finale: txt_portes.append(f"MD: {arme_md_finale['nom']}")
+                if arme_mg_finale: txt_portes.append(f"MG: {arme_mg_finale['nom']}")
                 arme_active_nom = " | ".join(txt_portes) if txt_portes else "Aucune"
-                if arme_md_obj:
-                    w_base = CATALOGUE_ARMES_AVANCE.get(arme_md_obj.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1"})
-                    arme_active_degats = w_base["degats"] + arme_md_obj.get("bonus_degats", 0)
-                    arme_active_danger = w_base["danger"] + arme_md_obj.get("bonus_danger", 0)
+                
+                if arme_md_finale:
+                    w_base = CATALOGUE_ARMES_AVANCE.get(arme_md_finale.get("modele_racine", "Katana"), {"degats": 3, "danger": 5, "portee": "1"})
+                    arme_active_degats = w_base["degats"] + arme_md_finale.get("bonus_degats", 0)
+                    arme_active_danger = w_base["danger"] + arme_md_finale.get("bonus_danger", 0)
                     arme_active_portee = w_base["portee"]
 
-            # Sélection de l'Armure Portée
+            # --- SÉLECTION DE L'ARMURE PORTÉE ---
             armure_active_obj = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Armure" and obj.get("equipe", False)), None)
             liste_armures_sac = ["Aucune"] + [a["nom"] for a in f["inventaire_sac"] if a["type_cat"] == "Armure"]
             nom_a_actuelle = armure_active_obj["nom"] if armure_active_obj else "Aucune"
             
             sel_armure = st.selectbox("👘 Sélectionner l'Armure Portée :", liste_armures_sac, index=liste_armures_sac.index(nom_a_actuelle) if nom_a_actuelle in liste_armures_sac else 0, key="sel_a_active_live")
+            
             for a in f["inventaire_sac"]:
                 if a["type_cat"] == "Armure":
                     a["equipe"] = (a["nom"] == sel_armure)
