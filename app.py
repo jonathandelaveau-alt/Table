@@ -150,7 +150,9 @@ if role == "Joueur (Ma Fiche)":
         clan_actuel = col_civ2.selectbox("Sélectionnez votre Clan :", list(DATA_CLANS.keys()), index=list(DATA_CLANS.keys()).index(f.get("clan", "Grue")) if f.get("clan") in DATA_CLANS else 1)
         liste_familles_filtrees = DATA_CLANS[clan_actuel]
         famille_actuelle = col_civ3.selectbox("Sélectionnez votre Famille :", liste_familles_filtrees, index=liste_familles_filtrees.index(f.get("famille")) if f.get("famille") in liste_familles_filtrees else 0)
-        
+        f["genre"] = st.selectbox("Genre :", ["Homme", "Femme", "Autre"], index=0 if f.get("genre") == "Homme" else 1 if f.get("genre") == "Femme" else 2, key="sb_mini_genre")
+        f["espece"] = st.text_input("Espèce :", value=f.get("espece", "Humain"), key="ti_mini_espece")
+
         col_civ4, col_civ5, col_civ6 = st.columns(3)
         ecole = col_civ4.text_input("Nom de l'École :", value=f.get("ecole", ""))
         rang_ecole = col_civ5.number_input("Rang d'École (1 à 6) :", 1, 6, value=f.get("rang_ecole", 1))
@@ -181,32 +183,59 @@ if role == "Joueur (Ma Fiche)":
         end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
         sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
         
-        st.markdown("##### 🩺 États & Blessures Subis")
-        col_sante1, col_sante2 = st.columns(2)
-        with col_sante1:
-            e_blinde = st.checkbox("Saignant 🩸", value=f.get("e_saignant", False), key="chk_saignant")
-            e_etourdi = st.checkbox("Étourdi 😵‍💫", value=f.get("e_etourdi", False), key="chk_etourdi")
-            e_compromis = st.checkbox("Compromis ⚖️", value=f.get("e_compromis", False), key="chk_compromis")
-            e_inconscient = st.checkbox("Inconscient 💤", value=f.get("e_inconscient", False), key="chk_inconscient")
-            e_aveugle = st.checkbox("Aveuglé 🙈", value=f.get("e_aveugle", False), key="chk_aveugle")
-        with col_sante2:
-            b_legere = st.checkbox("Blessure Mineure / Légère", value=f.get("b_legere", False), key="chk_b_legere")
-            b_grave = st.checkbox("Blessure Majeure / Grave", value=f.get("b_grave", False), key="chk_b_grave")
-            b_mutilante = st.checkbox("Blessure Mutilante / Permanente", value=f.get("b_mutilante", False), key="chk_b_mutilante")
-
-        messages_etats = []
-        if e_blinde: messages_etats.append("• **Saignant :** Vous subissez 1 dégât physique à la fin de chacune de vos actions.")
-        if e_etourdi: messages_etats.append("• **Étourdi :** Pas d'actions nécessitant une concentration majeure.")
-        if e_compromis: messages_etats.append("• **Compromis :** Impossible de garder des dés contenant des symboles de conflit.")
-        if e_inconscient: messages_etats.append("• **Inconscient :** Sans défense. Difficulté des attaques contre vous égale à 1.")
-        if e_aveugle: messages_etats.append("• **Aveuglé :** Difficulté des tests basés sur la vue augmentée de +2.")
-        if messages_etats: st.error("⚠️ **EFFETS DES ÉTATS :**\n" + "\n".join(messages_etats))
-
-        messages_blessures = []
-        if b_legere: messages_blessures.append("• **Blessure Légère :** Coût en opportunités augmenté de +1 sur vos actions martiales.")
-        if b_grave: messages_blessures.append("• **Blessure Grave :** Difficulté de tous vos tests physiques augmentée de +1.")
-        if b_mutilante: messages_blessures.append("• **Blessure Mutilante :** Malus permanent sur l'anneau associé.")
-        if messages_blessures: st.warning("🚨 **EFFETS DES BLESSURES :**\n" + "\n".join(messages_blessures))
+                # =====================================================================
+        # 🩸 GESTION DES ÉTATS & BLESSURES (LIEN : ETATS_BLESSURES.PY)
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("🩸 États & Blessures du Personnage")
+        
+        # Sécurité d'initialisation de la liste dans la fiche du joueur
+        if "mes_etats" not in f:
+            f["mes_etats"] = []
+            
+        # 1. Récupération sécurisée du catalogue depuis etats_blessures.py
+        db_etats_source = CATALOGUE_ETATS_BLESSURES if 'CATALOGUE_ETATS_BLESSURES' in globals() else {}
+        
+        # 2. Affichage des afflictions actuellement subies par le joueur
+        if f["mes_etats"]:
+            st.markdown("**Afflictions actives sur votre personnage :**")
+            for affliction in f["mes_etats"]:
+                col_aff_nom, col_aff_action = st.columns([3, 1])
+                
+                # Recherche de la description dans le fichier externe pour l'afficher au survol/texte
+                desc_affliction = "Description non trouvée."
+                for cat_aff, dict_aff in db_etats_source.items():
+                    if affliction in dict_aff:
+                        desc_affliction = dict_aff[affliction]
+                        break
+                
+                col_aff_nom.write(f"• **{affliction}** : *{desc_affliction}*")
+                
+                # Bouton de guérison unitaire
+                if col_aff_action.button("🩹 Soigner", key=f"heal_act_{affliction.replace(' ', '_')}"):
+                    f["mes_etats"].remove(affliction)
+                    sauver_fiche(nom_id, f)
+                    st.rerun()
+        else:
+            st.info("✨ Le personnage ne subit actuellement aucun état handicapant ou blessure majeure.")
+            
+        # 3. Menu déroulant pour s'ajouter un état depuis le catalogue etats_blessures.py
+        liste_options_dispo = ["-- Choisir un malus à appliquer --"]
+        for categorie_aff, dict_contenu in db_etats_source.items():
+            for nom_aff in dict_contenu.keys():
+                if nom_aff not in f["mes_etats"]:
+                    liste_options_dispo.append(f"{nom_aff} ({categorie_aff})")
+                    
+        sel_nouvel_effet = st.selectbox("🎯 S'infliger un état ou une blessure :", liste_options_dispo, key="sb_inflict_etat_direct")
+        
+        if sel_nouvel_effet != "-- Choisir un malus à appliquer --":
+            # On extrait uniquement le nom de l'état (en enlevant la catégorie entre parenthèses)
+            nom_propre_aff = sel_nouvel_effet.split(" (")[0]
+            f["mes_etats"].append(nom_propre_aff)
+            sauver_fiche(nom_id, f)
+            st.success(f"💥 L'état '{nom_propre_aff}' a été appliqué à votre feuille !")
+            st.rerun()
+            
         st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         air = st.slider("Air 💨", 1, 5, value=air_score)
