@@ -554,7 +554,7 @@ if role == "Joueur (Ma Fiche)":
             st.info("Aucune arme dans votre sac pour utiliser le laboratoire de forge.")
 
         # =====================================================================
-        # 📖 MON GRIMOIRE PERSONNEL (TECHNIQUES MAÎTRISÉES)
+        # 📖 MON GRIMOIRE PERSONNEL (TECHNIQUES MAÎTRISÉES ENRICHIES)
         # =====================================================================
         st.markdown("---")
         st.subheader("📖 Mon Grimoire de Techniques Personnelles")
@@ -565,8 +565,9 @@ if role == "Joueur (Ma Fiche)":
             "Ninjutsus 🥷": "mes_ninjutsus", "Inversions ☯️": "mes_inversions"
         }
 
-        # Affichage à plat des techniques maîtrisées
+        db_descriptions = DESCRIPTIONS_LORE if 'DESCRIPTIONS_LORE' in globals() else {}
         tech_possedee_trouvee = False
+        
         for label_cat, cle_fiche in cles_techniques.items():
             if cle_fiche not in f: f[cle_fiche] = []
             
@@ -577,11 +578,13 @@ if role == "Joueur (Ma Fiche)":
                     col_t_nom, col_t_oeil, col_t_del = st.columns([3, 0.5, 0.5])
                     col_t_nom.write(f"• {t_nom}")
                     
-                    if col_t_oeil.button("👁️", key=f"look_my_t_{cle_fiche}_{t_nom}"):
-                        f["tech_regardee_nom"] = t_nom
+                    if col_t_oeil.button("👁️", key=f"look_my_t_{cle_fiche}_{t_nom.replace(' ', '_')}"):
+                        st.session_state["tech_grimoire_inspectee"] = t_nom
                         
-                    if col_t_del.button("❌", key=f"forget_t_{cle_fiche}_{t_nom}"):
+                    if col_t_del.button("❌", key=f"forget_t_{cle_fiche}_{t_nom.replace(' ', '_')}"):
                         f[cle_fiche].remove(t_nom)
+                        if st.session_state.get("tech_grimoire_inspectee") == t_nom:
+                            st.session_state["tech_grimoire_inspectee"] = None
                         sauver_fiche(nom_id, f)
                         st.error(f"🔮 Technique {t_nom} oubliée.")
                         st.rerun()
@@ -589,123 +592,77 @@ if role == "Joueur (Ma Fiche)":
         if not tech_possedee_trouvee:
             st.info("Votre grimoire est vide. Utilisez le catalogue ci-dessous pour apprendre des techniques.")
 
-        # Fenêtre d'affichage rapide de la technique lue depuis le grimoire
-        if f.get("tech_regardee_nom"):
-            st.info(f"🔮 **Lecture de la technique :** {f['tech_regardee_nom']}\n\n*(Consultez sa fiche complète dans le catalogue ci-dessous si nécessaire)*")
-
-        # =====================================================================
-        # 🏛️ LE GRAND CATALOGUE IMPÉRIAL SYNCHRONISÉ (DYNAMIQUE ET FILTRÉ)
-        # =====================================================================
-        st.markdown("---")
-        st.subheader("🏛️ Le Grand Catalogue des Techniques d'Émeraude")
-        
-        # Récupération sécurisée du catalogue centralisé de votre fichier externe
-        db_globale_tech = CATALOGUE_COMPLET if 'CATALOGUE_COMPLET' in globals() else {}
-        db_descriptions = DESCRIPTIONS_LORE if 'DESCRIPTIONS_LORE' in globals() else {}
-
-        # 1. PREMIER FILTRE : Choix du grand type (Katas, Kíhos, Invocations...)
-        # Note : On gère l'accent sur 'Kíhos' tel qu'écrit dans votre fichier
-        liste_grands_types = ["-- Sélectionner --"] + list(db_globale_tech.keys())
-        cat_selectionne = st.selectbox("🔍 1. Choisir la catégorie de Technique :", liste_grands_types, key="sb_grand_cat_dr")
-        
-        if cat_selectionne != "-- Sélectionner --":
-            # Correspondance pour savoir dans quelle liste de la fiche sauvegarder
-            cle_fiche_cible = cles_techniques.get(f"{cat_selectionne} ") or cles_techniques.get(next((k for k in cles_techniques.keys() if cat_selectionne.split()[0] in k), ""))
+        # 🎪 BULLE D'INFORMATION INTERACTIVE (Œil du Grimoire)
+        if st.session_state.get("tech_grimoire_inspectee"):
+            t_active = st.session_state["tech_grimoire_inspectee"]
+            texte_lore_officiel = db_descriptions.get(t_active, "📜 *Aucune description rédigée dans DESCRIPTIONS_LORE pour cette technique.*")
             
-            # Contenu du catalogue pour la catégorie choisie (Ex: Général, Corps-à-corps...)
-            sous_categories_dict = db_globale_tech[cat_selectionne]
-            
-            # 2. DEUXIÈMED FILTRE : Extraction directe de vos sous-catégories
-            liste_sous_types = ["-- Sélectionner --"] + list(sous_categories_dict.keys())
-            filtre_sous_type = st.selectbox(f"🎯 2. Sous-catégorie ({cat_selectionne}) :", liste_sous_types, key="sb_dr_sub")
-            
-            if filtre_sous_type != "-- Sélectionner --":
-                rangs_disponibles_dict = sous_categories_dict[filtre_sous_type]
-                
-                # 3. TROISIÈME FILTRE : Extraction des Rangs réellement configurés (Ex: "Rang 1", "Rang 2")
-                liste_rangs = ["-- Sélectionner --"] + list(rangs_disponibles_dict.keys())
-                filtre_rang = st.selectbox("📊 3. Filtrer par Rang :", liste_rangs, key="sb_dr_rang")
-                
-                if filtre_rang != "-- Sélectionner --":
-                    # Récupération de la liste des noms de techniques (Ex: ["Posture de la Sentinelle", "Éclat de la Lame"])
-                    liste_noms_techniques = rangs_disponibles_dict[filtre_rang]
-                    
-                    st.markdown(f"📋 **Techniques disponibles d'après votre fichier :**")
-                    
-                    if not liste_noms_techniques:
-                        st.info("ℹ️ Aucune technique n'est enregistrée dans cette sous-catégorie pour le moment.")
-                    else:
-                        for t_nom in liste_noms_techniques:
-                            deja_apprise = t_nom in f.get(cle_fiche_cible, [])
-                            
-                            # Récupération de la description associée dans DESCRIPTIONS_LORE
-                            texte_lore = db_descriptions.get(t_nom, "📜 *Description technique en attente de rédaction dans le fichier.*")
-                            
-                            # Rendu graphique sous forme de volet déroulant interactif
-                            with st.expander(f"{'✅ (Maîtrisé)' if deja_apprise else '✨'} {t_nom} ({filtre_sous_type})"):
-                                st.text(texte_lore)
-                                
-                                if deja_apprise:
-                                    st.caption("✔️ Cette technique est déjà inscrite et consultable dans votre grimoire personnel.")
-                                else:
-                                    if st.button(f"🧠 Apprendre {t_nom}", key=f"learn_dr_{cat_selectionne}_{t_nom.replace(' ', '_')}"):
-                                        if cle_fiche_cible:
-                                            f[cle_fiche_cible].append(t_nom)
-                                            sauver_fiche(nom_id, f)
-                                            st.success(f"🔮 {t_nom} a été mémorisé dans votre Grimoire !")
-                                            st.rerun()
-                                        else:
-                                            st.error("Erreur d'aiguillage de la fiche joueur.")
+            st.markdown("---")
+            with st.chat_message("assistant", avatar="🔮"):
+                st.markdown(f"##### Parchemin de Technique : **{t_active}**")
+                st.text(texte_lore_officiel)
+                if st.button("❌ Fermer la bulle de lecture", key="btn_close_bubble_tech"):
+                    st.session_state["tech_grimoire_inspectee"] = None
+                    st.rerun()
 
-        # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
-        st.markdown("---")
-        sauver_fiche(nom_id, f)
         # =====================================================================
         # 💎 COMPTEUR D'EXPÉRIENCE ACCUMULÉE
         # =====================================================================
         st.markdown("---")
         st.subheader("💎 Suivi de l'Expérience de Mission")
-        if "xp_mission" not in f:
-            f["xp_mission"] = 0
-            
+        if "xp_mission" not in f: f["xp_mission"] = 0
         f["xp_mission"] = st.slider("Points d'Expérience (XP) accumulés :", min_value=0, max_value=100, value=f["xp_mission"], key="slider_xp_joueur")
-        st.caption(f"💡 Vous avez actuellement `{f['xp_mission']}` points d'XP en réserve pour vos calculs d'améliorations.")
-
+        st.caption(f"💡 Vous avez actuellement `{f['xp_mission']}` points d'XP en réserve.")
         # =====================================================================
-        # 🎲 INTERFACE TACTIQUE : SIMULATEUR D'AIDE À L'ACTION
+        # 🎲 INTERFACE TACTIQUE : SIMULATEUR D'AIDE À L'ACTION (26 COMPÉTENCES)
         # =====================================================================
         st.markdown("---")
         st.subheader("🎲 Aide à l'Action : Calculateur de Dés Tactique")
-        st.caption("Cette section calcule automatiquement votre réserve de dés théorique pour vos jets de dés.")
+        st.caption("Cette section calcule votre réserve de dés théorique selon vos compétences spécifiques de L5R.")
         
         type_action = st.radio("Sélectionner la complexité de l'action :", ["Action Simple / Standard", "Action Spéciale / Narrative"], key="rad_type_action")
         
         if type_action == "Action Spéciale / Narrative":
-            st.text_input("📝 Écrivez l'action spécifique que votre personnage tente de réaliser :", placeholder="Ex: Grimper discrètement le mur du temple pendant l'alerte...", key="ti_action_speciale")
-            st.info("ℹ️ Pour cette action narrative, exposez votre approche au Maître du Jeu pour valider le choix final des dés.")
-            
+            st.text_input("📝 Écrivez l'action spécifique que votre personnage tente de réaliser :", placeholder="Ex: Infiltrer le dojo de nuit...", key="ti_action_speciale")
+            st.info("ℹ️ Exposez votre approche narrative au Maître du Jeu pour valider les modificateurs.")
         else:
             col_act1, col_act2, col_act3 = st.columns(3)
             
             with col_act1:
                 anneau_choisi = st.selectbox("☯️ 1. Choisir l'Anneau (D6) :", ["Air", "Terre", "Feu", "Eau", "Vide"], key="sb_action_anneau")
-                # Lecture automatique des scores de l'anneau depuis la fiche joueur (valeur par défaut 1 si absent)
                 score_anneau = f.get(anneau_choisi.lower(), f.get(f"anneau_{anneau_choisi.lower()}", 2))
                 
             with col_act2:
-                # Vos 5 compétences officielles L5R 5e
-                liste_competences_l5r = ["Artisanale", "Martial", "Savante", "Sociale", "Professionnelle"]
-                comp_choisie = st.selectbox("📚 2. Choisir la Compétence (D12) :", ["Aucune"] + liste_competences_l5r, key="sb_action_comp")
+                dict_toutes_competences = {
+                    "Artisanales 🎨": ["Artisanat", "Composition", "Design", "Esthétique", "Forgeron"],
+                    "Martiales ⚔️": ["Armes de poing", "Armes de jet", "Arts martiaux (Corps à corps)", "Arts martiaux (Distance)", "Arts martiaux (Mains nues)", "Méditation"],
+                    "Savantes 📜": ["Commerce", "Culture", "Théologie", "Médecine", "Sentiment", "Tactique"],
+                    "Sociales 🎭": ["Commandement", "Courtoisie", "Jeux", "Ruse", "Performance"],
+                    "Professionnelles ⚒️": ["Commerce (Pro)", "Chasse", "Navigation", "Survie", "Travail manuel"]
+                }
+                
+                liste_deroulante_comp = ["Aucune (0 dé)"]
+                for categorie, liste_sous_comps in dict_toutes_competences.items():
+                    for comp in liste_sous_comps:
+                        liste_deroulante_comp.append(f"{comp} ({categorie.split()[0]})")
+                
+                comp_choisie_brute = st.selectbox("📚 2. Choisir la Compétence Spécifique (D12) :", liste_deroulante_comp, key="sb_action_comp_advanced")
                 
                 score_comp = 0
-                if comp_choisie != "Aucune":
-                    # Lecture automatique de la compétence dans la fiche
-                    score_comp = f.get(comp_choisie.lower(), f.get(f"comp_{comp_choisie.lower()}", 0))
+                nom_competence_propre = "Aucune"
+                
+                if comp_choisie_brute != "Aucune (0 dé)":
+                    nom_competence_propre = comp_choisie_brute.split(" (")[0]
+                    cat_parente_brute = comp_choisie_brute.split("(")[1].replace(")", "").lower()
+                    
+                    score_comp = f.get(nom_competence_propre.lower(), f.get(f"comp_{nom_competence_propre.lower()}", 0))
+                    if score_comp == 0:
+                        cat_cle = cat_parente_brute[:-1] if cat_parente_brute.endswith("s") else cat_parente_brute
+                        score_comp = f.get(cat_cle, f.get(f"comp_{cat_cle}", 0))
                     
             with col_act3:
-                # Extraction dynamique des armes possédées dans le sac
                 liste_armes_sac_sim = ["Aucune"] + [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
-                arme_choisie_sim = st.selectbox("⚔️ 3. Arme utilisée (Facultatif) :", liste_armes_sac_sim, key="sb_action_arme")
+                arme_choisie_sim = st.selectbox("⚔️ 3. Arme en main (Facultatif) :", liste_armes_sac_sim, key="sb_action_arme")
                 
                 txt_arme_bonus = ""
                 if arme_choisie_sim != "Aucune":
@@ -715,12 +672,63 @@ if role == "Joueur (Ma Fiche)":
                         data_racine = CATALOGUE_ARMES_AVANCE.get(w_racine, {})
                         txt_arme_bonus = f"\n• **Propriétés de l'arme :** *{data_racine.get('proprietes', 'Aucune')}* (Portée: {data_racine.get('portee', '1')})"
 
-            # Affichage du bilan de dés indicatif (Sans bouton de validation, calcul automatique en temps réel)
             st.markdown("##### 📊 Composition de votre Réserve de Dés :")
             st.success(
-                f"🔥 **Sous l'approche du {anneau_choisi} :**\n"
+                f"🔥 **Sous l'approche de l'Anneau de {anneau_choisi} :**\n"
                 f"• Vous lancez **{score_anneau} Dés d'Anneau (D6)**\n"
-                f"• Vous ajoutez **{score_comp} Dés de Compétence (D12)** *(via votre score en {comp_choisie})*\n"
+                f"• Vous ajoutez **{score_comp} Dés de Compétence (D12)** *(via votre maîtrise en : {nom_competence_propre})*\n"
                 f"👉 **Total théorique à lancer :** `{score_anneau} D6` + `{score_comp} D12`"
                 f"{txt_arme_bonus}"
             )
+
+        # =====================================================================
+        # 🏛️ LE GRAND CATALOGUE IMPÉRIAL SYNCHRONISÉ (DYNAMIQUE ET FILTRÉ)
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("🏛️ Le Grand Catalogue des Techniques d'Émeraude")
+        
+        db_globale_tech = CATALOGUE_COMPLET if 'CATALOGUE_COMPLET' in globals() else {}
+
+        liste_grands_types = ["-- Sélectionner --"] + list(db_globale_tech.keys())
+        cat_selectionne = st.selectbox("🔍 1. Choisir la catégorie de Technique :", liste_grands_types, key="sb_grand_cat_dr")
+        
+        if cat_selectionne != "-- Sélectionner --":
+            cle_fiche_cible = cles_techniques.get(f"{cat_selectionne} ") or cles_techniques.get(next((k for k in cles_techniques.keys() if cat_selectionne.split()[0] in k), ""))
+            sous_categories_dict = db_globale_tech[cat_selectionne]
+            
+            liste_sous_types = ["-- Sélectionner --"] + list(sous_categories_dict.keys())
+            filtre_sous_type = st.selectbox(f"🎯 2. Sous-catégorie ({cat_selectionne}) :", liste_sous_types, key="sb_dr_sub")
+            
+            if filtre_sous_type != "-- Sélectionner --":
+                rangs_disponibles_dict = sous_categories_dict[filtre_sous_type]
+                
+                liste_rangs = ["-- Sélectionner --"] + list(rangs_disponibles_dict.keys())
+                filtre_rang = st.selectbox("📊 3. Filtrer par Rang :", liste_rangs, key="sb_dr_rang")
+                
+                if filtre_rang != "-- Sélectionner --":
+                    liste_noms_techniques = rangs_disponibles_dict[filtre_rang]
+                    st.markdown(f"📋 **Techniques disponibles d'après votre fichier :**")
+                    
+                    if not liste_noms_techniques:
+                        st.info("ℹ️ Aucune technique n'est enregistrée dans cette sous-catégorie pour le moment.")
+                    else:
+                        for t_nom in liste_noms_techniques:
+                            deja_apprise = t_nom in f.get(cle_fiche_cible, [])
+                            texte_lore = db_descriptions.get(t_nom, "📜 *Description technique en attente de rédaction dans le fichier.*")
+                            
+                            with st.expander(f"{'✅ (Maîtrisé)' if deja_apprise else '✨'} {t_nom} ({filtre_sous_type})"):
+                                st.text(texte_lore)
+                                
+                                if deja_apprise:
+                                    st.caption("✔️ Cette technique est déjà inscrite dans votre grimoire personnel.")
+                                else:
+                                    if st.button(f"🧠 Apprendre {t_nom}", key=f"learn_dr_{cat_selectionne}_{t_nom.replace(' ', '_')}"):
+                                        if cle_fiche_cible:
+                                            f[cle_fiche_cible].append(t_nom)
+                                            sauver_fiche(nom_id, f)
+                                            st.success(f"🔮 {t_nom} a été mémorisé dans votre Grimoire !")
+                                            st.rerun()
+
+        # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
+        st.markdown("---")
+        sauver_fiche(nom_id, f)
