@@ -283,43 +283,31 @@ if role == "Joueur (Ma Fiche)":
 
         if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
-        # --- SECTION DES 5 ANNEAUX RE-ALIGNÉE ET CORRIGÉE ---
-            st.subheader("🌀 Les Cinq Anneaux")
-            sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
+                 # --- FORMULE STABLE DES 5 ANNEAUX (ZÉRO ERREUR D'INDENTATION) ---
+        st.subheader("🌀 Les Cinq Anneaux")
+        sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         
-        ca1, ca2, ca3, ca4, ca5 = st.columns(5)
+        # Affichage direct et robuste aligné sur le bord de la page
+        air = st.slider("Air 💨", 1, 5, value=f.get("air", 1))
+        score_b_air = st.selectbox("Score de Blessure Critique - Air (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_air", 0)), key="sb_air")
         
-        with ca1:
-            air = st.slider("Air 💨", 1, 5, value=f.get("air", 1))
-            score_b_air = st.selectbox("Blessure Air :", list(range(0, 17)), index=int(f.get("score_b_air", 0)), key="sb_air")
-            if score_b_air > 0:
-                st.caption(f"🩸 Gravité Air : **{score_b_air}/16**")
-
-        with ca2:
-            terre = st.slider("Terre 🏔️", 1, 5, value=f.get("terre", 1))
-            score_b_terre = st.selectbox("Blessure Terre :", list(range(0, 17)), index=int(f.get("score_b_terre", 0)), key="sb_terre")
-            if score_b_terre > 0:
-                st.caption(f"🩸 Gravité Terre : **{score_b_terre}/16**")
-
-        with ca3:
-            feu = st.slider("Feu 🔥", 1, 5, value=f.get("feu", 1))
-            score_b_feu = st.selectbox("Blessure Feu :", list(range(0, 17)), index=int(f.get("score_b_feu", 0)), key="sb_feu")
-            if score_b_feu > 0:
-                st.caption(f"🩸 Gravité Feu : **{score_b_feu}/16**")
-
-        with ca4:
-            eau = st.slider("Eau 💧", 1, 5, value=f.get("eau", 1))
-            score_b_eau = st.selectbox("Blessure Eau :", list(range(0, 17)), index=int(f.get("score_b_eau", 0)), key="sb_eau")
-            if score_b_eau > 0:
-                st.caption(f"🩸 Gravité Eau : **{score_b_eau}/16**")
-
-        with ca5:
-            vide = st.slider("Vide 🌌", 1, 5, value=f.get("vide", 1))
-            score_b_vide = st.selectbox("Blessure Vide :", list(range(0, 17)), index=int(f.get("score_b_vide", 0)), key="sb_vide")
-            if score_b_vide > 0:
-                st.caption(f"🩸 Gravité Vide : **{score_b_vide}/16**")
-
-        p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
+        st.markdown("---")
+        terre = st.slider("Terre 🏔️", 1, 5, value=f.get("terre", 1))
+        score_b_terre = st.selectbox("Score de Blessure Critique - Terre (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_terre", 0)), key="sb_terre")
+        
+        st.markdown("---")
+        feu = st.slider("Feu 🔥", 1, 5, value=f.get("feu", 1))
+        score_b_feu = st.selectbox("Score de Blessure Critique - Feu (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_feu", 0)), key="sb_feu")
+        
+        st.markdown("---")
+        eau = st.slider("Eau 💧", 1, 5, value=f.get("eau", 1))
+        score_b_eau = st.selectbox("Score de Blessure Critique - Eau (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_eau", 0)), key="sb_eau")
+        
+        st.markdown("---")
+        vide = st.slider("Vide 🌌", 1, 5, value=f.get("vide", 1))
+        score_b_vide = st.selectbox("Score de Blessure Critique - Vide (0 à 16) :", list(range(0, 17)), index=int(f.get("score_b_vide", 0)), key="sb_vide")
+        
+        st.markdown("---")
 
         # --- RAPPEL DES CARACTÉRISTIQUES DE L'ARMURE PORTÉE (NOUVEAUTÉ) ---
         armure_actuelle_nom = f.get("armure_active", "Armure de Tenue de Cérémonie")
