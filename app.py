@@ -1,17 +1,35 @@
 import json
 import os
+import streamlit as st
 
-# 1. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
+# =====================================================================
+# 📂 1. CONFIGURATION DU DOSSIER DE STOCKAGE (OBLIGATOIREMENT EN PREMIER)
+# =====================================================================
+DB_DIR = "sauvegardes_l5a"
+if not os.path.exists(DB_DIR): 
+    os.makedirs(DB_DIR)
+ACTIONS_FILE = "notifications_mj.json"
+
+# =====================================================================
+# 📜 2. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
+# =====================================================================
 from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE, CATALOGUE_DIVERS
 from techniques import CATALOGUE_COMPLET, DESCRIPTIONS_LORE
 from etats_blessures import CATALOGUE_ETATS_BLESSURES
 from ecoles import CATALOGUE_ECOLES
 
+# =====================================================================
+# ⚙️ 3. FONCTIONS UNIQUES ET SÉCURISÉES DE CHARGEMENT ET SAUVEGARDE
+# =====================================================================
 def charger_fiche(nom_id):
-    """Charge la fiche du joueur et garantit la présence de TOUTES les clés mécaniques L5R."""
-    nom_fichier = f"fiche_{nom_id.lower()}.json"
+    """Charge la fiche du joueur depuis le dossier DB_DIR et garantit la présence de TOUTES les clés mécaniques."""
+    if not nom_id:
+        return None
+        
+    nom_fichier = f"{nom_id.lower().strip()}.json"
+    path_complet = os.path.join(DB_DIR, nom_fichier)
     
-    # Structure de base universelle pour ne perdre aucune variable
+    # Votre structure de base universelle préservée à 100%
     structure_defaut = {
         "clan": "Clan de la Grue", "famille": "Kakita", "genre": "Homme", "espece": "Humain", "ecole": "",
         "anneau_air": 2, "anneau_terre": 2, "anneau_feu": 2, "anneau_eau": 2, "anneau_vide": 2,
@@ -27,11 +45,11 @@ def charger_fiche(nom_id):
         "posture": "Air", "endurance_actuelle": 10, "sang_froid_actuel": 10
     }
     
-    if os.path.exists(nom_fichier):
+    if os.path.exists(path_complet):
         try:
-            with open(nom_fichier, "r", encoding="utf-8") as f_json:
+            with open(path_complet, "r", encoding="utf-8") as f_json:
                 donnees_chargees = json.load(f_json)
-                # Fusion intelligente : conserve l'existant et ajoute ce qui manque
+                # Fusion intelligente : conserve l'existant du joueur et ajoute les clés de structure manquantes
                 structure_defaut.update(donnees_chargees)
                 return structure_defaut
         except Exception:
@@ -39,22 +57,13 @@ def charger_fiche(nom_id):
     return structure_defaut
 
 def sauver_fiche(nom_id, dictionnaire_fiche):
-    """Fige immédiatement l'intégralité du dictionnaire sur le disque dur."""
+    """Fige immédiatement l'intégralité du dictionnaire dans le dossier DB_DIR."""
     if not nom_id:
         return
-    nom_fichier = f"fiche_{nom_id.lower()}.json"
-    with open(nom_fichier, "w", encoding="utf-8") as f_json:
+    nom_fichier = f"{nom_id.lower().strip()}.json"
+    path_complet = os.path.join(DB_DIR, nom_fichier)
+    with open(path_complet, "w", encoding="utf-8") as f_json:
         json.dump(dictionnaire_fiche, f_json, ensure_ascii=False, indent=4)
-
-def sauver_fiche(nom_joueur, data):
-    with open(os.path.join(DB_DIR, f"{nom_joueur.lower().strip()}.json"), "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-def charger_fiche(nom_joueur):
-    path = os.path.join(DB_DIR, f"{nom_joueur.lower().strip()}.json")
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f: return json.load(f)
-    return None
 
 # 2. Configuration et Design Sombre L5A
 st.set_page_config(page_title="L5A - Table Tactique Évoluée", layout="wide")
