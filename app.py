@@ -322,18 +322,15 @@ if role == "Joueur (Ma Fiche)":
                     st.success("Objet retiré de l'inventaire.")
                     st.rerun()
             
-            # Affichage de la boîte d'analyse détaillée de l'œil si cliqué
+                        # Affichage de la boîte d'analyse détaillée de l'œil si cliqué
             if f.get("objet_regarde_id"):
-                obj_analysé = next((obj for obj in f["inventaire_sac"] if obj["id_obj"] == f["objet_regarde_id"]), None)
-                if obj_analysé:
-                    st.info(f"🔍 **Analyse approfondie de l'objet :** *{obj_analysé['nom']}*\n\n"
-                            f"• **Catégorie :** {obj_analysé['type_cat']} \n"
-                    # --- AFFICHAGE FACILITÉ DE L'ANALYSE APPROFONDIE ---
-                    st.info(f"🔍 **Analyse approfondie de l'objet :** *{obj_analysé['nom']}*\n\n"
-                            f"• **Catégorie :** {obj_analysé['type_cat']} \n"
-                            f"• **Notes & Origine :** {obj_analysé.get('details','Modèle standard')} \n"
-                            f"• **Modificateurs appliqués :** Dégâts/Résistance Bonus : {obj_analysé.get('bonus_degats', obj_analysé.get('bonus_res_p', 0))} \n"
-                            f"• **Enchantements & Propriétés :** {obj_analysé.get('proprietes','Aucune')}")
+                obj_analyse = next((obj for obj in f["inventaire_sac"] if obj["id_obj"] == f["objet_regarde_id"]), None)
+                if obj_analyse:
+                    st.info(f"🔍 **Analyse approfondie de l'objet :** *{obj_analyse['nom']}*\n\n"
+                            f"• **Catégorie :** {obj_analyse['type_cat']} \n"
+                            f"• **Notes & Origine :** {obj_analyse.get('details','Modèle standard')} \n"
+                            f"• **Modificateurs appliqués :** Dégâts/Résistance Bonus : {obj_analyse.get('bonus_degats', obj_analyse.get('bonus_res_p', 0))} \n"
+                            f"• **Enchantements & Propriétés :** {obj_analyse.get('proprietes','Aucune')}")
 
         # --- ZONE D'ACHAT UNIFIÉE (AJOUTER OBJET EN BAS DE LA PAGE) ---
         st.markdown("---")
