@@ -63,7 +63,7 @@ role = st.sidebar.selectbox(
 )
 
 # Initialisation par défaut pour éviter les erreurs de lecture plus bas
-onglet_actif = "📜 Ma Feuille de Personnage"
+if onglet_actif = "📜 Ma Feuille de Personnage"
 
 if role == "Joueur (Ma Fiche)":
     nom_id = st.sidebar.text_input("⛩️ Saisissez votre prénom :", key="input_prenom_joueur").strip()
