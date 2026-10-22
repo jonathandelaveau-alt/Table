@@ -511,48 +511,54 @@ if role == "Joueur (Ma Fiche)":
                         sauver_fiche(nom_id, f)
                         st.rerun()
 
-          # =====================================================================
-        # 🛒 SECTION DU JOUEUR : BOUTIQUE D'ACHAT & CATALOGUES
         # =====================================================================
-        st.markdown("---")
-        st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
-        col_cat1, col_cat2, col_cat3 = st.columns(3)
-        
-        with col_cat1:
-            st.markdown("**1. Catégorie : Armes**")
-            w_achat = st.selectbox("Sélectionner une arme :", list(CATALOGUE_ARMES_AVANCE.keys()) if 'CATALOGUE_ARMES_AVANCE' in globals() else [], key="buy_w_sel")
-            if w_achat and st.button("➕ Ajouter l'Arme", key="btn_buy_w"):
-                f["inventaire_sac"].append({
-                    "id_obj": int(time.time()), "nom": f"{w_achat} standard", "modele_racine": w_achat, "type_cat": "Arme", 
-                    "details": "Standard", "main_equipee": "Aucune", "prise_main": "1 main", "bonus_degats": 0, "bonus_danger": 0, "proprietes": "Aucune"
-                })
-                sauver_fiche(nom_id, f)
-                st.rerun()
-                
-        with col_cat2:
-            st.markdown("**2. Catégorie : Armures**")
-            a_achat = st.selectbox("Sélectionner une armure :", list(CATALOGUE_ARMURES.keys()) if 'CATALOGUE_ARMURES' in globals() else [], key="buy_a_sel")
-            if a_achat and st.button("➕ Ajouter l'Armure", key="btn_buy_a"):
-                f["inventaire_sac"].append({
-                    "id_obj": int(time.time()), "nom": f"{a_achat} standard", "modele_racine": a_achat, "type_cat": "Armure", 
-                    "details": "Standard", "equipe": False, "bonus_res_p": 0, "bonus_res_s": 0, "proprietes": "Aucune"
-                })
-                sauver_fiche(nom_id, f)
-                st.rerun()
-
-        with col_cat3:
-            st.markdown("**3. Catégorie : Objets Divers**")
-            liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
-            if liste_divers:
-                d_achat = st.selectbox("Sélectionner un utilitaire :", liste_divers, key="boutique_divers_unique_sel")
-                if st.button("➕ Ajouter l'Objet Divers", key="btn_buy_d_sac"):
-                    d_stats = CATALOGUE_DIVERS[d_achat]
+        # 🛒 INTERCEPTION DE L'ONGLET : MARCHÉ D'ÉMERAUDE
+        # =====================================================================
+        # On ferme l'affichage précédent et on ouvre le code du marché partagé
+        if onglet_actif == "🛒 Marché d'Émeraude":
+            st.title("🛒 Le Marché de l'Empire d'Émeraude")
+            st.info("🛍️ Achetez vos équipements ici. Les objets sélectionnés seront automatiquement ajoutés à votre Sac à Dos.")
+            
+            col_cat1, col_cat2, col_cat3 = st.columns(3)
+            
+            with col_cat1:
+                st.markdown("**1. Catégorie : Armes**")
+                w_achat = st.selectbox("Sélectionner une arme :", list(CATALOGUE_ARMES_AVANCE.keys()) if 'CATALOGUE_ARMES_AVANCE' in globals() else [], key="buy_w_sel")
+                if w_achat and st.button("➕ Ajouter l'Arme", key="btn_buy_w"):
                     f["inventaire_sac"].append({
-                        "id_obj": int(time.time()), "nom": d_achat, "type_cat": "Divers", 
-                        "details": f"Type : {d_stats['type']}.", "proprietes": d_stats["effet"], "equipe": False
+                        "id_obj": int(time.time()), "nom": f"{w_achat} standard", "modele_racine": w_achat, "type_cat": "Arme", 
+                        "details": "Standard", "main_equipee": "Aucune", "prise_main": "1 main", "bonus_degats": 0, "bonus_danger": 0, "proprietes": "Aucune"
                     })
                     sauver_fiche(nom_id, f)
+                    st.success(f"✨ {w_achat} a été glissé dans votre sac !")
                     st.rerun()
+                    
+            with col_cat2:
+                st.markdown("**2. Catégorie : Armures**")
+                a_achat = st.selectbox("Sélectionner une armure :", list(CATALOGUE_ARMURES.keys()) if 'CATALOGUE_ARMURES' in globals() else [], key="buy_a_sel")
+                if a_achat and st.button("➕ Ajouter l'Armure", key="btn_buy_a"):
+                    f["inventaire_sac"].append({
+                        "id_obj": int(time.time()), "nom": f"{a_achat} standard", "modele_racine": a_achat, "type_cat": "Armure", 
+                        "details": "Standard", "equipe": False, "bonus_res_p": 0, "bonus_res_s": 0, "proprietes": "Aucune"
+                    })
+                    sauver_fiche(nom_id, f)
+                    st.success(f"✨ {a_achat} a été suspendue dans votre sac !")
+                    st.rerun()
+
+            with col_cat3:
+                st.markdown("**3. Catégorie : Objets Divers**")
+                liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
+                if liste_divers:
+                    d_achat = st.selectbox("Sélectionner un utilitaire :", liste_divers, key="boutique_divers_unique_sel")
+                    if st.button("➕ Ajouter l'Objet Divers", key="btn_buy_d_sac"):
+                        d_stats = CATALOGUE_DIVERS[d_achat]
+                        f["inventaire_sac"].append({
+                            "id_obj": int(time.time()), "nom": d_achat, "type_cat": "Divers", 
+                            "details": f"Type : {d_stats['type']}.", "proprietes": d_stats["effet"], "equipe": False
+                        })
+                        sauver_fiche(nom_id, f)
+                        st.success(f"✨ {d_achat} glissé dans le sac !")
+                        st.rerun()
         # =====================================================================
         # 🔨 LE GRAND LABORATOIRE DE FORGE & D'AMÉLIORATION
         # =====================================================================
