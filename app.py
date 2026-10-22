@@ -527,64 +527,129 @@ if role == "Joueur (Ma Fiche)":
                     })
                     sauver_fiche(nom_id, f)
                     st.rerun()
-
-             # =====================================================================
-        # 📜 LE GRIMOIRE DES TECHNIQUES IMPÉRIALES (LIEN CATALOGUES)
+        # =====================================================================
+        # 🔨 LE GRAND LABORATOIRE DE FORGE & D'AMÉLIORATION
         # =====================================================================
         st.markdown("---")
-        st.subheader("📖 Le Grimoire des Techniques Impériales")
+        st.subheader("🔨 Laboratoire de Forge Impériale & Recyclage")
         
-        # Liste de correspondance entre vos clés de fiche et vos catalogues importés
-        categories_list = [
-            ("Katas", "mes_katas", CATALOGUE_KATAS if 'CATALOGUE_KATAS' in globals() else {}),
-            ("Kihos", "mes_kihos", CATALOGUE_KIHOS if 'CATALOGUE_KIHOS' in globals() else {}),
-            ("Invocations", "mes_invocs", CATALOGUE_INVOCATIONS if 'CATALOGUE_INVOCATIONS' in globals() else {}),
-            ("Rituels", "mes_rituels", CATALOGUE_RITUELS if 'CATALOGUE_RITUELS' in globals() else {}),
-            ("Shujis", "mes_shujis", CATALOGUE_SHUJIS if 'CATALOGUE_SHUJIS' in globals() else {}),
-            ("Mahos", "mes_mahos", CATALOGUE_MAHOS if 'CATALOGUE_MAHOS' in globals() else {}),
-            ("Ninjutsus", "mes_ninjutsus", CATALOGUE_NINJUTSUS if 'CATALOGUE_NINJUTSUS' in globals() else {}),
-            ("Inversions", "mes_inversions", CATALOGUE_INVERSIONS if 'CATALOGUE_INVERSIONS' in globals() else {})
-        ]
-
-        for nom_cat, cle_fiche, cat_ref in categories_list:
-            if cle_fiche not in f:
-                f[cle_fiche] = []
+        liste_armes_sac_forge = [w["nom"] for w in f["inventaire_sac"] if w["type_cat"] == "Arme"]
+        if liste_armes_sac_forge:
+            w_a_forger = st.selectbox("Sélectionner l'arme à améliorer ou modifier :", liste_armes_sac_forge, key="sb_forge_w")
+            arme_forge_obj = next((w for w in f["inventaire_sac"] if w["nom"] == w_a_forger), None)
+            
+            if arme_forge_obj:
+                col_f1, col_f2 = st.columns(2)
+                with col_f1:
+                    arme_forge_obj["bonus_degats"] = st.number_input("➕ Bonus de Dégâts :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_degats", 0), key=f"f_deg_{arme_forge_obj['id_obj']}")
+                with col_f2:
+                    arme_forge_obj["bonus_danger"] = st.number_input("⚠️ Bonus de Danger :", min_value=0, max_value=10, value=arme_forge_obj.get("bonus_danger", 0), key=f"f_dng_{arme_forge_obj['id_obj']}")
                 
-            # Création d'un volet déroulant par catégorie de technique
-            with st.expander(f"✨ {nom_cat} Maîtrisés ({len(f[cle_fiche])})"):
-                # 1. Affichage des techniques déjà apprises par le joueur
-                if f[cle_fiche]:
-                    for tech in f[cle_fiche]:
-                        col_t_txt, col_t_btn = st.columns([3, 1])
-                        col_t_txt.write(f"• **{tech}**")
-                        # Bouton de suppression en croix pour oublier la technique
-                        if col_t_btn.button("❌", key=f"del_t_{cle_fiche}_{tech}"):
-                            f[cle_fiche].remove(tech)
-                            sauver_fiche(nom_id, f)
-                            st.rerun()
-                else:
-                    st.caption(f"Aucun {nom_cat[:-1]} connu.")
+                new_nom_w = st.text_input("📝 Renommer l'arme (Ex: Katana Ancestral) :", value=arme_forge_obj["nom"], key=f"f_nom_{arme_forge_obj['id_obj']}")
+                if new_nom_w != arme_forge_obj["nom"]:
+                    arme_forge_obj["nom"] = new_nom_w
+                    sauver_fiche(nom_id, f)
+                    st.rerun()
+        else:
+            st.info("Aucune arme dans votre sac pour utiliser le laboratoire de forge.")
 
-                # 2. Formulaire pour apprendre une nouvelle technique depuis le catalogue racine
-                if cat_ref:
-                    # On filtre pour ne pas proposer des techniques que le joueur connaît déjà
-                    liste_choix = ["-- Apprendre une technique --"] + [t for t in cat_ref.keys() if t not in f[cle_fiche]]
-                    sel_t = st.selectbox(f"Choisir dans le catalogue des {nom_cat} :", liste_choix, key=f"add_select_{cle_fiche}")
+        # =====================================================================
+        # 📖 MON GRIMOIRE PERSONNEL (TECHNIQUES MAÎTRISÉES)
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("📖 Mon Grimoire de Techniques Personnelles")
+        
+        cles_techniques = {
+            "Katas 📚": "mes_katas", "Kihos 🧘": "mes_kihos", "Invocations 🌪️": "mes_invocs",
+            "Rituels 📜": "mes_rituels", "Shujis 🎭": "mes_shujis", "Mahos 🩸": "mes_mahos",
+            "Ninjutsus 🥷": "mes_ninjutsus", "Inversions ☯️": "mes_inversions"
+        }
+
+        # Affichage à plat des techniques maîtrisées
+        tech_possedee_trouvee = False
+        for label_cat, cle_fiche in cles_techniques.items():
+            if cle_fiche not in f: f[cle_fiche] = []
+            
+            if f[cle_fiche]:
+                tech_possedee_trouvee = True
+                st.markdown(f"**🔹 {label_cat} :**")
+                for t_nom in f[cle_fiche]:
+                    col_t_nom, col_t_oeil, col_t_del = st.columns([3, 0.5, 0.5])
+                    col_t_nom.write(f"• {t_nom}")
                     
-                    if sel_t != "-- Apprendre une technique --" and st.button("🧠 Valider l'apprentissage", key=f"btn_add_val_{cle_fiche}"):
-                        f[cle_fiche].append(sel_t)
+                    if col_t_oeil.button("👁️", key=f"look_my_t_{cle_fiche}_{t_nom}"):
+                        f["tech_regardee_nom"] = t_nom
+                        
+                    if col_t_del.button("❌", key=f"forget_t_{cle_fiche}_{t_nom}"):
+                        f[cle_fiche].remove(t_nom)
                         sauver_fiche(nom_id, f)
-                        st.success(f"🔮 Technique apprise avec succès !")
+                        st.error(f"🔮 Technique {t_nom} oubliée.")
                         st.rerun()
-                else:
-                    st.warning(f"⚠️ Le fichier technique.py ne contient pas de catalogue pour {nom_cat}.")
+                        
+        if not tech_possedee_trouvee:
+            st.info("Votre grimoire est vide. Utilisez le catalogue ci-dessous pour apprendre des techniques.")
+
+        # Fenêtre d'affichage rapide de la technique lue depuis le grimoire
+        if f.get("tech_regardee_nom"):
+            st.info(f"🔮 **Lecture de la technique :** {f['tech_regardee_nom']}\n\n*(Consultez sa fiche complète dans le catalogue ci-dessous si nécessaire)*")
+
+        # =====================================================================
+        # 🏛️ LE GRAND CATALOGUE IMPÉRIAL (RECHERCHE & APPRENTISSAGE)
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("🏛️ Le Grand Catalogue des Techniques d'Émeraude")
+        
+        dict_catalogues_complets = {
+            "Katas": CATALOGUE_KATAS if 'CATALOGUE_KATAS' in globals() else {},
+            "Kihos": CATALOGUE_KIHOS if 'CATALOGUE_KIHOS' in globals() else {},
+            "Invocations": CATALOGUE_INVOCATIONS if 'CATALOGUE_INVOCATIONS' in globals() else {},
+            "Rituels": CATALOGUE_RITUELS if 'CATALOGUE_RITUELS' in globals() else {},
+            "Shujis": CATALOGUE_SHUJIS if 'CATALOGUE_SHUJIS' in globals() else {},
+            "Mahos": CATALOGUE_MAHOS if 'CATALOGUE_MAHOS' in globals() else {},
+            "Ninjutsus": CATALOGUE_NINJUTSUS if 'CATALOGUE_NINJUTSUS' in globals() else {},
+            "Inversions": CATALOGUE_INVERSIONS if 'CATALOGUE_INVERSIONS' in globals() else {}
+        }
+
+        # Étape 1 : Choisir le type de grimoire
+        cat_selectionne = st.selectbox("🔍 Sélectionner un grand catalogue :", ["-- Choisir un catalogue --"] + list(dict_catalogues_complets.keys()), key="sb_grand_cat")
+        
+        if cat_selectionne != "-- Choisir un catalogue --":
+            db_tech = dict_catalogues_complets[cat_selectionne]
+            cle_fiche_cible = cles_techniques[f"{cat_selectionne} " + [k.split()[-1] for k in cles_techniques.keys() if cat_selectionne in k][0]]
+            
+            # Étape 2 : Filtrer par sous-catégorie précise (Général, Mêlée, Distance, Non-humain)
+            liste_sous_types = ["Tous"]
+            for t_data in db_tech.values():
+                s_type = t_data.get("type", t_data.get("sub_type", "Général"))
+                if s_type not in liste_sous_types: liste_sous_types.append(s_type)
+                
+            filtre_sous_type = st.selectbox(f"🎯 Filtrer les {cat_selectionne} par sous-catégorie :", liste_sous_types, key="sb_sub_filter")
+            
+            # Étape 3 : Affichage des techniques correspondantes
+            st.markdown(f"📋 **Liste des {cat_selectionne} disponibles :**")
+            for t_nom, t_data in db_tech.items():
+                current_sub = t_data.get("type", t_data.get("sub_type", "Général"))
+                
+                # Application du filtre choisi
+                if filtre_sous_type != "Tous" and current_sub != filtre_sous_type:
+                    continue
+                    
+                # Vérification si le joueur possède déjà la technique
+                deja_apprise = t_nom in f.get(cle_fiche_cible, [])
+                
+                with st.expander(f"{'✅' if deja_apprise else '✨'} {t_nom} ({current_sub})"):
+                    st.write(f"• **Effet :** {t_data.get('effet', t_data.get('description', 'Pas de description.'))}")
+                    if 'rang' in t_data: st.caption(f"Rang requis : {t_data['rang']}")
+                    
+                    if deja_apprise:
+                        st.caption("✔️ Vous maîtrisez déjà cette technique.")
+                    else:
+                        if st.button(f"🧠 Apprendre {t_nom}", key=f"learn_{cat_selectionne}_{t_nom}"):
+                            f[cle_fiche_cible].append(t_nom)
+                            sauver_fiche(nom_id, f)
+                            st.success(f"🔮 Vous avez ajouté {t_nom} à votre grimoire !")
+                            st.rerun()
 
         # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
         st.markdown("---")
         sauver_fiche(nom_id, f)
-
-# =====================================================================
-# ⛩️ SECTION ACCUEIL : ÉCRAN PARCHEMIN (SI AUCUNE CONNEXION)
-# =====================================================================
-else:
-    st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
