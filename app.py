@@ -451,6 +451,110 @@ if role == "Joueur (Ma Fiche)":
                     st.info(f"🔍 **Analyse de l'objet :** *{obj_analyse['nom']}*\n\n"
                             f"• **Catégorie :** {obj_analyse.get('type_cat')} | Racine : `{obj_analyse.get('modele_racine','Inconnue')}`\n"
                             f"• **Propriétés :** *{obj_analyse.get('proprietes','Aucune')}*")
+        # =====================================================================
+        # 📜 LE GRIMOIRE DES TECHNIQUES IMPÉRIALES (CATALOGUE ACTIF & INVENTIF)
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("📖 Le Grimoire des Techniques Impériales")
+        
+        # Dictionnaires globaux de référence (sécurité si non importés)
+        dict_categories_tech = {
+            "Katas": ("mes_katas", "📚 Apprendre un Kata", CATALOGUE_KATAS if 'CATALOGUE_KATAS' in globals() else {}),
+            "Kihos": ("mes_kihos", "🧘 Apprendre un Kiho", CATALOGUE_KIHOS if 'CATALOGUE_KIHOS' in globals() else {}),
+            "Invocations": ("mes_invocs", "🌪️ Apprendre une Invocation", CATALOGUE_INVOCATIONS if 'CATALOGUE_INVOCATIONS' in globals() else {}),
+            "Rituels": ("mes_rituels", "📜 Apprendre un Rituel", CATALOGUE_RITUELS if 'CATALOGUE_RITUELS' in globals() else {}),
+            "Shujis": ("mes_shujis", "🎭 Apprendre un Shuji", CATALOGUE_SHUJIS if 'CATALOGUE_SHUJIS' in globals() else {}),
+            "Mahos": ("mes_mahos", "🩸 Apprendre une Maho", CATALOGUE_MAHOS if 'CATALOGUE_MAHOS' in globals() else {}),
+            "Ninjutsus": ("mes_ninjutsus", "🥷 Apprendre un Ninjutsu", CATALOGUE_NINJUTSUS if 'CATALOGUE_NINJUTSUS' in globals() else {}),
+            "Inversions": ("mes_inversions", "☯️ Apprendre une Inversion", CATALOGUE_INVERSIONS if 'CATALOGUE_INVERSIONS' in globals() else {})
+        }
+
+        # Affichage interactif par onglets des compétences apprises avec option de suppression ❌
+        tabs_tech = st.tabs([f"✨ {k}" for k in dict_categories_tech.keys()])
+        
+        for index_t, (nom_cat, (cle_fiche, label_achat, catalogue_ref)) in enumerate(dict_categories_tech.items()):
+            with tabs_tech[index_t]:
+                st.markdown(f"##### Vos {nom_cat} Actifs")
+                if cle_fiche not in f: 
+                    f[cle_fiche] = []
+                
+                if not f[cle_fiche]:
+                    st.info(f"Vous ne maîtrisez aucun {nom_cat[:-1]} pour le moment.")
+                else:
+                    for t_apprise in f[cle_fiche]:
+                        col_t_nom, col_t_suppr = st.columns([4, 1])
+                        col_t_nom.write(f"• **{t_apprise}**")
+                        # Croix de suppression de technique apprise ❌
+                        if col_t_suppr.button("❌", key=f"del_tech_{cle_fiche}_{t_apprise}"):
+                            f[cle_fiche].remove(t_apprise)
+                            sauver_fiche(nom_id, f)
+                            st.error(f"Technique {t_apprise} oubliée.")
+                            st.rerun()
+
+                # Menu d'apprentissage / Sélection depuis les catalogues officiels
+                st.markdown(f"**➕ {label_achat}**")
+                if catalogue_ref:
+                    liste_choix_tech = ["-- Choisir une technique --"] + [t for t in catalogue_ref.keys() if t not in f[cle_fiche]]
+                    sel_tech_add = st.selectbox(f"Sélectionner dans le catalogue des {nom_cat} :", liste_choix_tech, key=f"sb_add_tech_{cle_fiche}")
+                    
+                    if sel_tech_add != "-- Choisir une technique --" and st.button("🧠 Mémoriser la Technique", key=f"btn_add_tech_{cle_fiche}"):
+                        f[cle_fiche].append(sel_tech_add)
+                        sauver_fiche(nom_id, f)
+                        st.success(f"🔮 Vous venez d'apprendre : {sel_tech_add} !")
+                        st.rerun()
+                else:
+                    st.caption("⚠️ Aucun catalogue de référence chargé pour cette catégorie.")
+
+        # =====================================================================
+        # 🛒 ZONE D'ACHAT UNIFIÉE (MAGASIN COMPATIBLE SÉCURISÉ)
+        # =====================================================================
+        st.markdown("---")
+        st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
+        col_cat1, col_cat2, col_cat3 = st.columns(3)
+        
+        with col_cat1:
+            st.markdown("**1. Catégorie : Armes**")
+            w_achat = st.selectbox("Sélectionner une arme du catalogue :", list(CATALOGUE_ARMES_AVANCE.keys()) if 'CATALOGUE_ARMES_AVANCE' in globals() else [], key="buy_w_sel")
+            if w_achat and st.button("➕ Ajouter l'Arme", key="btn_buy_w"):
+                f["inventaire_sac"].append({
+                    "id_obj": int(time.time()), "nom": f"{w_achat} standard", "modele_racine": w_achat, "type_cat": "Arme", 
+                    "details": "Achetée au catalogue d'école standard.", "main_equipee": "Aucune", "prise_main": "1 main", "bonus_degats": 0, "bonus_danger": 0, "proprietes": CATALOGUE_ARMES_AVANCE[w_achat]["proprietes"] if 'CATALOGUE_ARMES_AVANCE' in globals() else "Standard"
+                })
+                sauver_fiche(nom_id, f)
+                st.success(f"✨ {w_achat} a été glissé dans votre sac !")
+                st.rerun()
+                
+        with col_cat2:
+            st.markdown("**2. Catégorie : Armures**")
+            a_achat = st.selectbox("Sélectionner une armure du catalogue :", list(CATALOGUE_ARMURES.keys()) if 'CATALOGUE_ARMURES' in globals() else [], key="buy_a_sel")
+            if a_achat and st.button("➕ Ajouter l'Armure", key="btn_buy_a"):
+                f["inventaire_sac"].append({
+                    "id_obj": int(time.time()), "nom": f"{a_achat} standard", "modele_racine": a_achat, "type_cat": "Armure", 
+                    "details": "Achetée au catalogue de protection standard.", "equipe": False, "bonus_res_p": 0, "bonus_res_s": 0, "proprietes": CATALOGUE_ARMURES[a_achat]["proprietes"] if 'CATALOGUE_ARMURES' in globals() else "Standard"
+                })
+                sauver_fiche(nom_id, f)
+                st.success(f"✨ {a_achat} a été suspendue dans votre sac !")
+                st.rerun()
+
+        with col_cat3:
+            st.markdown("**3. Catégorie : Objets Divers**")
+            liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
+            if liste_divers:
+                d_achat = st.selectbox("Sélectionner un objet utilitaire :", liste_divers, key="boutique_divers_unique_sel")
+                if st.button("➕ Ajouter l'Objet Divers", key="btn_buy_d_sac"):
+                    d_stats = CATALOGUE_DIVERS[d_achat]
+                    f["inventaire_sac"].append({
+                        "id_obj": int(time.time()), "nom": d_achat, "type_cat": "Divers", 
+                        "details": f"Type : {d_stats['type']}. Niveau de Rareté : {d_stats['rarete']}.", 
+                        "proprietes": d_stats["effet"], "equipe": False
+                    })
+                    sauver_fiche(nom_id, f)
+                    st.success(f"✨ {d_achat} glissé dans le sac !")
+                    st.rerun()
+
+        # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
+        st.markdown("---")
+        sauver_fiche(nom_id, f)
                # === 🛒 BOUTIQUE D'ACHAT DU JOUEUR ===
         st.markdown("---")
         st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
