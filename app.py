@@ -242,26 +242,23 @@ if role == "Joueur (Ma Fiche)":
         end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
         sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
         
-                # =====================================================================
-        # 🩸 GESTION DES ÉTATS & BLESSURES (LIEN : ETATS_BLESSURES.PY)
+        # =====================================================================
+        # 🩸 ÉTATS & BLESSURES SUBIS (AFFICHAGE SEUL SUR LA FEUILLE)
         # =====================================================================
         st.markdown("---")
         st.subheader("🩸 États & Blessures du Personnage")
         
-        # Sécurité d'initialisation de la liste dans la fiche du joueur
         if "mes_etats" not in f:
             f["mes_etats"] = []
             
-        # 1. Récupération sécurisée du catalogue depuis etats_blessures.py
         db_etats_source = CATALOGUE_ETATS_BLESSURES if 'CATALOGUE_ETATS_BLESSURES' in globals() else {}
         
-        # 2. Affichage des afflictions actuellement subies par le joueur
         if f["mes_etats"]:
             st.markdown("**Afflictions actives sur votre personnage :**")
             for affliction in f["mes_etats"]:
-                col_aff_nom, col_aff_action = st.columns([3, 1])
+                col_aff_nom, col_aff_action = st.columns([4, 1])
                 
-                # Recherche de la description dans le fichier externe pour l'afficher au survol/texte
+                # Récupération de la description
                 desc_affliction = "Description non trouvée."
                 for cat_aff, dict_aff in db_etats_source.items():
                     if affliction in dict_aff:
@@ -270,30 +267,12 @@ if role == "Joueur (Ma Fiche)":
                 
                 col_aff_nom.write(f"• **{affliction}** : *{desc_affliction}*")
                 
-                # Bouton de guérison unitaire
-                if col_aff_action.button("🩹 Soigner", key=f"heal_act_{affliction.replace(' ', '_')}"):
+                if col_aff_action.button("🩹 Soigner", key=f"heal_main_{affliction.replace(' ', '_')}"):
                     f["mes_etats"].remove(affliction)
                     sauver_fiche(nom_id, f)
                     st.rerun()
         else:
             st.info("✨ Le personnage ne subit actuellement aucun état handicapant ou blessure majeure.")
-            
-        # 3. Menu déroulant pour s'ajouter un état depuis le catalogue etats_blessures.py
-        liste_options_dispo = ["-- Choisir un malus à appliquer --"]
-        for categorie_aff, dict_contenu in db_etats_source.items():
-            for nom_aff in dict_contenu.keys():
-                if nom_aff not in f["mes_etats"]:
-                    liste_options_dispo.append(f"{nom_aff} ({categorie_aff})")
-                    
-        sel_nouvel_effet = st.selectbox("🎯 S'infliger un état ou une blessure :", liste_options_dispo, key="sb_inflict_etat_direct")
-        
-        if sel_nouvel_effet != "-- Choisir un malus à appliquer --":
-            # On extrait uniquement le nom de l'état (en enlevant la catégorie entre parenthèses)
-            nom_propre_aff = sel_nouvel_effet.split(" (")[0]
-            f["mes_etats"].append(nom_propre_aff)
-            sauver_fiche(nom_id, f)
-            st.success(f"💥 L'état '{nom_propre_aff}' a été appliqué à votre feuille !")
-            st.rerun()
             
         st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
