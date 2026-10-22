@@ -485,8 +485,8 @@ if role == "Joueur (Ma Fiche)":
                         sauver_fiche(nom_id, f)
                         st.rerun()
 
-        # =====================================================================
-        # 🛒 ZONE D'ACHAT UNIFIÉE (MAGASIN COMPATIBLE SÉCURISÉ)
+          # =====================================================================
+        # 🛒 SECTION DU JOUEUR : BOUTIQUE D'ACHAT & CATALOGUES
         # =====================================================================
         st.markdown("---")
         st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
@@ -539,119 +539,8 @@ if role == "Joueur (Ma Fiche)":
 
         sauver_fiche(nom_id, f)
 
-# Le code s'arrête ici pour préserver la ligne suivante :
-
-# ==================== VUE MJ ====================
-elif role == "Maître du Jeu (Hôte)":
-    st.header("👁️ Panneau Tactique de l'Hôte")
-    if st.button("🔄 ACTUALISER LA TABLE"): 
-        st.rerun()
-    fichiers = [f for f in os.listdir(DB_DIR) if f.endswith('.json')]
-    if not fichiers:
-        st.info("Aucun samouraï n'a partagé de données.")
-    else:
-        st.subheader("📋 Informations Autorisées par les Joueurs")
-        for f_name in fichiers:
-            chemin_fichier = os.path.join(DB_DIR, f_name)
-            with open(chemin_fichier, "r", encoding="utf-8") as file: p = json.load(file)
-            nom_j = f_name.replace('.json', '').capitalize()
-            
-            col_head1, col_head2 = st.columns(2)
-            col_head1.markdown(f"### 🏯 Fiche de {nom_j}")
-            if col_head2.button(f"❌ Supprimer {nom_j}", key=f"del_{nom_j}"):
-                os.remove(chemin_fichier)
-                st.warning("Fiche détruite."); st.rerun()
-            
-            av, tv, fv, ev = p.get('air', 1), p.get('terre', 1), p.get('feu', 1), p.get('eau', 1)
-            em, sm = (tv + fv) * 2, (tv + ev) * 2
-            ep, sp = em - p.get('end_act', em), sm - p.get('sf_act', sm)
-            
-            roles_bruts = p.get('profil', ['Bushi'])
-            roles_txt = ", ".join(roles_bruts) if isinstance(roles_bruts, list) else roles_bruts
-            titre_cadre = f"💮 {nom_j} : {p.get('famille','Inconnu')} {p.get('perso','Inconnu')} (Clan {p.get('clan','Inconnu')}) — Rang {p.get('rang_ecole',1)} [{roles_txt}] | Posture : {p.get('posture','Air')}"
-            
-            with st.expander(titre_cadre, expanded=True):
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.markdown("**🌀 Éléments & Gravités**")
-                    if p.get("sh_anneaux", True):
-                        st.write(f"💨 A: {av} (Blessure: {p.get('score_b_air',0)}) | 🏔️ T: {tv} (Blessure: {p.get('score_b_terre',0)})")
-                        st.write(f"🔥 F: {fv} (Blessure: {p.get('score_b_feu',0)}) | 💧 E: {ev} (Blessure: {p.get('score_b_eau',0)})")
-                        st.write(f"🌌 Vide: {p.get('vide',1)} (Actuel: **{p.get('p_vide',0)}** | Blessure: {p.get('score_b_vide',0)})")
-                    else: st.caption("🔒 Masqué")
-                with col2:
-                    st.markdown("**🩸 Santé & Seuils**")
-                    if p.get("sh_vitalite", True):
-                        st.write(f"❤️ Endurance : **{p.get('end_act',em)} / {em}**")
-                        if ep > 0: st.error(f"-{ep} PV")
-                        st.write(f"🧠 Sang-froid : **{p.get('sf_act',sm)} / {sm}**")
-                        if sp > 0: st.warning(f"Stress : -{sp}")
-                    else: st.caption("🔒 Masqué")
-                with col3:
-                    st.markdown("**⚖️ Profil Social**")
-                    if p.get("sh_social", True): st.write(f"🎖️ H: {p.get('hon',50)} | ⭐ G: {p.get('glo',50)} | 📜 S: {p.get('sta',50)}")
-                    else: st.caption("🔒 Masqué")
-                with col4:
-                    st.markdown("**⚔️ Arsenal Équipé**")
-                    if p.get("sh_equipement", True):
-                        st.write(f"🗡️ Arme : **{p.get('arme_active','Aucune')}** ({'2 mains ⚔️' if p.get('deux_mains',False) else '1 main'})")
-                        st.write(f"💥 Dégâts: {p.get('w_deg','3')} | Danger: **{p.get('w_dang',5)}** | 📏 Portée: {p.get('w_por','1')}")
-                        st.write(f"👘 Armure: {p.get('armure_active','Aucune')} (P: {p.get('res_p',1)}/S: {p.get('res_s',0)})")
-                    else: st.caption("🔒 Masqué")
-                
-                if p.get("sh_grimoire", True):
-                    st.markdown("🎯 **Technique activement préparée :**")
-                    st.info(f"`{p.get('tech_active_cliquee', 'Aucune')}`")
-
-                comp_visibles = []
-                dic_noms = {"c_est": "Esthétique", "c_com": "Composition", "c_sty": "Stylisme", "c_forg": "Forge 🔨", "c_for": "Forme", "c_cac": "Corps-à-corps", "c_dis": "Distance", "c_chu": "Corps Humain", "c_med": "Méditation", "c_tac": "Tactique", "c_cul": "Culture", "c_gou": "Gouvernement", "c_mdc": "Médecine", "c_sen": "Sentiment", "c_the": "Théologie", "c_cmd": "Commandement", "c_crt": "Courtoisie", "c_jeu": "Jeu", "c_org": "Organisation 📋", "c_cmr": "Commerce", "c_tra": "Travail Manuel", "c_nav": "Navigation", "c_mag": "Magouille", "c_sur": "Survie"}
-                for k_code, n_aff in dic_noms.items():
-                    if p.get(k_code, 0) > 0: comp_visibles.append(f"{n_aff}: **{p[k_code]}**")
-                if comp_visibles: st.caption(f"📊 **Compétences (Rang ≥ 1) :** " + " | ".join(comp_visibles))
-
-        st.markdown("---")
-        st.subheader("🔔 Boîte de réception des Actions Soumises")
-        if os.path.exists(ACTIONS_FILE):
-            try:
-                with open(ACTIONS_FILE, "r", encoding="utf-8") as file: actions = json.load(file)
-            except: actions = []
-            en_attente = [a for a in actions if a["statut"] == "En attente"]
-            if not en_attente: st.info("Aucune action en attente.")
-            else:
-                for act in en_attente:
-                    st.markdown("---")
-                    cola, colb = st.columns(2)
-                    with cola:
-                        st.warning(f"⚔️ **{act['joueur']}** ({act['perso']}) veut agir !")
-                        st.write(f"🔹 **Jet :** Compétence **[{act['competence']}]** + Élément **[{act['element']}]**")
-                        st.write(f"🎯 **Technique employée :** `{act.get('technique', 'Aucune')}`")
-                        aj = act.get("anneaux", {})
-                        st.caption(f"📈 *Anneaux :* Air: {aj.get('air',1)} | Terre: {aj.get('terre',1)} | Feu: {aj.get('feu',1)} | Eau: {aj.get('eau',1)}")
-                        st.info(f"💬 **Message / Intention :** {act['description']}")
-                    with colb:
-                        commentaire_mj = st.text_input("Réponse ou contrainte du MJ :", key=f"txt_{act['id']}")
-                        c_btn1, c_btn2 = st.columns(2)
-                        if c_btn1.button("✅ Autoriser", key=f"val_{act['id']}"):
-                            for a in actions:
-                                if a["id"] == act["id"]: 
-                                    a["statut"] = "Validé"
-                                    a["description_mj"] = commentaire_mj if commentaire_mj else "Approuvé."
-                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
-                                json.dump(actions, file, indent=4, ensure_ascii=False)
-                            st.success("Validé !")
-                            st.rerun()
-                            
-                        if c_btn2.button("⛔ Refuser", key=f"ref_{act['id']}"):
-                            for a in actions:
-                                if a["id"] == act["id"]: 
-                                    a["statut"] = "Refusé"
-                                    a["description_mj"] = commentaire_mj if commentaire_mj else "Refusé."
-                            with open(ACTIONS_FILE, "w", encoding="utf-8") as file: 
-                                json.dump(actions, file, indent=4, ensure_ascii=False)
-                            st.error("Refusé !")
-                            st.rerun()
-        else: 
-            st.info("Aucune notification reçue.")
-# --- FIN ABSOLUE DU FICHIER : COMPLÈTEMENT COLLÉ À GAUCHE (0 ESPACE) ---
+# =====================================================================
+# ⛩️ SECTION ACCUEIL : ÉCRAN PARCHEMIN (SI AUCUNE CONNEXION)
+# =====================================================================
 else:
     st.info("⛩️ Saisissez votre prénom ci-dessus pour déplier votre parchemin de personnage.")
