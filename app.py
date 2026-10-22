@@ -1,7 +1,44 @@
-import streamlit as st
 import json
 import os
-import time
+
+def charger_fiche(nom_id):
+    """Charge la fiche du joueur et garantit la présence de TOUTES les clés mécaniques L5R."""
+    nom_fichier = f"fiche_{nom_id.lower()}.json"
+    
+    # Structure de base universelle pour ne perdre aucune variable
+    structure_defaut = {
+        "clan": "Clan de la Grue", "famille": "Kakita", "genre": "Homme", "espece": "Humain", "ecole": "",
+        "anneau_air": 2, "anneau_terre": 2, "anneau_feu": 2, "anneau_eau": 2, "anneau_vide": 2,
+        "comp_artisanat": 0, "comp_composition": 0, "comp_design": 0, "comp_esthetique": 0, "comp_forgeron": 0,
+        "comp_armes_de_poing": 0, "comp_armes_de_jet": 0, "comp_arts_martiaux_(corps_à_corps)": 0,
+        "comp_arts_martiaux_(distance)": 0, "comp_arts_martiaux_(mains_nues)": 0, "comp_meditation": 0,
+        "comp_commerce": 0, "comp_culture": 0, "comp_theologie": 0, "comp_medecine": 0, "comp_sentiment": 0, "comp_tactique": 0,
+        "comp_commandement": 0, "comp_courtoisie": 0, "comp_jeux": 0, "comp_ruse": 0, "comp_performance": 0,
+        "comp_chasse": 0, "comp_navigation": 0, "comp_survie": 0, "comp_travail_manuel": 0,
+        "inventaire_sac": [], "mes_katas": [], "mes_kihos": [], "mes_invocs": [], "mes_rituels": [], 
+        "mes_shujis": [], "mes_mahos": [], "mes_ninjutsus": [], "mes_inversions": [], "mes_etats": [],
+        "xp_accumulee": 0, "xp_depensee_rang": 0, "xp_depensee_libre": 0, "titres_obtenus": [],
+        "posture": "Air", "endurance_actuelle": 10, "sang_froid_actuel": 10
+    }
+    
+    if os.path.exists(nom_fichier):
+        try:
+            with open(nom_fichier, "r", encoding="utf-8") as f_json:
+                donnees_chargees = json.load(f_json)
+                # Fusion intelligente : conserve l'existant et ajoute ce qui manque
+                structure_defaut.update(donnees_chargees)
+                return structure_defaut
+        except Exception:
+            return structure_defaut
+    return structure_defaut
+
+def sauver_fiche(nom_id, dictionnaire_fiche):
+    """Fige immédiatement l'intégralité du dictionnaire sur le disque dur."""
+    if not nom_id:
+        return
+    nom_fichier = f"fiche_{nom_id.lower()}.json"
+    with open(nom_fichier, "w", encoding="utf-8") as f_json:
+        json.dump(dictionnaire_fiche, f_json, ensure_ascii=False, indent=4)
 
 # 1. IMPORTATION LOGIQUE DES BASES DE DONNÉES DÉPORTÉES
 from equipements import CATALOGUE_ARMURES, CATALOGUE_ARMES_AVANCE, CATALOGUE_DIVERS
