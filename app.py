@@ -140,6 +140,80 @@ if role == "Joueur (Ma Fiche)":
         feu_score = int(f.get("feu", 1))
         eau_score = int(f.get("eau", 1))
         vide_score = int(f.get("vide", 1))
+        # =====================================================================
+        # 🧮 CALCULATEUR DE STATISTIQUES SECONDAIRES & HAUTS FAITS (L5R 5E)
+        # =====================================================================
+        # Récupération stricte et conversion des 5 Anneaux en entiers
+        val_air = int(f.get("anneau_air", 2))
+        val_terre = int(f.get("anneau_terre", 2))
+        val_feu = int(f.get("anneau_feu", 2))
+        val_eau = int(f.get("anneau_eau", 2))
+        val_vide = int(f.get("anneau_vide", 2))
+
+        # --- EXÉCUTION DES 5 FORMULES OFFICIELLES ---
+        endurance_max = (val_terre + val_feu) * 2     # Formule 1 : Endurance
+        sang_froid_max = (val_terre + val_eau) * 2     # Formule 2 : Sang-Froid
+        attention_max = val_air + val_feu             # Formule 3 : Attention (Focus)
+        vigilance_max = (val_air + val_eau) / 2       # Formule 4 : Vigilance Passive
+        points_vide_max = val_vide                    # Formule 5 : Points de Vide max = Anneau de Vide
+
+        st.markdown("---")
+        st.subheader("📊 Vitalité & Défenses Sacrées")
+
+        # Ajustement automatique si la fatigue dépasse le nouveau maximum calculé
+        if int(f.get("endurance_actuelle", endurance_max)) > endurance_max:
+            f["endurance_actuelle"] = endurance_max
+        if int(f.get("sang_froid_actuel", sang_froid_max)) > sang_froid_max:
+            f["sang_froid_actuel"] = sang_froid_max
+        if int(f.get("points_vide_actuels", points_vide_max)) > points_vide_max:
+            f["points_vide_actuels"] = points_vide_max
+
+        # Affichage visuel en double colonne
+        col_vit1, col_vit2 = st.columns(2)
+        with col_vit1:
+            st.markdown(f"❤️ **Endurance Maximale :** `{endurance_max}`")
+            f["endurance_actuelle"] = st.number_input(
+                "Endurance Actuelle (Points de Vie) :", 
+                min_value=0, max_value=endurance_max, 
+                value=int(f.get("endurance_actuelle", endurance_max)),
+                key="num_endurance_live_v5"
+            )
+            st.progress(f["endurance_actuelle"] / endurance_max if endurance_max > 0 else 0)
+            
+            st.markdown(f"🎯 **Attention (Focus Initiative) :** `{attention_max}`")
+            
+        with col_vit2:
+            st.markdown(f"🧠 **Sang-Froid Maximal :** `{sang_froid_max}`")
+            f["sang_froid_actuel"] = st.number_input(
+                "Sang-Froid Actuel (Résistance au Stress) :", 
+                min_value=0, max_value=sang_froid_max, 
+                value=int(f.get("sang_froid_actuel", sang_froid_max)),
+                key="num_sangfroid_live_v5"
+            )
+            st.progress(f["sang_froid_actuel"] / sang_froid_max if sang_froid_max > 0 else 0)
+            
+            st.markdown(f"👁️ **Vigilance Passive :** `{vigilance_max}`")
+
+        st.markdown("---")
+        st.markdown(f"🌌 **Points de Vide Disponibles :** Max théorique `{points_vide_max}`")
+        f["points_vide_actuels"] = st.slider(
+            "Points de Vide dépensés / restants :",
+            min_value=0, max_value=points_vide_max,
+            value=int(f.get("points_vide_actuels", points_vide_max)),
+            key="slider_points_vide_l5r"
+        )
+
+        # =====================================================================
+        # 🩸 LE BOUTON ROUGE : ENREGISTRER EN PARCHEMIN & SYNCHRONISER
+        # =====================================================================
+        st.markdown("---")
+        if st.button("🧧 ENREGISTRER EN PARCHEMIN (Sauvegarde et Actualisation)", key="btn_rouge_sauvegarde_parchemin", use_container_width=True):
+            # 1. On fige le dictionnaire en mémoire vive de session
+            st.session_state["fiche_active"] = f
+            # 2. On écrit physiquement le fichier JSON dans sauvegardes_l5a/
+            sauver_fiche(nom_id, f)
+            st.toast("📜 Le Parchemin Ancestral a été scellé et enregistré sur le serveur !", icon="🔥")
+            st.rerun()
         
         # --- CENTRALISATION IMMÉDIATE DU DICTIONNAIRE DE SAUVEGARDE (MAJ) ---
         maj = {
@@ -255,12 +329,15 @@ if role == "Joueur (Ma Fiche)":
         else:
             st.caption("⚠️ Aucune école sélectionnée pour le moment. Veuillez en choisir une dans la liste ci-dessus.")
             
-        # --- SYNCHRONISATION EN DIRECT DE L'ONGLET ---
-        st.sidebar.markdown("---")
-        if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
-            st.toast("⚡ Synchronisation avec le serveur réussie !", icon="🛸")
-            st.rerun()
-
+# --- BOUTON D'ACTUALISATION SÉCURISÉ ---
+st.sidebar.markdown("---")
+if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
+    # On efface la mémoire tampon pour forcer l'application à relire le fichier JSON propre
+    if "fiche_active" in st.session_state:
+        del st.session_state["fiche_active"]
+    st.toast("🛸 Données synchronisées avec la dernière sauvegarde !", icon="⚡")
+    st.rerun()
+    
         # --- SOLUTION RADICALE IMMUNISÉE CONTRE LES INDENTATIONS ---
         # --- CALCUL AUTOMATIQUE DU BONUS DE POSTURE DE L'AIR ---
         try:
