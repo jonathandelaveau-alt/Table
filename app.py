@@ -181,11 +181,6 @@ if role == "Joueur (Ma Fiche)":
         end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
         sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
         
-        armure_actuelle_nom = f.get("armure_active", "Armure de Tenue de Cérémonie")
-        stats_armure_actuelle = CATALOGUE_ARMURES.get(armure_actuelle_nom, {"res_p": 1, "res_s": 0, "proprietes": "Cérémonielle"})
-        st.markdown(f"🛡️ **Équipement de Protection Actif :** *{armure_actuelle_nom}*")
-        st.info(f"🔰 **Résistance Physique :** {stats_armure_actuelle['res_p']} | **Résistance Surnaturelle :** {stats_armure_actuelle['res_s']} \n\n*Propriétés : {stats_armure_actuelle['proprietes']}*")
-
         st.markdown("##### 🩺 États & Blessures Subis")
         col_sante1, col_sante2 = st.columns(2)
         with col_sante1:
