@@ -22,14 +22,13 @@ from ecoles import CATALOGUE_ECOLES
 # ⚙️ 3. FONCTIONS UNIQUES ET SÉCURISÉES DE CHARGEMENT ET SAUVEGARDE
 # =====================================================================
 def charger_fiche(nom_id):
-    """Charge la fiche du joueur depuis le dossier DB_DIR et garantit la présence de TOUTES les clés mécaniques."""
+    """Charge la fiche depuis le dossier et applique la structure par défaut UNIQUEMENT sur les clés manquantes."""
     if not nom_id:
-        return None
+        return {}
         
     nom_fichier = f"{nom_id.lower().strip()}.json"
     path_complet = os.path.join(DB_DIR, nom_fichier)
     
-    # Votre structure de base universelle préservée à 100%
     structure_defaut = {
         "clan": "Clan de la Grue", "famille": "Kakita", "genre": "Homme", "espece": "Humain", "ecole": "",
         "anneau_air": 2, "anneau_terre": 2, "anneau_feu": 2, "anneau_eau": 2, "anneau_vide": 2,
@@ -49,8 +48,9 @@ def charger_fiche(nom_id):
         try:
             with open(path_complet, "r", encoding="utf-8") as f_json:
                 donnees_chargees = json.load(f_json)
-                # Fusion intelligente : conserve l'existant du joueur et ajoute les clés de structure manquantes
-                structure_defaut.update(donnees_chargees)
+                # Sécurité critique : on prend d'abord tout ce que le joueur a enregistré
+                for cle, valeur in donnees_chargees.items():
+                    structure_defaut[cle] = valeur
                 return structure_defaut
         except Exception:
             return structure_defaut
@@ -108,14 +108,15 @@ if role == "Joueur (Ma Fiche)":
     nom_id = st.sidebar.text_input("⛩️ Saisissez votre prénom :", key="input_prenom_joueur").strip()
     
     if nom_id:
-        f = charger_fiche(nom_id)
-        if not f: 
-            f = {}
+        # On charge les données existantes du joueur de manière persistante
+        if "fiche_active" not in st.session_state or st.session_state.get("joueur_courant") != nom_id:
+            st.session_state["fiche_active"] = charger_fiche(nom_id)
+            st.session_state["joueur_courant"] = nom_id
             
+        f = st.session_state["fiche_active"]
+        
         st.sidebar.markdown("---")
         st.sidebar.subheader("📌 Navigation")
-        
-        # Le sélecteur étendu à 7 onglets indépendants
         onglet_actif = st.sidebar.radio(
             "Choisir la zone à afficher :",
             [
@@ -124,7 +125,7 @@ if role == "Joueur (Ma Fiche)":
                 "🎲 Calculateur de Dés Tactique",
                 "🏛️ Grand Catalogue des Techniques", 
                 "🛒 Marché d'Émeraude",
-                "🩸 S'infliger un État / Blessure"  # <-- Nouvel onglet ajouté ici
+                "🩸 S'infliger un État / Blessure"
             ],
             key="radio_navigation_globale"
         )
@@ -1015,7 +1016,8 @@ if role == "Joueur (Ma Fiche)":
                                                 st.success(f"🔮 {t_nom} a été mémorisé dans votre Grimoire !")
                                                 st.rerun()
 
-        # --- BLOC DE SAUVEGARDE ABSOLUE ET SYSTÉMATIQUE DE TOUS LES ONGLETS ---
-        st.markdown("---")
-        sauver_fiche(nom_id, f)
+        # --- BLOC DE SAUVEGARDE UNIVERSELLE FILTRÉE ---
+        if nom_id and f:
+            sauver_fiche(nom_id, f)
+            st.session_state["fiche_active"] = f
         
