@@ -86,12 +86,11 @@ if role == "Joueur (Ma Fiche)":
                 "🎲 Calculateur de Dés Tactique",
                 "🏛️ Grand Catalogue des Techniques", 
                 "🛒 Marché d'Émeraude",
-                "💎 Progression & Expérience",
-                "🎖️ Titres Honorifiques"
+                "🩸 S'infliger un État / Blessure"  # <-- Nouvel onglet ajouté ici
             ],
             key="radio_navigation_globale"
         )
-     
+
         if onglet_actif == "📜 Ma Feuille de Personnage":
             st.header(f"👤 Votre Feuille Dynamique — {nom_id}")
             # (Ici continue votre code habituel avec vos anneaux, caractéristiques, etc.)
@@ -216,6 +215,12 @@ if role == "Joueur (Ma Fiche)":
             )
         else:
             st.caption("⚠️ Aucune école sélectionnée pour le moment. Veuillez en choisir une dans la liste ci-dessus.")
+            
+# --- BOUTON D'ACTUALISATION ET SYNCHRONISATION EN DIRECT ---
+st.sidebar.markdown("---")
+if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_sync_refresh"):
+    st.toast("⚡ Synchronisation avec le serveur réussie !", icon="🛸")
+    st.rerun()
 
         posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
         valeur_air_posture = 2 if int(rang_ecole) >= 4 else 1
@@ -243,36 +248,35 @@ if role == "Joueur (Ma Fiche)":
         sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
         
         # =====================================================================
-        # 🩸 ÉTATS & BLESSURES SUBIS (AFFICHAGE SEUL SUR LA FEUILLE)
+        # 🩸 INTERCEPTION DE L'ONGLET : CLINIQUE DES AFFLICTIONS
         # =====================================================================
-        st.markdown("---")
-        st.subheader("🩸 États & Blessures du Personnage")
-        
-        if "mes_etats" not in f:
-            f["mes_etats"] = []
+        if onglet_actif == "🩸 S'infliger un État / Blessure":
+            st.title("🩸 Tribunal des Afflictions et Blessures")
+            st.info("🎯 Sélectionnez ici les malus ou blessures majeures imposés par le scénario ou le Maître du Jeu.")
             
-        db_etats_source = CATALOGUE_ETATS_BLESSURES if 'CATALOGUE_ETATS_BLESSURES' in globals() else {}
-        
-        if f["mes_etats"]:
-            st.markdown("**Afflictions actives sur votre personnage :**")
-            for affliction in f["mes_etats"]:
-                col_aff_nom, col_aff_action = st.columns([4, 1])
+            db_etats_source = CATALOGUE_ETATS_BLESSURES if 'CATALOGUE_ETATS_BLESSURES' in globals() else {}
+            
+            liste_options_dispo = ["-- Choisir un malus à appliquer --"]
+            for categorie_aff, dict_contenu in db_etats_source.items():
+                for nom_aff in dict_contenu.keys():
+                    if nom_aff not in f.get("mes_etats", []):
+                        liste_options_dispo.append(f"{nom_aff} ({categorie_aff})")
+                        
+            sel_nouvel_effet = st.selectbox("Sélectionner l'affliction à transférer sur votre feuille :", liste_options_dispo, key="sb_onglet_dedie_malus")
+            
+            if sel_nouvel_effet != "-- Choisir un malus à appliquer --":
+                # Extraction propre du nom
+                nom_propre_aff = sel_nouvel_effet.split(" (")[0]
                 
-                # Récupération de la description
-                desc_affliction = "Description non trouvée."
-                for cat_aff, dict_aff in db_etats_source.items():
-                    if affliction in dict_aff:
-                        desc_affliction = dict_aff[affliction]
-                        break
+                if "mes_etats" not in f:
+                    f["mes_etats"] = []
+                    
+                f["mes_etats"].append(nom_propre_aff)
                 
-                col_aff_nom.write(f"• **{affliction}** : *{desc_affliction}*")
-                
-                if col_aff_action.button("🩹 Soigner", key=f"heal_main_{affliction.replace(' ', '_')}"):
-                    f["mes_etats"].remove(affliction)
-                    sauver_fiche(nom_id, f)
-                    st.rerun()
-        else:
-            st.info("✨ Le personnage ne subit actuellement aucun état handicapant ou blessure majeure.")
+                # --- SAUVEGARDE UNIVERSELLE AUTOMATIQUE ---
+                sauver_fiche(nom_id, f)
+                st.success(f"💥 L'état '{nom_propre_aff}' a été appliqué. Retrouvez-le sur votre onglet 'Feuille de Personnage' !")
+                st.rerun()
             
         st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
@@ -958,7 +962,7 @@ if role == "Joueur (Ma Fiche)":
                                                 st.success(f"🔮 {t_nom} a été mémorisé dans votre Grimoire !")
                                                 st.rerun()
 
-        # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
+        # --- BLOC DE SAUVEGARDE ABSOLUE ET SYSTÉMATIQUE DE TOUS LES ONGLETS ---
         st.markdown("---")
         sauver_fiche(nom_id, f)
         
