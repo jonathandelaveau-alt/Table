@@ -239,19 +239,25 @@ if role == "Joueur (Ma Fiche)":
         p_vide = st.number_input("Points de Vide Actuels", 0, vide, value=f.get("p_vide", 1))
 
         end_m, sf_m, attn, vigi = (terre + feu) * 2, (terre + eau) * 2, air + feu, (air + eau) / 2
-        st.subheader("📊 Vitalité & Défenses")
+                st.subheader("📊 Vitalité & Défenses")
         sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
         cv1, cv2 = st.columns(2)
         end_act = cv1.number_input(f"Endurance Actuelle (Max: {end_m}) :", 0, end_m, value=min(f.get("end_act", end_m), end_m))
         sf_act = cv2.number_input(f"Sang-froid Actuel (Max: {sf_m}) :", 0, sf_m, value=min(f.get("sf_act", sf_m), sf_m))
-                # --- MODULE DES ÉTATS ET BLESSURES CRITIQUES (SOUS LA VITALITÉ) ---
-        st.markdown("##### 🩺 États & Blessures Subis")
         
+        # --- RAPPEL DES CARACTÉRISTIQUES DE L'ARMURE PORTÉE ---
+        armure_actuelle_nom = f.get("armure_active", "Armure de Tenue de Cérémonie")
+        stats_armure_actuelle = CATALOGUE_ARMURES.get(armure_actuelle_nom, {"res_p": 1, "res_s": 0, "proprietes": "Cérémonielle"})
+        
+        st.markdown(f"🛡️ **Équipement de Protection Actif :** *{armure_actuelle_nom}*")
+        st.info(f"🔰 **Résistance Physique (🛡️) :** {stats_armure_actuelle['res_p']} | **Résistance Surnaturelle (✨) :** {stats_armure_actuelle['res_s']} \n\n*Propriétés d'armure : {stats_armure_actuelle['proprietes']}*")
+
+        # --- MODULE DES ÉTATS ET BLESSURES CRITIQUES ---
+        st.markdown("##### 🩺 États & Blessures Subis")
         col_sante1, col_sante2 = st.columns(2)
         
         with col_sante1:
             st.markdown("**🚨 États Préjudiciables :**")
-            # Cases à cocher pour les états officiels
             e_blinde = st.checkbox("Saignant 🩸", value=f.get("e_saignant", False), key="chk_saignant")
             e_etourdi = st.checkbox("Étourdi 😵‍💫", value=f.get("e_etourdi", False), key="chk_etourdi")
             e_compromis = st.checkbox("Compromis ⚖️", value=f.get("e_compromis", False), key="chk_compromis")
@@ -281,10 +287,10 @@ if role == "Joueur (Ma Fiche)":
         if b_grave: messages_blessures.append("• **Blessure Grave :** La difficulté de tous vos tests physiques augmente de +1.")
         if b_mutilante: messages_blessures.append("• **Blessure Mutilante :** Malus permanent sur l'anneau associé (Défini par le MJ).")
 
-                if messages_blessures:
+        if messages_blessures:
             st.warning("🚨 **EFFETS DES BLESSURES ACTIVES :**\n" + "\n".join(messages_blessures))
 
-        # --- BLOC RE-ALIGNÉ DES ANNEAUX (CORRECT) ---
+        # --- BLOC RE-ALIGNÉ DES ANNEAUX ---
         st.subheader("🌀 Les Cinq Anneaux")
         sh_anneaux = st.checkbox("👁️ Partager mes 5 Anneaux avec le MJ", value=f.get("sh_anneaux", True))
         
