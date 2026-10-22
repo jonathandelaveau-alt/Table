@@ -223,7 +223,7 @@ if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_s
     st.rerun()
     posture = st.selectbox("Posture Active de combat :", ["Air", "Terre", "Feu", "Eau", "Vide"], index=["Air", "Terre", "Feu", "Eau", "Vide"].index(f.get("posture", "Air")))
     valeur_air_posture = 2 if int(rang_ecole) >= 4 else 1
-        EFFETS_POSTURES = {
+    EFFETS_POSTURES = {
             "Air": f"💨 **Posture de l'Air :** Le niveau de difficulté des tests d'attaque/manipulation contre vous augmente de {valeur_air_posture}.",
             "Terre": "🏔️ **Posture de la Terre :** Vos adversaires ne peuvent pas dépenser leurs aubaines pour des coups critiques ou des États.",
             "Feu": "🔥 **Posture du Feu :** En cas de réussite, vous gagnez un succès BONUS par conflit sur les dégâts et dés gardés.",
