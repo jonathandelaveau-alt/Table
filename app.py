@@ -230,7 +230,7 @@ if st.sidebar.button("🔄 Actualiser les données en direct", key="btn_global_s
             "Eau": "💧 **Posture de l'Eau :** Effectuez une seconde action (sans test requis, ni même type).",
             "Vide": "🌌 **Posture du Vide :** Les conflits obtenus lors des tests ne vous infligent aucun point de stress."
         }
-        st.info(EFFETS_POSTURES[posture])
+    st.info(EFFETS_POSTURES[posture])
 
         st.subheader("📊 Vitalité & Défenses")
         sh_vitalite = st.checkbox("👁️ Partager mes jauges avec le MJ", value=f.get("sh_vitalite", True))
