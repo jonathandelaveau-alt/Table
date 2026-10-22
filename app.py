@@ -555,61 +555,6 @@ if role == "Joueur (Ma Fiche)":
         # --- SAUVEGARDE FINALE DE L'ESPACE DU JOUEUR ---
         st.markdown("---")
         sauver_fiche(nom_id, f)
-               # === 🛒 BOUTIQUE D'ACHAT DU JOUEUR ===
-        st.markdown("---")
-        st.subheader("🛒 Ajouter Objet (Magasin & Sac)")
-        col_cat1, col_cat2, col_cat3 = st.columns(3)
-        
-        with col_cat1:
-            st.markdown("**1. Catégorie : Armes**")
-            w_achat = st.selectbox("Sélectionner une arme du catalogue :", list(CATALOGUE_ARMES_AVANCE.keys()), key="buy_w_sel")
-            if st.button("➕ Ajouter l'Arme", key="btn_buy_w"):
-                f["inventaire_sac"].append({
-                    "id_obj": int(time.time()), "nom": f"{w_achat} standard", "modele_racine": w_achat, "type_cat": "Arme", 
-                    "details": "Achetée au catalogue d'école standard.", "main_equipee": "Aucune", "prise_main": "1 main", "bonus_degats": 0, "bonus_danger": 0, "proprietes": CATALOGUE_ARMES_AVANCE[w_achat]["proprietes"]
-                })
-                sauver_fiche(nom_id, f)
-                st.success(f"✨ {w_achat} a été glissé dans votre sac !")
-                st.rerun()
-                
-        with col_cat2:
-            st.markdown("**2. Catégorie : Armures**")
-            a_achat = st.selectbox("Sélectionner une armure du catalogue :", list(CATALOGUE_ARMURES.keys()), key="buy_a_sel")
-            if st.button("➕ Ajouter l'Armure", key="btn_buy_a"):
-                f["inventaire_sac"].append({
-                    "id_obj": int(time.time()), "nom": f"{a_achat} standard", "modele_racine": a_achat, "type_cat": "Armure", 
-                    "details": "Achetée au catalogue de protection standard.", "equipe": False, "bonus_res_p": 0, "bonus_res_s": 0, "proprietes": CATALOGUE_ARMURES[a_achat]["proprietes"]
-                })
-                sauver_fiche(nom_id, f)
-                st.success(f"✨ {a_achat} a été suspendue dans votre sac !")
-                st.rerun()
-
-        with col_cat3:
-            st.markdown("**3. Catégorie : Objets Divers**")
-            liste_divers = list(CATALOGUE_DIVERS.keys()) if 'CATALOGUE_DIVERS' in globals() else []
-            if liste_divers:
-                d_achat = st.selectbox("Sélectionner un objet utilitaire :", liste_divers, key="boutique_divers_unique_sel")
-                if st.button("➕ Ajouter l'Objet Divers", key="btn_buy_d_sac"):
-                    d_stats = CATALOGUE_DIVERS[d_achat]
-                    f["inventaire_sac"].append({
-                        "id_obj": int(time.time()), "nom": d_achat, "type_cat": "Divers", 
-                        "details": f"Type : {d_stats['type']}. Niveau de Rareté : {d_stats['rarete']}.", 
-                        "proprietes": d_stats["effet"], "equipe": False
-                    })
-                    sauver_fiche(nom_id, f)
-                    st.success(f"✨ {d_achat} glissé dans le sac !")
-                    st.rerun()
-
-        # --- GESTION DES TECHNIQUES ET SAUVEGARDE FINALE DU JOUEUR ---
-        st.markdown("---")
-        st.info("👈 Veuillez sélectionner votre accès dans le menu latéral gauche.")        
-        st.subheader("📜 Gestion des techniques")
-        
-        for cle_g in ["mes_katas", "mes_kihos", "mes_invocs", "mes_rituels", "mes_shujis", "mes_mahos", "mes_ninjutsus", "mes_inversions"]:
-            if cle_g not in f: 
-                f[cle_g] = []
-
-        sauver_fiche(nom_id, f)
 
 # ==================== VUE MJ ====================
 elif role == "Maître du Jeu (Hôte)":
