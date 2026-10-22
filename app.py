@@ -348,10 +348,10 @@ if role == "Joueur (Ma Fiche)":
                     arme_active_danger = w_base["danger"] + arme_md_obj.get("bonus_danger", 0)
                     arme_active_portee = w_base["portee"]
 
-            # Sélection de l'Armure Portée
-            armures_equipees = [obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Armure" and obj.get("equipe", False)]
+            # Extraction du premier dictionnaire d'armure équipée trouvé
+            armure_active_obj = next((obj for obj in f["inventaire_sac"] if obj["type_cat"] == "Armure" and obj.get("equipe", False)), None)
             liste_armures_sac = ["Aucune"] + [a["nom"] for a in f["inventaire_sac"] if a["type_cat"] == "Armure"]
-            nom_a_actuelle = armures_equipees["nom"] if armures_equipees else "Aucune"
+            nom_a_actuelle = armure_active_obj["nom"] if armure_active_obj else "Aucune"
             
             sel_armure = st.selectbox("👘 Sélectionner l'Armure Portée :", liste_armures_sac, index=liste_armures_sac.index(nom_a_actuelle) if nom_a_actuelle in liste_armures_sac else 0, key="sel_a_active_live")
             for a in f["inventaire_sac"]:
